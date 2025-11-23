@@ -1,5 +1,5 @@
 import React from 'react';
-import logoImage from '../../logo.png';
+import logoImage from '../assets/images/navodaya_logo.png';
 
 const Header: React.FC = () => {
   const handleLogoClick = () => {
