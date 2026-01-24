@@ -1,7 +1,5 @@
 import React from "react";
-import logoImage from "../assets/images/navodaya_logo.svg"; 
-// If your repo only has PNG right now, switch to:
-// import logoImage from "../assets/images/navodaya_logo.png";
+import logoImage from "../assets/images/navodaya_logo.png";
 
 /**
  * Mask-painted logo reveal:

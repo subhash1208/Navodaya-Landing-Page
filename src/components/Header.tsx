@@ -11,13 +11,11 @@ const Header: React.FC = () => {
       <div className="container mx-auto px-6 h-full">
         <div className="flex items-center justify-between h-full">
           <div className="flex items-center space-x-3 transition-all duration-300 ease-in-out cursor-pointer" onClick={handleLogoClick}>
-            <div className="p-1 group-hover:p-2 rounded-lg bg-white shadow-lg transition-all duration-300 ease-in-out">
-              <img 
-                src={logoImage} 
-                alt="Navodaya Logo" 
-                className="w-5 h-5 group-hover:w-8 group-hover:h-8 object-contain logo-enhanced transition-all duration-300 ease-in-out"
-              />
-            </div>
+            <img 
+              src={logoImage} 
+              alt="Navodaya Logo" 
+              className="w-8 h-8 group-hover:w-10 group-hover:h-10 object-contain transition-all duration-300 ease-in-out"
+            />
             <div className="transition-all duration-300 ease-in-out flex flex-col justify-center">
               <h1 className="text-base group-hover:text-xl font-bold text-slate-800 transition-all duration-300 ease-in-out leading-tight">Navodaya</h1>
               <p className="text-xs text-slate-600 opacity-0 group-hover:opacity-100 transition-all duration-300 ease-in-out max-h-0 group-hover:max-h-10 overflow-hidden">Industries and Care Kits</p>

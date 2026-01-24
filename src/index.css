@@ -1,9 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import './tailwind.css';
 
+/* CSS Reset */
 * {
   margin: 0;
   padding: 0;
@@ -218,10 +217,10 @@ html {
 /* Enhanced image quality */
 img {
   image-rendering: -webkit-optimize-contrast;
-  image-rendering: crisp-edges;
-  image-rendering: pixelated;
+  backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   -moz-backface-visibility: hidden;
+  transform: translate3d(0, 0, 0);
   -webkit-transform: translate3d(0, 0, 0);
   -moz-transform: translate3d(0, 0, 0);
 }
@@ -229,7 +228,6 @@ img {
 /* Logo specific enhancements */
 .logo-enhanced {
   image-rendering: -webkit-optimize-contrast;
-  image-rendering: crisp-edges;
   filter: contrast(1.1) brightness(1.05) saturate(1.1);
   -webkit-filter: contrast(1.1) brightness(1.05) saturate(1.1);
 }
@@ -474,15 +472,13 @@ img {
 }
 
 /* Netflix-style Drawing Animation */
-@keyframes drawStroke {
+@keyframes drawText {
   0% {
-    -webkit-text-stroke-width: 2px;
-    -webkit-text-stroke-dasharray: 0 1000;
-    -webkit-text-stroke-dashoffset: 1000;
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
   }
   100% {
-    -webkit-text-stroke-width: 2px;
-    -webkit-text-stroke-dasharray: 1000 0;
-    -webkit-text-stroke-dashoffset: 0;
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 0;
   }
 }

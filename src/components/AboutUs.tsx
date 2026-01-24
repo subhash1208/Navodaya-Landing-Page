@@ -29,7 +29,7 @@ const AboutUs: React.FC = () => {
 
   useEffect(() => {
     const word = rotatingWords[currentWord];
-    let timeout: NodeJS.Timeout;
+    let timeout: ReturnType<typeof setTimeout>;
 
     if (!isDeleting && displayText === word) {
       timeout = setTimeout(() => setIsDeleting(true), 2000);

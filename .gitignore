@@ -1,3 +1,29 @@
 node_modules/
 .env
 dist/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# IDE/Editor files
+.windsurf/
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary files
+*.tmp
+*.bak
+*.log
+
+# Asset development files (keep only production assets)
+src/assets/images/logo_code*.txt
+src/assets/images/logo_code_backup.txt
+src/assets/images/logo_code_clean.txt
+src/assets/images/logo_code_final.txt
+
+# Tailwind CSS file (contains @tailwind directives)
+src/tailwind.css

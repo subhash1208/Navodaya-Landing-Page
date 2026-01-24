@@ -1,5 +1,7 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { X } from 'lucide-react';
+import { DotLottie } from '@lottiefiles/dotlottie-web';
+import netflixLottie from '../assets/images/netflix-logo.json';
 import logoImage from '../assets/images/navodaya_logo.png';
 
 interface LoadingAnimationProps {
@@ -7,12 +9,12 @@ interface LoadingAnimationProps {
 }
 
 const LoadingAnimation: React.FC<LoadingAnimationProps> = ({ onComplete }) => {
-  const [isDrawing, setIsDrawing] = useState(false);
-  const [isFilled, setIsFilled] = useState(false);
-  const [showLogo, setShowLogo] = useState(false);
-  const [showTagline, setShowTagline] = useState(false);
   const [showSkip, setShowSkip] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
+  const [showLogo, setShowLogo] = useState(false);
+  const [startDrawing, setStartDrawing] = useState(false);
+  const [showTagline, setShowTagline] = useState(false);
+  const [showMotto, setShowMotto] = useState(false);
   const companyName = "NAVODAYA";
 
   const handleExit = useCallback(() => {
@@ -21,28 +23,23 @@ const LoadingAnimation: React.FC<LoadingAnimationProps> = ({ onComplete }) => {
   }, [onComplete]);
 
   useEffect(() => {
-    // Start drawing animation
-    const drawTimer = setTimeout(() => {
-      setIsDrawing(true);
-      // Play whoosh sound
-      const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIGGS57OihUBELTKXh8bllHAU2jdXvzn0pBSh+zPDhkj4KFV+16+qnVRQLRp/g8r5sIQUrgs/y2Ik2CBhkuezooVARDEyl4fG5ZRwFNo3V7859KQUofsz');
-      audio.volume = 0.15;
-      audio.play().catch(() => {});
-    }, 300);
-
-    // Fill animation after drawing completes
-    const fillTimer = setTimeout(() => setIsFilled(true), 1800);
+    // Play whoosh sound
+    const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIGGS57OihUBELTKXh8bllHAU2jdXvzn0pBSh+zPDhkj4KFV+16+qnVRQLRp/g8r5sIQUrgs/y2Ik2CBhkuezooVARDEyl4fG5ZRwFNo3V7859KQUofsz');
+    audio.volume = 0.15;
+    audio.play().catch(() => {});
     
-    const logoTimer = setTimeout(() => setShowLogo(true), 2500);
-    const taglineTimer = setTimeout(() => setShowTagline(true), 2900);
+    const logoTimer = setTimeout(() => setShowLogo(true), 300);
+    const drawTimer = setTimeout(() => setStartDrawing(true), 800);
+    const taglineTimer = setTimeout(() => setShowTagline(true), 3000);
+    const mottoTimer = setTimeout(() => setShowMotto(true), 3500);
     const skipTimer = setTimeout(() => setShowSkip(true), 2000);
-    const completeTimer = setTimeout(() => handleExit(), 4500);
+    const completeTimer = setTimeout(() => handleExit(), 5000);
 
     return () => {
-      clearTimeout(drawTimer);
-      clearTimeout(fillTimer);
       clearTimeout(logoTimer);
+      clearTimeout(drawTimer);
       clearTimeout(taglineTimer);
+      clearTimeout(mottoTimer);
       clearTimeout(skipTimer);
       clearTimeout(completeTimer);
     };
@@ -63,35 +60,32 @@ const LoadingAnimation: React.FC<LoadingAnimationProps> = ({ onComplete }) => {
         </button>
       )}
 
-      <div className="flex flex-col items-center gap-8">
+      <div className="flex flex-col items-center justify-center gap-6">
         {/* Logo */}
         {showLogo && (
           <div className="animate-fadeIn">
-            <div className="bg-white p-4 rounded-2xl shadow-2xl">
-              <img src={logoImage} alt="Logo" className="w-20 h-20 object-contain" />
-            </div>
+            <img src={logoImage} alt="Logo" className="w-24 h-24 object-contain" />
           </div>
         )}
 
-        {/* Company Name with Drawing Effect */}
-        <div className="flex gap-2 md:gap-4 text-6xl md:text-8xl font-bold">
+        {/* Company Name with Netflix-style path morphing */}
+        <div className="relative flex gap-1 md:gap-2 text-6xl md:text-8xl font-bold">
           {companyName.split('').map((letter, index) => (
-            <span
+            <div
               key={index}
-              className="inline-block relative"
+              className="relative inline-block text-blue-600"
               style={{
-                color: isFilled ? '#2563eb' : 'transparent',
-                WebkitTextStroke: isDrawing ? '2px #2563eb' : '2px transparent',
-                textShadow: isFilled ? '0 4px 20px rgba(37, 99, 235, 0.5)' : 'none',
-                transition: 'all 0.6s ease-out'
-              } as React.CSSProperties}
+                textShadow: '0 4px 20px rgba(37, 99, 235, 0.5)',
+                clipPath: startDrawing ? 'inset(0 0 0 0)' : 'inset(100% 0 0 0)',
+                transition: `clip-path 0.5s cubic-bezier(0.25, 0.1, 0.25, 1) ${index * 0.15}s`
+              }}
             >
               {letter}
-            </span>
+            </div>
           ))}
         </div>
         
-        {/* Tagline with typing effect */}
+        {/* Tagline */}
         {showTagline && (
           <div className="text-slate-700 text-lg md:text-xl font-medium animate-slide-up">
             <span className="inline-block">Industries and Care Kits</span>
@@ -99,8 +93,8 @@ const LoadingAnimation: React.FC<LoadingAnimationProps> = ({ onComplete }) => {
         )}
 
         {/* Company Motto */}
-        {showTagline && (
-          <div className="text-blue-600 text-base md:text-lg font-semibold italic animate-slide-up" style={{ animationDelay: '0.3s' }}>
+        {showMotto && (
+          <div className="text-blue-600 text-base md:text-lg font-semibold italic animate-slide-up">
             "Your Trusted Partner in Progress and Care"
           </div>
         )}
