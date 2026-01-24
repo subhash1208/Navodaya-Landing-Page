@@ -1,8 +1,6 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { X } from 'lucide-react';
-import { DotLottie } from '@lottiefiles/dotlottie-web';
-import netflixLottie from '../assets/images/netflix-logo.json';
-import logoImage from '../assets/images/navodaya_logo.png';
+import logoImage from '../assets/images/logo.png';
 
 interface LoadingAnimationProps {
   onComplete: () => void;
@@ -46,8 +44,8 @@ const LoadingAnimation: React.FC<LoadingAnimationProps> = ({ onComplete }) => {
   }, [handleExit]);
 
   return (
-    <div className={`fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-slate-50 overflow-hidden transition-opacity duration-700 ${
-      isExiting ? 'opacity-0' : 'opacity-100'
+    <div className={`fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-slate-50 overflow-hidden transition-all duration-1000 ease-out ${
+      isExiting ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
     }`}>
       {/* Skip Button */}
       {showSkip && !isExiting && (
@@ -60,42 +58,81 @@ const LoadingAnimation: React.FC<LoadingAnimationProps> = ({ onComplete }) => {
         </button>
       )}
 
-      <div className="flex flex-col items-center justify-center gap-6">
-        {/* Logo */}
+      <div className="relative flex items-center justify-center w-full h-full">
+        {/* Logo - Fixed Position */}
         {showLogo && (
-          <div className="animate-fadeIn">
-            <img src={logoImage} alt="Logo" className="w-24 h-24 object-contain" />
+          <div 
+            className="absolute top-[20%] animate-fadeIn"
+            style={{ 
+              willChange: 'transform, opacity',
+              backfaceVisibility: 'hidden'
+            }}
+          >
+            <img 
+              src={logoImage} 
+              alt="Logo" 
+              className="w-24 h-24 object-contain transform transition-all duration-1000 ease-out hover:scale-110"
+              style={{ 
+                willChange: 'transform',
+                backfaceVisibility: 'hidden'
+              }}
+            />
           </div>
         )}
 
-        {/* Company Name with Netflix-style path morphing */}
-        <div className="relative flex gap-1 md:gap-2 text-6xl md:text-8xl font-bold">
+        {/* Company Name with elegant wavy animation */}
+        <div 
+          className="absolute top-[45%] flex gap-1 md:gap-2 text-6xl md:text-8xl font-bold wavy-text"
+          style={{ 
+            willChange: 'transform',
+            backfaceVisibility: 'hidden'
+          }}
+        >
           {companyName.split('').map((letter, index) => (
-            <div
+            <span
               key={index}
-              className="relative inline-block text-blue-600"
+              className="text-blue-600 animate-fadeIn"
               style={{
                 textShadow: '0 4px 20px rgba(37, 99, 235, 0.5)',
-                clipPath: startDrawing ? 'inset(0 0 0 0)' : 'inset(100% 0 0 0)',
-                transition: `clip-path 0.5s cubic-bezier(0.25, 0.1, 0.25, 1) ${index * 0.15}s`
+                opacity: startDrawing ? 1 : 0,
+                transform: startDrawing ? 'translateY(0)' : 'translateY(20px)',
+                transition: `all 0.8s cubic-bezier(0.4, 0, 0.2, 1) ${index * 0.1}s`,
+                willChange: 'transform, opacity',
+                backfaceVisibility: 'hidden'
               }}
             >
               {letter}
-            </div>
+            </span>
           ))}
         </div>
         
-        {/* Tagline */}
+        {/* Tagline - Fixed Position */}
         {showTagline && (
-          <div className="text-slate-700 text-lg md:text-xl font-medium animate-slide-up">
-            <span className="inline-block">Industries and Care Kits</span>
+          <div 
+            className="absolute top-[65%] text-slate-700 text-lg md:text-xl font-medium animate-slide-up text-center"
+            style={{ 
+              willChange: 'transform, opacity',
+              backfaceVisibility: 'hidden'
+            }}
+          >
+            <span className="inline-block transform transition-all duration-700 ease-out">
+              Industries and Care Kits
+            </span>
           </div>
         )}
 
-        {/* Company Motto */}
+        {/* Company Motto - Fixed Position */}
         {showMotto && (
-          <div className="text-blue-600 text-base md:text-lg font-semibold italic animate-slide-up">
-            "Your Trusted Partner in Progress and Care"
+          <div 
+            className="absolute top-[75%] text-blue-600 text-base md:text-lg font-semibold italic animate-slide-up text-center px-4"
+            style={{ 
+              willChange: 'transform, opacity',
+              backfaceVisibility: 'hidden'
+            }}
+          >
+            <span className="inline-block transform transition-all duration-700 ease-out">
+              "Your Trusted Partner in Progress and Care"
+            </span>
           </div>
         )}
       </div>

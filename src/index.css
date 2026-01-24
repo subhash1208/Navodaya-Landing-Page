@@ -33,36 +33,37 @@ body {
   overflow-x: hidden;
 }
 
-/* Custom animations */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
+/* Enhanced wavy text animation for company name */
+@keyframes wave {
+  0%, 100% {
     transform: translateY(0);
   }
-}
-
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
-  }
   50% {
-    transform: translateY(-10px);
+    transform: translateY(-8px);
   }
 }
 
-@keyframes pulse-glow {
-  0%, 100% {
-    box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
-  }
-  50% {
-    box-shadow: 0 0 40px rgba(59, 130, 246, 0.6);
-  }
+.wavy-text {
+  display: inline-block;
 }
 
+.wavy-text span {
+  display: inline-block;
+  animation: wave 2s ease-in-out infinite;
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+.wavy-text span:nth-child(1) { animation-delay: 0s; }
+.wavy-text span:nth-child(2) { animation-delay: 0.1s; }
+.wavy-text span:nth-child(3) { animation-delay: 0.2s; }
+.wavy-text span:nth-child(4) { animation-delay: 0.3s; }
+.wavy-text span:nth-child(5) { animation-delay: 0.4s; }
+.wavy-text span:nth-child(6) { animation-delay: 0.5s; }
+.wavy-text span:nth-child(7) { animation-delay: 0.6s; }
+.wavy-text span:nth-child(8) { animation-delay: 0.7s; }
+
+/* Enhanced smooth animations inspired by modern web apps */
 @keyframes smoothFadeIn {
   from {
     opacity: 0;
@@ -141,39 +142,114 @@ body {
     filter: blur(0);
   }
 }
+
+/* Enhanced letter animation with GPU acceleration */
+@keyframes letterReveal {
+  0% {
+    opacity: 0;
+    transform: translateY(50px) rotateX(90deg) scale(0.8);
+    filter: blur(10px);
+  }
+  30% {
+    transform: translateY(20px) rotateX(45deg) scale(0.9);
+    filter: blur(5px);
+  }
+  50% {
+    transform: translateY(-10px) rotateX(0deg) scale(1.05);
+    filter: blur(2px);
+  }
+  70% {
+    transform: translateY(-5px) rotateX(0deg) scale(1.02);
+    filter: blur(1px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) rotateX(0deg) scale(1);
+    filter: blur(0);
+  }
+}
+
+/* Enhanced animation classes with GPU acceleration */
 .animate-fadeIn {
   animation: smoothFadeIn 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, opacity;
 }
 
 .animate-float {
   animation: smoothFloat 3s ease-in-out infinite;
   will-change: transform;
-}
-
-.animate-pulse-glow {
-  animation: pulse-glow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  backface-visibility: hidden;
 }
 
 .animate-smooth-pulse {
   animation: smoothPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  will-change: transform, opacity;
 }
 
 .animate-shimmer {
   background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
   background-size: 200% 100%;
   animation: shimmer 2s infinite;
+  will-change: background-position;
 }
 
 .animate-slide-up {
   animation: slideInUp 1s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, opacity;
 }
 
 .animate-fadeOut {
   animation: fadeOut 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  will-change: opacity;
 }
 
 .animate-logo-reveal {
   animation: logoReveal 2s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, opacity, filter;
+}
+
+/* Enhanced loading letter animation */
+.loading-letter {
+  display: inline-block;
+  animation: letterReveal 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  will-change: transform, opacity, filter;
+  backface-visibility: hidden;
+}
+
+/* Enhanced hover effects with GPU acceleration */
+.hover-lift {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+              box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, box-shadow;
+  backface-visibility: hidden;
+}
+
+.hover-lift:hover {
+  transform: translate3d(0, -8px, 0) scale3d(1.02, 1.02, 1);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+}
+
+/* Enhanced transitions for all interactive elements */
+button, input, textarea, select, a {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+/* Enhanced button hover effects */
+button:hover {
+  filter: brightness(1.05);
+  transform: translate3d(0, -1px, 0);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, filter;
+}
+
+/* Enhanced focus states */
+input:focus, textarea:focus, select:focus {
+  transform: translate3d(0, -1px, 0);
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.15);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, box-shadow;
 }
 
 /* Glassmorphism enhancements */

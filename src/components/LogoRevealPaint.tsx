@@ -1,5 +1,5 @@
 import React from "react";
-import logoImage from "../assets/images/navodaya_logo.png";
+import logoImage from '../assets/images/logo.png';
 
 /**
  * Mask-painted logo reveal:
@@ -22,7 +22,6 @@ const LogoRevealPaint: React.FC<{
   // We use a square viewBox and viewBox-preserving image to stay crisp.
   // The masks are animated strokes (big rounded caps) moving along diagonals.
   const vars = {
-    // @ts-expect-error CSS vars for timing
     "--nvDrawDur": `${durationMs}ms`,
     "--nvDrawDelay": `${delayMs}ms`,
   } as React.CSSProperties;
