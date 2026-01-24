@@ -1,13 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { X } from 'lucide-react';
 import logoImage from '../assets/images/logo.png';
 
-interface LoadingAnimationProps {
-  onComplete: () => void;
-}
-
-const LoadingAnimation: React.FC<LoadingAnimationProps> = ({ onComplete }) => {
-  const [showSkip, setShowSkip] = useState(false);
+const LoadingAnimation: React.FC<{ onComplete: () => void }> = ({ onComplete }) => {
   const [isExiting, setIsExiting] = useState(false);
   const [showLogo, setShowLogo] = useState(false);
   const [startDrawing, setStartDrawing] = useState(false);
@@ -17,7 +11,7 @@ const LoadingAnimation: React.FC<LoadingAnimationProps> = ({ onComplete }) => {
 
   const handleExit = useCallback(() => {
     setIsExiting(true);
-    setTimeout(() => onComplete(), 800);
+    setTimeout(() => onComplete(), 300);
   }, [onComplete]);
 
   useEffect(() => {
@@ -26,38 +20,25 @@ const LoadingAnimation: React.FC<LoadingAnimationProps> = ({ onComplete }) => {
     audio.volume = 0.15;
     audio.play().catch(() => {});
     
-    const logoTimer = setTimeout(() => setShowLogo(true), 300);
-    const drawTimer = setTimeout(() => setStartDrawing(true), 800);
-    const taglineTimer = setTimeout(() => setShowTagline(true), 3000);
-    const mottoTimer = setTimeout(() => setShowMotto(true), 3500);
-    const skipTimer = setTimeout(() => setShowSkip(true), 2000);
-    const completeTimer = setTimeout(() => handleExit(), 5000);
+    const logoTimer = setTimeout(() => setShowLogo(true), 0);
+    const drawTimer = setTimeout(() => setStartDrawing(true), 200);
+    const taglineTimer = setTimeout(() => setShowTagline(true), 1200);
+    const mottoTimer = setTimeout(() => setShowMotto(true), 1600);
+    const completeTimer = setTimeout(() => handleExit(), 3000);
 
     return () => {
       clearTimeout(logoTimer);
       clearTimeout(drawTimer);
       clearTimeout(taglineTimer);
       clearTimeout(mottoTimer);
-      clearTimeout(skipTimer);
       clearTimeout(completeTimer);
     };
   }, [handleExit]);
 
   return (
-    <div className={`fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-slate-50 overflow-hidden transition-all duration-1000 ease-out ${
+    <div className={`fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-white via-blue-50 to-blue-100 overflow-hidden transition-all duration-1000 ease-out ${
       isExiting ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
     }`}>
-      {/* Skip Button */}
-      {showSkip && !isExiting && (
-        <button
-          onClick={handleExit}
-          className="absolute top-6 right-6 flex items-center gap-2 px-4 py-2 bg-white/80 hover:bg-white text-slate-700 rounded-full shadow-lg transition-all duration-300 hover:scale-105 animate-fadeIn"
-        >
-          <span className="text-sm font-medium">Skip</span>
-          <X className="w-4 h-4" />
-        </button>
-      )}
-
       <div className="relative flex items-center justify-center w-full h-full">
         {/* Logo - Fixed Position */}
         {showLogo && (

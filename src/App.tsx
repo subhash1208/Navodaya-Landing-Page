@@ -79,7 +79,7 @@ function App() {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-50 font-sans transition-all duration-1000 overflow-x-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-blue-100 font-sans transition-all duration-1000 overflow-x-hidden">
       {/* Loading Animation */}
       {animationState.isLoading && (
         <LoadingAnimation onComplete={handleLoadingComplete} />

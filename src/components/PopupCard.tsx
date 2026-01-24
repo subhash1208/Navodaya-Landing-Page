@@ -17,34 +17,34 @@ const PopupCard: React.FC<PopupCardProps> = ({ onContactClick, onExploreClick })
     >
       <div className="flex flex-col items-center justify-center p-4 h-full">
       {/* Main Popup Card */}
-      <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl p-8 md:p-12 max-w-2xl w-full mx-4 shadow-2xl hover-lift">
-        {/* Glassmorphic overlay effect */}
-        <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-white/30 to-white/10 backdrop-blur-xl transition-all duration-500"></div>
+      <div className="backdrop-blur-xl bg-white/90 border border-blue-300 rounded-3xl p-8 md:p-12 max-w-2xl w-full mx-4 shadow-2xl hover-lift">
+        {/* Maximum bright overlay effect */}
+        <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-white/80 to-blue-50/80 backdrop-blur-xl transition-all duration-500"></div>
         
         <div className="relative z-10 text-center">
           <div className="mb-6">
             <h2 className="text-3xl md:text-4xl font-bold text-slate-800 mb-4 animate-slide-up">
               Coming Soon
             </h2>
-            <p className="text-lg md:text-xl text-slate-700 leading-relaxed animate-slide-up" style={{ animationDelay: '0.2s' }}>
+            <p className="text-lg md:text-xl text-slate-700 leading-relaxed animate-slide-up">
               We are building something <span className="text-blue-600 font-semibold">extraordinary</span> for you, 
               but you can still contact us
             </p>
           </div>
 
-          <div className="mb-8 animate-slide-up" style={{ animationDelay: '0.4s' }}>
+          <div className="mb-8 animate-slide-up">
             <p className="text-slate-600 text-lg italic">
               "Your Trusted Partner in Progress and Care"
             </p>
           </div>
 
-          <div className="mb-6 animate-slide-up" style={{ animationDelay: '0.5s' }}>
+          <div className="mb-6 animate-slide-up">
             <p className="text-slate-600 text-base">
               Explore our manufacturing capabilities or get in touch directly
             </p>
           </div>
 
-          <div className="flex flex-col md:flex-row gap-4 justify-center animate-slide-up" style={{ animationDelay: '0.6s' }}>
+          <div className="flex flex-col md:flex-row gap-4 justify-center animate-slide-up">
             <button
               onClick={onExploreClick}
               className="group bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 text-white px-8 py-4 rounded-2xl font-semibold text-lg transition-all duration-300 transform hover:scale-105 hover:shadow-2xl flex items-center space-x-3 mx-auto relative overflow-hidden"

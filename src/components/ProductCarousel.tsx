@@ -88,14 +88,12 @@ const ProductCarousel: React.FC = () => {
                         >
                           {/* Front Side */}
                           <div 
-                            className="absolute inset-0 backdrop-blur-sm bg-white/15 border border-white/25 rounded-xl p-4 text-center hover-lift cursor-pointer"
+                            className="absolute inset-0 backdrop-blur-sm bg-white/15 border border-white/25 rounded-xl p-4 text-center hover-lift cursor-pointer flex flex-col items-center justify-center"
                             style={{ backfaceVisibility: 'hidden' }}
                             onClick={() => setShowInfo(globalIndex)}
                           >
-                            <div className="text-3xl mb-2 opacity-60">{product.icon}</div>
-                            <div className="h-3 bg-white/20 rounded mb-2"></div>
-                            <div className="h-2 bg-white/15 rounded w-3/4 mx-auto"></div>
-                            <div className="text-xs text-slate-500 mt-2 opacity-70">{product.name}</div>
+                            <div className="text-4xl mb-1 opacity-60">{product.icon}</div>
+                            <div className="text-sm text-slate-500 opacity-70">{product.name}</div>
                           </div>
                           
                           {/* Back Side */}
