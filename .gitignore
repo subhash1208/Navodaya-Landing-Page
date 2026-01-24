@@ -27,3 +27,4 @@ src/assets/images/logo_code_final.txt
 
 # Tailwind CSS file (contains @tailwind directives)
 src/tailwind.css
+.vercel
