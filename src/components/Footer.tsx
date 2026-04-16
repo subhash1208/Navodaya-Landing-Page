@@ -1,63 +1,71 @@
-import React from 'react';
 import { Mail, Phone, MapPin, Handshake } from 'lucide-react';
+import { BRAND, NAV_LINKS } from '../constants';
 
-const Footer: React.FC = () => {
-  return (
-    <footer className="w-full bg-slate-900 text-white py-3">
-      <div className="container mx-auto px-6">
-        <div className="flex flex-col md:flex-row gap-6 items-start">
-          {/* Trust Icon */}
-          <div className="flex items-center justify-center md:justify-start mt-4">
-            <Handshake className="w-20 h-20 text-blue-400 animate-float" strokeWidth={1.5} />
-          </div>
-          
-          {/* Content Grid */}
-          <div className="flex-1 grid md:grid-cols-3 gap-4">
-          {/* Company Info */}
-          <div>
-            <h3 className="text-lg font-bold mb-2">Navodaya</h3>
-            <p className="text-slate-300 text-sm">Industries and Care Kits</p>
-            <p className="text-slate-400 text-xs mt-2">Your Trusted Partner in Progress and Care</p>
-          </div>
+const Footer: React.FC = () => (
+  <footer className="w-full bg-brand-dark text-white py-10">
+    <div className="max-w-content mx-auto px-6">
+      <div className="flex flex-col md:flex-row gap-8 items-start">
 
-          {/* Contact Info */}
-          <div>
-            <h4 className="text-base font-semibold mb-2">Contact Us</h4>
-            <div className="space-y-1 text-sm">
-              <div className="flex items-center space-x-2 text-slate-300">
-                <Mail className="w-4 h-4" />
-                <span>info@navodaya.group</span>
-              </div>
-              <div className="flex items-center space-x-2 text-slate-300">
-                <Phone className="w-4 h-4" />
-                <span>+91 XXXXX XXXXX</span>
-              </div>
-              <div className="flex items-center space-x-2 text-slate-300">
-                <MapPin className="w-4 h-4" />
-                <span>India</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Quick Links */}
-          <div>
-            <h4 className="text-base font-semibold mb-2" style={{ marginLeft: '4.25rem' }}>Quick Links</h4>
-            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-              <a href="#home" className="text-slate-300 hover:text-blue-400 transition-colors">Home</a>
-              <a href="#about" className="text-slate-300 hover:text-blue-400 transition-colors">About</a>
-              <a href="#products" className="text-slate-300 hover:text-blue-400 transition-colors">Products</a>
-              <a href="#contact" className="text-slate-300 hover:text-blue-400 transition-colors">Contact</a>
-            </div>
-          </div>
-          </div>
+        {/* Trust icon */}
+        <div className="flex items-center justify-center md:justify-start mt-2 shrink-0">
+          <Handshake className="w-16 h-16 text-brand-secondary animate-float" strokeWidth={1.5} aria-hidden="true" />
         </div>
 
-        <div className="border-t border-slate-700 mt-3 pt-2 text-center text-slate-400 text-xs">
-          <p>&copy; {new Date().getFullYear()} Navodaya Industries. All rights reserved.</p>
+        {/* Grid */}
+        <div className="flex-1 grid sm:grid-cols-3 gap-6">
+
+          {/* Brand */}
+          <div>
+            <h2 className="text-lg font-bold mb-1">{BRAND.NAME}</h2>
+            <p className="text-slate-300 text-caption">{BRAND.FULL_NAME}</p>
+            <p className="text-slate-400 text-xs mt-2 italic">"{BRAND.TAGLINE}"</p>
+          </div>
+
+          {/* Contact */}
+          <div>
+            <h3 className="text-base font-semibold mb-3">Contact Us</h3>
+            <ul className="space-y-2 text-caption text-slate-300">
+              <li className="flex items-center gap-2">
+                <Mail className="w-4 h-4 shrink-0" aria-hidden="true" />
+                <a href={`mailto:${BRAND.EMAIL}`} className="hover:text-brand-secondary transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-secondary rounded">
+                  {BRAND.EMAIL}
+                </a>
+              </li>
+              <li className="flex items-center gap-2">
+                <Phone className="w-4 h-4 shrink-0" aria-hidden="true" />
+                <span>{BRAND.PHONE}</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <MapPin className="w-4 h-4 shrink-0" aria-hidden="true" />
+                <span>{BRAND.LOCATION}</span>
+              </li>
+            </ul>
+          </div>
+
+          {/* Quick links */}
+          <div>
+            <h3 className="text-base font-semibold mb-3">Quick Links</h3>
+            <ul className="grid grid-cols-2 gap-x-4 gap-y-2 text-caption">
+              {NAV_LINKS.map(({ label, href }) => (
+                <li key={href}>
+                  <a
+                    href={href}
+                    className="text-slate-300 hover:text-brand-secondary transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-secondary rounded"
+                  >
+                    {label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </div>
-    </footer>
-  );
-};
+
+      <div className="border-t border-slate-700 mt-8 pt-4 text-center text-slate-400 text-xs">
+        <p>&copy; {new Date().getFullYear()} {BRAND.FULL_NAME}. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+);
 
 export default Footer;

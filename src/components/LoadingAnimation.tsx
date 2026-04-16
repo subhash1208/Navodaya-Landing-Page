@@ -1,122 +1,138 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import logoImage from '../assets/images/logo.png';
+import { BRAND } from '../constants';
 
-const LoadingAnimation: React.FC<{ onComplete: () => void }> = ({ onComplete }) => {
+const SESSION_KEY = 'nv_intro_seen';
+const COMPANY_LETTERS = BRAND.NAME.toUpperCase().split('');
+
+interface LoadingAnimationProps {
+  onComplete: () => void;
+}
+
+const LoadingAnimation: React.FC<LoadingAnimationProps> = ({ onComplete }) => {
   const [isExiting, setIsExiting] = useState(false);
   const [showLogo, setShowLogo] = useState(false);
-  const [startDrawing, setStartDrawing] = useState(false);
+  const [showLetters, setShowLetters] = useState(false);
   const [showTagline, setShowTagline] = useState(false);
   const [showMotto, setShowMotto] = useState(false);
-  const companyName = "NAVODAYA";
 
-  const handleExit = useCallback(() => {
+  const exit = useCallback(() => {
     setIsExiting(true);
-    setTimeout(() => onComplete(), 300);
+    sessionStorage.setItem(SESSION_KEY, '1');
+    setTimeout(onComplete, 600);
   }, [onComplete]);
 
   useEffect(() => {
-    // Play whoosh sound
-    const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIGGS57OihUBELTKXh8bllHAU2jdXvzn0pBSh+zPDhkj4KFV+16+qnVRQLRp/g8r5sIQUrgs/y2Ik2CBhkuezooVARDEyl4fG5ZRwFNo3V7859KQUofsz');
-    audio.volume = 0.15;
-    audio.play().catch(() => {});
-    
-    const logoTimer = setTimeout(() => setShowLogo(true), 0);
-    const drawTimer = setTimeout(() => setStartDrawing(true), 200);
-    const taglineTimer = setTimeout(() => setShowTagline(true), 1200);
-    const mottoTimer = setTimeout(() => setShowMotto(true), 1600);
-    const completeTimer = setTimeout(() => handleExit(), 3000);
+    // Skip intro for returning visitors in the same session
+    if (sessionStorage.getItem(SESSION_KEY)) {
+      onComplete();
+      return;
+    }
 
-    return () => {
-      clearTimeout(logoTimer);
-      clearTimeout(drawTimer);
-      clearTimeout(taglineTimer);
-      clearTimeout(mottoTimer);
-      clearTimeout(completeTimer);
-    };
-  }, [handleExit]);
+    const timers = [
+      setTimeout(() => setShowLogo(true),    100),
+      setTimeout(() => setShowLetters(true), 400),
+      setTimeout(() => setShowTagline(true), 1300),
+      setTimeout(() => setShowMotto(true),   1700),
+      setTimeout(() => exit(),               3000),
+    ];
+
+    return () => timers.forEach(clearTimeout);
+  }, [exit, onComplete]);
 
   return (
-    <div className={`fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-white via-blue-50 to-blue-100 overflow-hidden transition-all duration-1000 ease-out ${
-      isExiting ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
-    }`}>
-      <div className="relative flex items-center justify-center w-full h-full">
-        {/* Logo - Fixed Position */}
-        {showLogo && (
-          <div 
-            className="absolute top-[20%] animate-fadeIn"
-            style={{ 
-              willChange: 'transform, opacity',
-              backfaceVisibility: 'hidden'
-            }}
-          >
-            <img 
-              src={logoImage} 
-              alt="Logo" 
-              className="w-24 h-24 object-contain transform transition-all duration-1000 ease-out hover:scale-110"
-              style={{ 
-                willChange: 'transform',
-                backfaceVisibility: 'hidden'
-              }}
-            />
-          </div>
-        )}
+    <div
+      className={`fixed inset-0 z-50 flex items-center justify-center bg-gradient-mesh overflow-hidden transition-all duration-700 ease-smooth ${
+        isExiting ? 'opacity-0 scale-105' : 'opacity-100 scale-100'
+      }`}
+      role="status"
+      aria-label="Loading Navodaya"
+    >
+      {/* Skip button */}
+      <button
+        onClick={exit}
+        className="absolute top-6 right-6 text-xs text-slate-400 hover:text-slate-600 transition-colors px-3 py-1.5 rounded-pill border border-slate-200 hover:border-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary"
+      >
+        Skip
+      </button>
 
-        {/* Company Name with elegant wavy animation */}
-        <div 
-          className="absolute top-[45%] flex gap-1 md:gap-2 text-6xl md:text-8xl font-bold wavy-text"
-          style={{ 
-            willChange: 'transform',
-            backfaceVisibility: 'hidden'
-          }}
+      <div className="flex flex-col items-center gap-6 select-none">
+        {/* Logo */}
+        <div
+          className={`transition-all duration-700 ease-spring ${
+            showLogo ? 'opacity-100 scale-100' : 'opacity-0 scale-75'
+          }`}
+          style={{ willChange: 'transform, opacity' }}
         >
-          {companyName.split('').map((letter, index) => (
+          <img
+            src={logoImage}
+            alt="Navodaya logo"
+            width={96}
+            height={96}
+            className="w-24 h-24 object-contain"
+            fetchPriority="high"
+          />
+        </div>
+
+        {/* Company name — letter stagger */}
+        <div className="flex gap-1 md:gap-2" aria-label={BRAND.NAME}>
+          {COMPANY_LETTERS.map((letter, i) => (
             <span
-              key={index}
-              className="text-blue-600 animate-fadeIn"
+              key={i}
+              aria-hidden="true"
+              className="text-5xl md:text-7xl font-black text-brand-primary transition-all duration-700 ease-spring"
               style={{
-                textShadow: '0 4px 20px rgba(37, 99, 235, 0.5)',
-                opacity: startDrawing ? 1 : 0,
-                transform: startDrawing ? 'translateY(0)' : 'translateY(20px)',
-                transition: `all 0.8s cubic-bezier(0.4, 0, 0.2, 1) ${index * 0.1}s`,
+                opacity: showLetters ? 1 : 0,
+                transform: showLetters ? 'translateY(0)' : 'translateY(32px)',
+                transitionDelay: `${i * 80}ms`,
+                textShadow: '0 4px 24px rgba(30, 64, 175, 0.35)',
                 willChange: 'transform, opacity',
-                backfaceVisibility: 'hidden'
               }}
             >
               {letter}
             </span>
           ))}
         </div>
-        
-        {/* Tagline - Fixed Position */}
-        {showTagline && (
-          <div 
-            className="absolute top-[65%] text-slate-700 text-lg md:text-xl font-medium animate-slide-up text-center"
-            style={{ 
-              willChange: 'transform, opacity',
-              backfaceVisibility: 'hidden'
-            }}
-          >
-            <span className="inline-block transform transition-all duration-700 ease-out">
-              Industries and Care Kits
-            </span>
-          </div>
-        )}
 
-        {/* Company Motto - Fixed Position */}
-        {showMotto && (
-          <div 
-            className="absolute top-[75%] text-blue-600 text-base md:text-lg font-semibold italic animate-slide-up text-center px-4"
-            style={{ 
-              willChange: 'transform, opacity',
-              backfaceVisibility: 'hidden'
-            }}
-          >
-            <span className="inline-block transform transition-all duration-700 ease-out">
-              "Your Trusted Partner in Progress and Care"
-            </span>
-          </div>
-        )}
+        {/* Tagline */}
+        <p
+          className={`text-lg md:text-xl font-medium text-slate-600 transition-all duration-700 ease-smooth ${
+            showTagline ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+          }`}
+          style={{ transitionDelay: '100ms', willChange: 'transform, opacity' }}
+        >
+          {BRAND.FULL_NAME}
+        </p>
+
+        {/* Motto */}
+        <p
+          className={`text-base md:text-lg font-semibold italic text-brand-secondary text-center px-4 transition-all duration-700 ease-smooth ${
+            showMotto ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+          }`}
+          style={{ transitionDelay: '100ms', willChange: 'transform, opacity' }}
+        >
+          "{BRAND.TAGLINE}"
+        </p>
+
+        {/* Progress bar */}
+        <div className="w-48 h-0.5 bg-slate-100 rounded-pill overflow-hidden mt-2">
+          <div
+            className="h-full bg-gradient-to-r from-brand-primary to-brand-secondary rounded-pill transition-all duration-[2800ms] ease-smooth"
+            style={{ width: showLogo ? '100%' : '0%' }}
+            role="progressbar"
+            aria-valuenow={showLogo ? 100 : 0}
+            aria-valuemin={0}
+            aria-valuemax={100}
+          />
+        </div>
       </div>
+
+      {/* Reduced motion override */}
+      <style>{`
+        @media (prefers-reduced-motion: reduce) {
+          .loading-letter { transition: none !important; opacity: 1 !important; transform: none !important; }
+        }
+      `}</style>
     </div>
   );
 };

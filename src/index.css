@@ -1,560 +1,115 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
-@import './tailwind.css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-/* CSS Reset */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html, body {
-  overflow-x: hidden;
-  max-width: 100vw;
-  height: 100%;
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  scroll-behavior: smooth;
-  position: relative;
-  width: 100%;
-}
-
-#root {
-  min-height: 100vh;
-  overflow-x: hidden;
-}
-
-/* Enhanced wavy text animation for company name */
-@keyframes wave {
-  0%, 100% {
-    transform: translateY(0);
+/* ─── Base ─────────────────────────────────────────────────────────────────── */
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
   }
-  50% {
-    transform: translateY(-8px);
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
   }
-}
 
-.wavy-text {
-  display: inline-block;
-}
-
-.wavy-text span {
-  display: inline-block;
-  animation: wave 2s ease-in-out infinite;
-  will-change: transform;
-  backface-visibility: hidden;
-}
-
-.wavy-text span:nth-child(1) { animation-delay: 0s; }
-.wavy-text span:nth-child(2) { animation-delay: 0.1s; }
-.wavy-text span:nth-child(3) { animation-delay: 0.2s; }
-.wavy-text span:nth-child(4) { animation-delay: 0.3s; }
-.wavy-text span:nth-child(5) { animation-delay: 0.4s; }
-.wavy-text span:nth-child(6) { animation-delay: 0.5s; }
-.wavy-text span:nth-child(7) { animation-delay: 0.6s; }
-.wavy-text span:nth-child(8) { animation-delay: 0.7s; }
-
-/* Enhanced smooth animations inspired by modern web apps */
-@keyframes smoothFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(30px) scale(0.95);
-    filter: blur(5px);
+  html, body {
+    overflow-x: hidden;
+    max-width: 100vw;
+    height: 100%;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-    filter: blur(0);
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    color: #0F172A;
+    background-color: #FFFFFF;
+  }
+
+  #root {
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  img {
+    display: block;
+    max-width: 100%;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  /* Accessible focus — never remove outline without replacement */
+  :focus-visible {
+    outline: 2px solid #1E40AF;
+    outline-offset: 2px;
   }
 }
 
-@keyframes smoothFloat {
-  0%, 100% {
-    transform: translate3d(0, 0, 0);
+/* ─── Components ────────────────────────────────────────────────────────────── */
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-card font-semibold text-sm text-white bg-brand-primary hover:bg-brand-primary/90 hover:-translate-y-0.5 hover:shadow-glow transition-all duration-200 ease-smooth focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 focus-visible:outline-none min-h-[44px];
   }
-  50% {
-    transform: translate3d(0, -15px, 0);
-  }
-}
 
-@keyframes smoothPulse {
-  0%, 100% {
-    transform: scale3d(1, 1, 1);
-    opacity: 1;
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-card font-semibold text-sm text-slate-700 bg-surface-subtle border border-slate-200 hover:bg-surface-muted hover:border-slate-300 hover:-translate-y-0.5 hover:shadow-card transition-all duration-200 ease-smooth focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:outline-none min-h-[44px];
   }
-  50% {
-    transform: scale3d(1.05, 1.05, 1);
-    opacity: 0.8;
-  }
-}
 
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
+  .card {
+    @apply bg-white border border-slate-100 rounded-card shadow-card hover:shadow-card-hover transition-shadow duration-300;
   }
-  100% {
-    background-position: 200% 0;
+
+  .section-container {
+    @apply max-w-content mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .section-heading {
+    @apply text-heading text-brand-dark text-center mb-4;
+  }
+
+  .section-subheading {
+    @apply text-body text-slate-500 text-center max-w-2xl mx-auto;
   }
 }
 
-@keyframes slideInUp {
-  from {
-    opacity: 0;
-    transform: translateY(100px);
+/* ─── Utilities ─────────────────────────────────────────────────────────────── */
+@layer utilities {
+  .ease-smooth {
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
 
-@keyframes fadeOut {
-  from {
-    opacity: 1;
+  .ease-spring {
+    transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
   }
-  to {
-    opacity: 0;
-  }
-}
 
-@keyframes logoReveal {
-  0% {
-    opacity: 0;
-    transform: scale(0.5) rotate(-180deg);
-    filter: blur(20px);
+  .text-balance {
+    text-wrap: balance;
   }
-  50% {
-    transform: scale(1.1) rotate(-90deg);
-    filter: blur(5px);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) rotate(0deg);
-    filter: blur(0);
+
+  .gpu {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    will-change: transform;
   }
 }
 
-/* Enhanced letter animation with GPU acceleration */
-@keyframes letterReveal {
-  0% {
-    opacity: 0;
-    transform: translateY(50px) rotateX(90deg) scale(0.8);
-    filter: blur(10px);
-  }
-  30% {
-    transform: translateY(20px) rotateX(45deg) scale(0.9);
-    filter: blur(5px);
-  }
-  50% {
-    transform: translateY(-10px) rotateX(0deg) scale(1.05);
-    filter: blur(2px);
-  }
-  70% {
-    transform: translateY(-5px) rotateX(0deg) scale(1.02);
-    filter: blur(1px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) rotateX(0deg) scale(1);
-    filter: blur(0);
-  }
-}
+/* ─── Custom scrollbar ──────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(30, 64, 175, 0.25); border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(30, 64, 175, 0.45); }
 
-/* Enhanced animation classes with GPU acceleration */
-.animate-fadeIn {
-  animation: smoothFadeIn 1.2s cubic-bezier(0.4, 0, 0.2, 1);
-  will-change: transform, opacity;
-}
-
-.animate-float {
-  animation: smoothFloat 3s ease-in-out infinite;
-  will-change: transform;
-  backface-visibility: hidden;
-}
-
-.animate-smooth-pulse {
-  animation: smoothPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  will-change: transform, opacity;
-}
-
-.animate-shimmer {
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-  background-size: 200% 100%;
-  animation: shimmer 2s infinite;
-  will-change: background-position;
-}
-
-.animate-slide-up {
-  animation: slideInUp 1s cubic-bezier(0.4, 0, 0.2, 1);
-  will-change: transform, opacity;
-}
-
-.animate-fadeOut {
-  animation: fadeOut 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-  will-change: opacity;
-}
-
-.animate-logo-reveal {
-  animation: logoReveal 2s cubic-bezier(0.4, 0, 0.2, 1);
-  will-change: transform, opacity, filter;
-}
-
-/* Enhanced loading letter animation */
-.loading-letter {
-  display: inline-block;
-  animation: letterReveal 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-  will-change: transform, opacity, filter;
-  backface-visibility: hidden;
-}
-
-/* Enhanced hover effects with GPU acceleration */
-.hover-lift {
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
-              box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  will-change: transform, box-shadow;
-  backface-visibility: hidden;
-}
-
-.hover-lift:hover {
-  transform: translate3d(0, -8px, 0) scale3d(1.02, 1.02, 1);
-  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-}
-
-/* Enhanced transitions for all interactive elements */
-button, input, textarea, select, a {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  will-change: transform;
-  backface-visibility: hidden;
-}
-
-/* Enhanced button hover effects */
-button:hover {
-  filter: brightness(1.05);
-  transform: translate3d(0, -1px, 0);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  will-change: transform, filter;
-}
-
-/* Enhanced focus states */
-input:focus, textarea:focus, select:focus {
-  transform: translate3d(0, -1px, 0);
-  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.15);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  will-change: transform, box-shadow;
-}
-
-/* Glassmorphism enhancements */
-.glass-card {
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-}
-
-/* Enhanced focus states */
-input:focus, textarea:focus, select:focus {
-  transform: translate3d(0, -1px, 0);
-  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.15);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Button hover effects */
-button:hover {
-  filter: brightness(1.05);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Smooth transitions for all interactive elements */
-button, input, textarea, select, a {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  will-change: transform;
-}
-
-/* Enhanced smooth scrolling */
-html {
-  scroll-behavior: smooth;
-}
-
-/* Smooth backdrop blur transitions */
-.backdrop-blur-xl {
-  transition: backdrop-filter 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Enhanced image quality */
-img {
-  image-rendering: -webkit-optimize-contrast;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  -moz-backface-visibility: hidden;
-  transform: translate3d(0, 0, 0);
-  -webkit-transform: translate3d(0, 0, 0);
-  -moz-transform: translate3d(0, 0, 0);
-}
-
-/* Logo specific enhancements */
-.logo-enhanced {
-  image-rendering: -webkit-optimize-contrast;
-  filter: contrast(1.1) brightness(1.05) saturate(1.1);
-  -webkit-filter: contrast(1.1) brightness(1.05) saturate(1.1);
-}
-
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(59, 130, 246, 0.3);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(59, 130, 246, 0.5);
-}
-
-/* Responsive improvements */
-@media (max-width: 768px) {
-  .text-6xl {
-    font-size: 3rem;
-  }
-  
-  .text-8xl {
-    font-size: 4rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .text-6xl {
-    font-size: 2.5rem;
-  }
-  
-  .text-8xl {
-    font-size: 3rem;
-  }
-}
-
-/* Loading animation enhancements */
-.loading-letter {
-  display: inline-block;
-  animation: letterReveal 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
-@keyframes letterReveal {
-  0% {
-    opacity: 0;
-    transform: translateY(50px) rotateX(90deg) scale(0.8);
-    filter: blur(10px);
-  }
-  30% {
-    transform: translateY(20px) rotateX(45deg) scale(0.9);
-    filter: blur(5px);
-  }
-  50% {
-    transform: translateY(-10px) rotateX(0deg) scale(1.05);
-    filter: blur(2px);
-  }
-  70% {
-    transform: translateY(-5px) rotateX(0deg) scale(1.02);
-    filter: blur(1px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) rotateX(0deg) scale(1);
-    filter: blur(0);
-  }
-}
-
-/* Enhanced skeleton animations */
-.skeleton-shimmer {
-  background: linear-gradient(90deg, 
-    rgba(229, 231, 235, 1) 25%, 
-    rgba(243, 244, 246, 1) 50%, 
-    rgba(229, 231, 235, 1) 75%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 3s ease-in-out infinite;
-  position: relative;
-  overflow: hidden;
-}
-
-.skeleton-shimmer::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, 
-    transparent, 
-    rgba(255, 255, 255, 0.4), 
-    transparent
-  );
-  animation: shimmer-wave 3s ease-in-out infinite;
-}
-
-@keyframes shimmer-wave {
-  0% {
-    left: -100%;
-  }
-  100% {
-    left: 100%;
-  }
-}
-
-/* Smooth hover effects for cards */
-.hover-lift {
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  will-change: transform;
-}
-
-.hover-lift:hover {
-  transform: translate3d(0, -8px, 0) scale3d(1.02, 1.02, 1);
-  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-}
-
-/* Two-way draw: one from start -> center, one from end -> center */
-@keyframes nv-draw {
-  to { stroke-dashoffset: 0; }
-}
-
-/* Subtle easing curve for a “hand painting” feel */
-.nv-drawA {
-  animation: nv-draw var(--drawDur, 1200ms) var(--drawDelay, 100ms) cubic-bezier(.2,.7,.2,1) forwards;
-}
-.nv-drawB {
-  animation: nv-draw var(--drawDur, 1200ms) var(--drawDelay, 100ms) cubic-bezier(.2,.7,.2,1) forwards;
-}
-
-/* Reduced motion: show fully painted immediately */
+/* ─── Reduced motion ────────────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
-  .nv-drawA, .nv-drawB {
-    animation: none !important;
-    stroke-dashoffset: 0 !important;
-  }
-}
-
-/* Two diagonal painter strokes ("hands") */
-@keyframes nv-draw-forward {
-  0%   { stroke-dasharray: 1; stroke-dashoffset: 1; }
-  100% { stroke-dasharray: 1; stroke-dashoffset: 0; }
-}
-
-@keyframes nv-draw-reverse {
-  0%   { stroke-dasharray: 1; stroke-dashoffset: 1; }
-  100% { stroke-dasharray: 1; stroke-dashoffset: 0; }
-}
-
-/* We drive direction by reversing the path line itself (we did that by
-   swapping the path endpoints). Both can use the same forward keyframes.
-   If you want to invert timing, just add a small stagger on B. */
-.nv-handA {
-  animation: nv-draw-forward var(--nvDrawDur, 1400ms) var(--nvDrawDelay, 100ms)
-             cubic-bezier(.2,.7,.2,1) forwards;
-}
-
-.nv-handB {
-  animation: nv-draw-forward var(--nvDrawDur, 1400ms) calc(var(--nvDrawDelay, 100ms) + 80ms)
-             cubic-bezier(.2,.7,.2,1) forwards;
-}
-
-/* Motion accessibility */
-@media (prefers-reduced-motion: reduce) {
-  .nv-handA, .nv-handB { animation: none !important; stroke-dashoffset: 0 !important; }
-}
-
-/* Loading Animations */
-@keyframes truckMove {
-  0% {
-    transform: translateX(0) translateY(-50%);
-    opacity: 1;
-  }
-  80% {
-    transform: translateX(calc(100vw + 80px)) translateY(-50%);
-    opacity: 1;
-  }
-  100% {
-    transform: translateX(calc(100vw + 80px)) translateY(-50%);
-    opacity: 0;
-  }
-}
-
-@keyframes letterFall {
-  0% {
-    transform: translateY(-50px);
-    opacity: 0;
-  }
-  100% {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-@keyframes planeSemiCircle {
-  0% {
-    left: -80px;
-    top: 10%;
-    opacity: 1;
-  }
-  50% {
-    left: 50%;
-    top: 30%;
-    opacity: 1;
-  }
-  90% {
-    left: calc(100% + 80px);
-    top: 10%;
-    opacity: 1;
-  }
-  100% {
-    left: calc(100% + 80px);
-    top: 10%;
-    opacity: 0;
-  }
-}
-
-@keyframes logoFall {
-  0% {
-    transform: translateX(-50%) translateY(0) scale(0.8);
-    opacity: 0;
-  }
-  50% {
-    opacity: 1;
-  }
-  70% {
-    transform: translateX(-50%) translateY(calc(50vh - 320px)) scale(1.1);
-  }
-  85% {
-    transform: translateX(-50%) translateY(calc(50vh - 300px)) scale(0.95);
-  }
-  100% {
-    transform: translateX(-50%) translateY(calc(50vh - 310px)) scale(1);
-    opacity: 1;
-  }
-}
-
-/* Netflix-style Drawing Animation */
-@keyframes drawText {
-  0% {
-    stroke-dasharray: 1000;
-    stroke-dashoffset: 1000;
-  }
-  100% {
-    stroke-dasharray: 1000;
-    stroke-dashoffset: 0;
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

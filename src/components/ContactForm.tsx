@@ -1,71 +1,80 @@
-import React, { useState } from 'react';
-import { Send, CheckCircle, Package, Users, Mail, Phone, MessageSquare } from 'lucide-react';
+import { useState, useCallback } from 'react';
+import { Send, CheckCircle, Package, Users, Mail, Phone, MessageSquare, User, Briefcase } from 'lucide-react';
 import { ContactFormData } from '../types';
+import { cn } from '../utils/cn';
+import { PRODUCTS, SECTION_IDS } from '../constants';
+
+const EMPTY_FORM: ContactFormData = {
+  productName: '',
+  quantity: '',
+  companyName: '',
+  companyEmail: '',
+  contactPersonName: '',
+  contactPersonDesignation: '',
+  contactPersonNumber: '',
+  message: '',
+};
+
+interface FieldProps {
+  label: string;
+  icon?: React.ReactNode;
+  children: React.ReactNode;
+}
+
+const Field: React.FC<FieldProps> = ({ label, icon, children }) => (
+  <div className="flex flex-col gap-1.5">
+    <label className="flex items-center gap-1.5 text-caption font-semibold text-slate-700">
+      {icon && <span aria-hidden="true">{icon}</span>}
+      {label}
+    </label>
+    {children}
+  </div>
+);
+
+const inputClass = cn(
+  'w-full px-4 py-3 rounded-xl bg-surface-subtle border border-slate-200',
+  'text-sm text-slate-800 placeholder:text-slate-400',
+  'hover:border-slate-300 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20',
+  'outline-none transition-all duration-200 ease-smooth min-h-[44px]'
+);
 
 const ContactForm: React.FC = () => {
-  const [formData, setFormData] = useState<ContactFormData>({
-    productName: '',
-    quantity: '',
-    companyName: '',
-    companyEmail: '',
-    contactPersonName: '',
-    contactPersonDesignation: '',
-    contactPersonNumber: '',
-    message: ''
-  });
-  
+  const [formData, setFormData] = useState<ContactFormData>(EMPTY_FORM);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submittedEmail, setSubmittedEmail] = useState('');
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
-
     try {
-      // In a real application, you would send this data to your backend
-      // For now, we'll simulate the submission
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      console.log('Form data to be sent to info@navodaya.group:', formData);
-      
+      // Simulate API call — replace with real endpoint
+      await new Promise<void>((resolve) => setTimeout(resolve, 1800));
+      setSubmittedEmail(formData.companyEmail);
       setIsSubmitted(true);
-      setFormData({
-        productName: '',
-        quantity: '',
-        companyName: '',
-        companyEmail: '',
-        contactPersonName: '',
-        contactPersonDesignation: '',
-        contactPersonNumber: '',
-        message: ''
-      });
-
-      setTimeout(() => {
-        setIsSubmitted(false);
-      }, 5000);
-    } catch (error) {
-      console.error('Error submitting form:', error);
+      setFormData(EMPTY_FORM);
+      setTimeout(() => setIsSubmitted(false), 6000);
+    } catch {
+      // Handle error state here
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [formData.companyEmail]);
 
   if (isSubmitted) {
     return (
-      <section id="contact" className="min-h-screen flex items-center justify-center p-4 animate-fadeIn">
-        <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl p-8 max-w-2xl w-full text-center hover-lift">
-          <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-6" />
-          <h3 className="text-2xl font-bold text-slate-800 mb-4 animate-slide-up">Thank You!</h3>
-          <p className="text-slate-700 text-lg animate-slide-up" style={{ animationDelay: '0.2s' }}>
-            Your message has been sent successfully. We'll get back to you soon at {formData.companyEmail || 'your email'}.
+      <section id={SECTION_IDS.CONTACT} className="min-h-screen flex items-center justify-center p-4">
+        <div className="bg-white border border-slate-100 rounded-card p-10 max-w-lg w-full text-center shadow-card animate-scale-in" role="alert" aria-live="polite">
+          <CheckCircle className="w-14 h-14 text-green-500 mx-auto mb-5" aria-hidden="true" />
+          <h2 className="text-heading text-brand-dark mb-3">Thank You!</h2>
+          <p className="text-body text-slate-500">
+            Your enquiry has been sent. We'll get back to you at{' '}
+            <strong className="text-brand-primary">{submittedEmail}</strong> shortly.
           </p>
         </div>
       </section>
@@ -73,165 +82,147 @@ const ContactForm: React.FC = () => {
   }
 
   return (
-    <section id="contact" className="min-h-screen flex items-center justify-center p-4 animate-fadeIn">
-      <div className="backdrop-blur-xl bg-white/20 border border-white/30 rounded-3xl p-8 md:p-12 max-w-4xl w-full hover-lift">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl md:text-4xl font-bold text-slate-800 mb-4 animate-slide-up">
-            Get in Touch
-          </h2>
-          <p className="text-slate-700 text-lg animate-slide-up" style={{ animationDelay: '0.2s' }}>
-            Tell us about your requirements and we'll help you find the perfect solution
+    <section id={SECTION_IDS.CONTACT} className="min-h-screen flex items-center justify-center p-4 py-section">
+      <div className="bg-white border border-slate-100 rounded-card p-8 md:p-12 max-w-4xl w-full shadow-card animate-fade-up">
+
+        <div className="text-center mb-10">
+          <h2 className="text-heading text-brand-dark mb-3">Get in Touch</h2>
+          <p className="text-body text-slate-500">
+            Tell us about your requirements and we'll find the perfect solution.
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6 animate-slide-up" style={{ animationDelay: '0.4s' }}>
+        <form onSubmit={handleSubmit} noValidate className="space-y-6">
           <div className="grid md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label htmlFor="productName" className="flex items-center space-x-2 text-slate-700 font-medium">
-                <Package className="w-4 h-4" />
-                <span>Product Name</span>
-              </label>
+            <Field label="Product" icon={<Package className="w-3.5 h-3.5" />}>
               <select
                 id="productName"
                 name="productName"
                 value={formData.productName}
-                onChange={handleInputChange}
+                onChange={handleChange}
                 required
-                className="w-full px-4 py-3 rounded-xl backdrop-blur-sm bg-white/30 border border-white/30 focus:border-blue-400 focus:ring-2 focus:ring-blue-200 outline-none transition-all duration-400 hover:bg-white/40"
+                className={inputClass}
               >
                 <option value="">Select a product</option>
-                <option value="Paper Cups">Paper Cups</option>
-                <option value="Garbage Bags">Garbage Bags</option>
-                <option value="Cable Ties">Cable Ties</option>
-                <option value="Beard Masks">Beard Masks</option>
-                <option value="Shoe Covers">Shoe Covers</option>
-                <option value="Latex Gloves">Latex Gloves</option>
+                {PRODUCTS.map((p) => (
+                  <option key={p.id} value={p.name}>{p.name}</option>
+                ))}
                 <option value="Other">Other</option>
               </select>
-            </div>
+            </Field>
 
-            <div className="space-y-2">
-              <label htmlFor="quantity" className="text-slate-700 font-medium">Quantity</label>
+            <Field label="Quantity">
               <input
                 type="text"
                 id="quantity"
                 name="quantity"
                 value={formData.quantity}
-                onChange={handleInputChange}
+                onChange={handleChange}
                 required
-                placeholder="e.g., 1000 pieces, 50 boxes"
-                className="w-full px-4 py-3 rounded-xl backdrop-blur-sm bg-white/30 border border-white/30 focus:border-blue-400 focus:ring-2 focus:ring-blue-200 outline-none transition-all duration-400 hover:bg-white/40"
+                placeholder="e.g. 1000 pieces, 50 boxes"
+                className={inputClass}
               />
-            </div>
+            </Field>
           </div>
 
           <div className="grid md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label htmlFor="companyName" className="flex items-center space-x-2 text-slate-700 font-medium">
-                <Users className="w-4 h-4" />
-                <span>Company Name</span>
-              </label>
+            <Field label="Company Name" icon={<Users className="w-3.5 h-3.5" />}>
               <input
                 type="text"
                 id="companyName"
                 name="companyName"
                 value={formData.companyName}
-                onChange={handleInputChange}
+                onChange={handleChange}
                 required
                 placeholder="Your company name"
-                className="w-full px-4 py-3 rounded-xl backdrop-blur-sm bg-white/30 border border-white/30 focus:border-blue-400 focus:ring-2 focus:ring-blue-200 outline-none transition-all duration-400 hover:bg-white/40"
+                className={inputClass}
               />
-            </div>
+            </Field>
 
-            <div className="space-y-2">
-              <label htmlFor="companyEmail" className="flex items-center space-x-2 text-slate-700 font-medium">
-                <Mail className="w-4 h-4" />
-                <span>Company Email</span>
-              </label>
+            <Field label="Company Email" icon={<Mail className="w-3.5 h-3.5" />}>
               <input
                 type="email"
                 id="companyEmail"
                 name="companyEmail"
                 value={formData.companyEmail}
-                onChange={handleInputChange}
+                onChange={handleChange}
                 required
                 placeholder="company@example.com"
-                className="w-full px-4 py-3 rounded-xl backdrop-blur-sm bg-white/30 border border-white/30 focus:border-blue-400 focus:ring-2 focus:ring-blue-200 outline-none transition-all duration-400 hover:bg-white/40"
+                className={inputClass}
               />
-            </div>
+            </Field>
           </div>
 
           <div className="grid md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label htmlFor="contactPersonName" className="text-slate-700 font-medium">Contact Person Name</label>
+            <Field label="Contact Person" icon={<User className="w-3.5 h-3.5" />}>
               <input
                 type="text"
                 id="contactPersonName"
                 name="contactPersonName"
                 value={formData.contactPersonName}
-                onChange={handleInputChange}
+                onChange={handleChange}
                 required
                 placeholder="Full name"
-                className="w-full px-4 py-3 rounded-xl backdrop-blur-sm bg-white/30 border border-white/30 focus:border-blue-400 focus:ring-2 focus:ring-blue-200 outline-none transition-all duration-400 hover:bg-white/40"
+                className={inputClass}
               />
-            </div>
+            </Field>
 
-            <div className="space-y-2">
-              <label htmlFor="contactPersonDesignation" className="text-slate-700 font-medium">Designation</label>
+            <Field label="Designation" icon={<Briefcase className="w-3.5 h-3.5" />}>
               <input
                 type="text"
                 id="contactPersonDesignation"
                 name="contactPersonDesignation"
                 value={formData.contactPersonDesignation}
-                onChange={handleInputChange}
+                onChange={handleChange}
                 required
-                placeholder="e.g., Manager, Director"
-                className="w-full px-4 py-3 rounded-xl backdrop-blur-sm bg-white/30 border border-white/30 focus:border-blue-400 focus:ring-2 focus:ring-blue-200 outline-none transition-all duration-400 hover:bg-white/40"
+                placeholder="e.g. Manager, Director"
+                className={inputClass}
               />
-            </div>
+            </Field>
           </div>
 
-          <div className="space-y-2">
-            <label htmlFor="contactPersonNumber" className="flex items-center space-x-2 text-slate-700 font-medium">
-              <Phone className="w-4 h-4" />
-              <span>Contact Number</span>
-            </label>
+          <Field label="Contact Number" icon={<Phone className="w-3.5 h-3.5" />}>
             <input
               type="tel"
               id="contactPersonNumber"
               name="contactPersonNumber"
               value={formData.contactPersonNumber}
-              onChange={handleInputChange}
+              onChange={handleChange}
               required
               placeholder="+91 XXXXX XXXXX"
-              className="w-full px-4 py-3 rounded-xl backdrop-blur-sm bg-white/30 border border-white/30 focus:border-blue-400 focus:ring-2 focus:ring-blue-200 outline-none transition-all duration-400 hover:bg-white/40"
+              className={inputClass}
             />
-          </div>
+          </Field>
 
-          <div className="space-y-2">
-            <label htmlFor="message" className="flex items-center space-x-2 text-slate-700 font-medium">
-              <MessageSquare className="w-4 h-4" />
-              <span>Message</span>
-            </label>
+          <Field label="Message" icon={<MessageSquare className="w-3.5 h-3.5" />}>
             <textarea
               id="message"
               name="message"
               value={formData.message}
-              onChange={handleInputChange}
+              onChange={handleChange}
               rows={4}
               placeholder="Tell us more about your requirements..."
-              className="w-full px-4 py-3 rounded-xl backdrop-blur-sm bg-white/30 border border-white/30 focus:border-blue-400 focus:ring-2 focus:ring-blue-200 outline-none transition-all duration-400 resize-none hover:bg-white/40"
-            ></textarea>
-          </div>
+              className={cn(inputClass, 'resize-none min-h-[120px]')}
+            />
+          </Field>
 
-          <div className="text-center">
+          <div className="text-center pt-2">
             <button
               type="submit"
               disabled={isSubmitting}
-              className="group bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-slate-400 disabled:to-slate-500 text-white px-8 py-4 rounded-2xl font-semibold text-lg transition-all duration-300 transform hover:scale-105 hover:shadow-2xl flex items-center space-x-3 mx-auto disabled:transform-none disabled:hover:shadow-none relative overflow-hidden"
+              className={cn(
+                'group inline-flex items-center gap-3 px-10 py-4 rounded-card font-semibold text-sm text-white',
+                'bg-brand-primary hover:bg-brand-primary/90 hover:-translate-y-0.5 hover:shadow-glow',
+                'disabled:bg-slate-300 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none',
+                'transition-all duration-200 ease-smooth focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2',
+                'min-h-[44px]'
+              )}
             >
-              <span>{isSubmitting ? 'Sending...' : 'Send Message'}</span>
-              <Send className={`w-5 h-5 ${isSubmitting ? 'animate-pulse' : 'group-hover:translate-x-2'} transition-transform duration-300`} />
+              <span>{isSubmitting ? 'Sending…' : 'Send Enquiry'}</span>
+              <Send
+                className={cn('w-4 h-4 transition-transform duration-200', isSubmitting ? 'animate-pulse' : 'group-hover:translate-x-1')}
+                aria-hidden="true"
+              />
             </button>
           </div>
         </form>

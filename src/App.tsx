@@ -1,126 +1,102 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, lazy, Suspense } from 'react';
+import { AppScreen } from './types';
+import { SECTION_IDS } from './constants';
 import Header from './components/Header';
-import LoadingAnimation from './components/LoadingAnimation';
-import PopupCard from './components/PopupCard';
-import AboutUs from './components/AboutUs';
-import ProductCarousel from './components/ProductCarousel';
-import ContactForm from './components/ContactForm';
 import Footer from './components/Footer';
-import { AnimationState } from './types';
+import LoadingAnimation from './components/LoadingAnimation';
+
+// Lazy-load below-fold sections
+const PopupCard      = lazy(() => import('./components/PopupCard'));
+const AboutUs        = lazy(() => import('./components/AboutUs'));
+const ProductCarousel = lazy(() => import('./components/ProductCarousel'));
+const ContactForm    = lazy(() => import('./components/ContactForm'));
+
+function SectionFallback() {
+  return (
+    <div className="w-full py-section flex items-center justify-center" aria-hidden="true">
+      <div className="w-8 h-8 rounded-full border-2 border-brand-primary border-t-transparent animate-spin" />
+    </div>
+  );
+}
 
 function App() {
-  const [animationState, setAnimationState] = useState<AnimationState>({
-    isLoading: true,
-    showPopup: false,
-    showContent: false
-  });
-  const [showMainContent, setShowMainContent] = useState(false);
+  const [screen, setScreen] = useState<AppScreen>('loading');
 
-  const handleLoadingComplete = () => {
-    setAnimationState(prev => ({
-      ...prev,
-      isLoading: false,
-      showPopup: true
-    }));
-    setShowMainContent(false);
-  };
+  const goTo = useCallback((next: AppScreen) => setScreen(next), []);
 
-  const handleContactClick = () => {
-    setAnimationState(prev => ({
-      ...prev,
-      showPopup: false,
-      showContent: true
-    }));
-    setShowMainContent(false);
-    
-    // Smooth scroll to contact section
+  const handleLoadingComplete = useCallback(() => goTo('popup'), [goTo]);
+  const handleExploreClick    = useCallback(() => goTo('main'),    [goTo]);
+  const handleContactClick    = useCallback(() => {
+    goTo('contact');
     setTimeout(() => {
-      const contactSection = document.getElementById('contact');
-      if (contactSection) {
-        contactSection.scrollIntoView({ behavior: 'smooth' });
-      }
+      document.getElementById(SECTION_IDS.CONTACT)?.scrollIntoView({ behavior: 'smooth' });
     }, 300);
-  };
+  }, [goTo]);
 
-  const handleExploreClick = () => {
-    setAnimationState(prev => ({
-      ...prev,
-      showPopup: false,
-      showContent: false
-    }));
-    setShowMainContent(true);
-  };
-
+  // Hash-based navigation
   useEffect(() => {
     const handleHashChange = () => {
-      const hash = window.location.hash;
-      
-      if (hash === '#contact') {
-        setAnimationState(prev => ({
-          ...prev,
-          showPopup: false,
-          showContent: true
-        }));
-        setShowMainContent(false);
-      } else if (hash === '#home' || hash === '#about' || hash === '#products') {
-        setAnimationState(prev => ({
-          ...prev,
-          showPopup: false,
-          showContent: false
-        }));
-        setShowMainContent(true);
+      const hash = window.location.hash.replace('#', '');
+      if (hash === SECTION_IDS.CONTACT) {
+        goTo('contact');
+      } else if ([SECTION_IDS.HOME, SECTION_IDS.ABOUT, SECTION_IDS.PRODUCTS].includes(hash as typeof SECTION_IDS[keyof typeof SECTION_IDS])) {
+        goTo('main');
       }
     };
-
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
-  }, []);
+  }, [goTo]);
 
-
+  const showHeader  = screen === 'main' || screen === 'contact';
+  const showMain    = screen === 'main';
+  const showContact = screen === 'contact';
+  const showPopup   = screen === 'popup';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-blue-100 font-sans transition-all duration-1000 overflow-x-hidden">
-      {/* Loading Animation */}
-      {animationState.isLoading && (
+    <div className="min-h-screen bg-gradient-mesh font-sans overflow-x-hidden">
+      {/* Skip navigation — accessibility */}
+      <a
+        href={`#${SECTION_IDS.HOME}`}
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-brand-primary focus:text-white focus:rounded-lg focus:text-sm focus:font-medium"
+      >
+        Skip to content
+      </a>
+
+      {/* Loading */}
+      {screen === 'loading' && (
         <LoadingAnimation onComplete={handleLoadingComplete} />
       )}
 
-      {/* Main Website Content */}
-      {!animationState.isLoading && !animationState.showPopup && !animationState.showContent && showMainContent && (
+      {/* Popup */}
+      {showPopup && (
         <>
-          <Header />
-          <div className="pt-16">
-            <AboutUs />
-            <ProductCarousel />
-            <Footer />
-          </div>
+          <div className="fixed inset-0 bg-black/50 z-30 animate-fade-in" aria-hidden="true" />
+          <Suspense fallback={null}>
+            <PopupCard onContactClick={handleContactClick} onExploreClick={handleExploreClick} />
+          </Suspense>
         </>
       )}
 
-      {/* Gray Overlay when popup is visible */}
-      {animationState.showPopup && (
-        <div className="fixed inset-0 bg-black/50 z-30 animate-fadeIn" />
-      )}
-
-      {/* Popup Card */}
-      {animationState.showPopup && (
-        <PopupCard onContactClick={handleContactClick} onExploreClick={handleExploreClick} />
-      )}
-
-      {/* Contact Form */}
-      {animationState.showContent && (
+      {/* Main content */}
+      {(showMain || showContact) && (
         <>
-          <Header />
-          <div className="pt-16 min-h-screen flex flex-col">
-            <div className="flex-1">
-              <ContactForm />
-            </div>
-            <Footer />
-          </div>
+          <Header currentScreen={screen} onNavigate={goTo} />
+          <main id={SECTION_IDS.HOME} className="pt-14">
+            {showMain && (
+              <Suspense fallback={<SectionFallback />}>
+                <AboutUs />
+                <ProductCarousel />
+              </Suspense>
+            )}
+            {showContact && (
+              <Suspense fallback={<SectionFallback />}>
+                <ContactForm />
+              </Suspense>
+            )}
+          </main>
+          <Footer />
         </>
       )}
-
-
     </div>
   );
 }
