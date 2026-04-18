@@ -20,7 +20,7 @@ export function ProductViewer({ productName }: ProductViewerProps) {
   const [isHovered, setIsHovered] = useState(false);
 
   return (
-    <div className="relative w-full aspect-square rounded-[1.25rem] overflow-hidden bg-gradient-to-br from-[--color-brand-light] via-slate-50 to-slate-100 border border-slate-100">
+    <div className="relative w-full aspect-square rounded-[1.25rem] overflow-hidden bg-gradient-to-br from-brand-light via-slate-50 to-slate-100 border border-slate-100">
 
       {/* Placeholder content */}
       <div
@@ -37,7 +37,7 @@ export function ProductViewer({ productName }: ProductViewerProps) {
         </div>
 
         <div className="text-center">
-          <p className="text-sm font-semibold text-[--color-brand-dark] mb-1">
+          <p className="text-sm font-semibold text-brand-dark mb-1">
             360° View Coming Soon
           </p>
           <p className="text-xs text-slate-400 max-w-[200px] leading-relaxed">
@@ -59,7 +59,7 @@ export function ProductViewer({ productName }: ProductViewerProps) {
       </div>
 
       {/* Corner badge */}
-      <div className="absolute top-3 right-3 bg-[--color-brand-primary]/10 text-[--color-brand-primary] text-[10px] font-semibold px-2 py-1 rounded-full border border-[--color-brand-primary]/20">
+      <div className="absolute top-3 right-3 bg-brand-primary/10 text-brand-primary text-[10px] font-semibold px-2 py-1 rounded-full border border-brand-primary/20">
         360° Ready
       </div>
     </div>

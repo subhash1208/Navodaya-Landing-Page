@@ -51,28 +51,28 @@ export default async function ProductPage({ params }: PageProps) {
   const quoteUrl = `${ROUTES.CONTACT}?product=${encodeURIComponent(product.name)}`;
 
   return (
-    <div className="min-h-screen bg-[--color-surface-muted]">
+    <div className="min-h-screen bg-(--color-)">
 
       {/* Page header */}
       <div className="bg-white border-b border-slate-100">
         <div className="max-w-[80rem] mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-slate-400 flex-wrap">
-            <Link href="/" className="hover:text-[--color-brand-primary] transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-brand-primary] rounded">
+            <Link href="/" className="hover:text-(--color-) transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-(--color-) rounded">
               Home
             </Link>
             <ChevronRight className="w-3 h-3 shrink-0" aria-hidden="true" />
-            <Link href={ROUTES.PRODUCTS} className="hover:text-[--color-brand-primary] transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-brand-primary] rounded">
+            <Link href={ROUTES.PRODUCTS} className="hover:text-(--color-) transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-(--color-) rounded">
               Products
             </Link>
             <ChevronRight className="w-3 h-3 shrink-0" aria-hidden="true" />
             <Link
               href={`${ROUTES.PRODUCTS}?category=${product.category.slug}`}
-              className="hover:text-[--color-brand-primary] transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-brand-primary] rounded"
+              className="hover:text-(--color-) transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-(--color-) rounded"
             >
               {product.category.name}
             </Link>
             <ChevronRight className="w-3 h-3 shrink-0" aria-hidden="true" />
-            <span className="text-[--color-brand-dark] font-medium truncate max-w-[200px]">{product.name}</span>
+            <span className="text-(--color-) font-medium truncate max-w-[200px]">{product.name}</span>
           </nav>
         </div>
       </div>
@@ -90,11 +90,11 @@ export default async function ProductPage({ params }: PageProps) {
           {/* Right — product info */}
           <div className="flex flex-col">
             {/* Category badge */}
-            <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[--color-brand-secondary] bg-sky-50 px-3 py-1.5 rounded-full self-start mb-4">
+            <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-(--color-) bg-sky-50 px-3 py-1.5 rounded-full self-start mb-4">
               {product.category.icon} {product.category.name}
             </span>
 
-            <h1 className="text-[clamp(1.5rem,3vw,2rem)] font-bold text-[--color-brand-dark] mb-4 leading-tight">
+            <h1 className="text-[clamp(1.5rem,3vw,2rem)] font-bold text-(--color-) mb-4 leading-tight">
               {product.name}
             </h1>
 
@@ -103,7 +103,7 @@ export default async function ProductPage({ params }: PageProps) {
             </p>
 
             {/* Specs table */}
-            <div className="bg-[--color-surface-subtle] rounded-xl p-5 mb-8 border border-slate-100">
+            <div className="bg-(--color-) rounded-xl p-5 mb-8 border border-slate-100">
               <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-4">
                 Product Specifications
               </h2>
@@ -111,15 +111,15 @@ export default async function ProductPage({ params }: PageProps) {
                 {specs.map(({ label, value }) => (
                   <div key={label} className="flex items-start justify-between gap-4 text-sm">
                     <dt className="text-slate-500 font-medium shrink-0">{label}</dt>
-                    <dd className="text-[--color-brand-dark] font-semibold text-right">{value}</dd>
+                    <dd className="text-(--color-) font-semibold text-right">{value}</dd>
                   </div>
                 ))}
               </dl>
             </div>
 
             {/* Pricing note */}
-            <div className="bg-[--color-brand-light] border border-[--color-brand-primary]/15 rounded-xl p-4 mb-8">
-              <p className="text-sm text-[--color-brand-dark] font-medium mb-1">Pricing on Request</p>
+            <div className="bg-(--color-) border border-(--color-)/15 rounded-xl p-4 mb-8">
+              <p className="text-sm text-(--color-) font-medium mb-1">Pricing on Request</p>
               <p className="text-xs text-slate-500 leading-relaxed">
                 We offer flexible B2B pricing based on order quantity and requirements.
                 Contact us for a custom quote tailored to your business.
@@ -130,14 +130,14 @@ export default async function ProductPage({ params }: PageProps) {
             <div className="flex flex-col sm:flex-row gap-3 mt-auto">
               <Link
                 href={quoteUrl}
-                className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-[--color-brand-primary] text-white font-semibold text-sm hover:bg-[--color-brand-primary]/90 hover:-translate-y-0.5 hover:shadow-[0_0_40px_rgba(30,64,175,0.3)] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--color-brand-primary] focus-visible:ring-offset-2 min-h-[44px]"
+                className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-(--color-) text-white font-semibold text-sm hover:bg-(--color-)/90 hover:-translate-y-0.5 hover:shadow-[0_0_40px_rgba(30,64,175,0.3)] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-) focus-visible:ring-offset-2 min-h-[44px]"
               >
                 <MessageSquare className="w-4 h-4" aria-hidden="true" />
                 Request a Quote
               </Link>
               <Link
                 href={`${ROUTES.PRODUCTS}?category=${product.category.slug}`}
-                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl border-2 border-slate-200 text-slate-600 font-semibold text-sm hover:border-[--color-brand-primary] hover:text-[--color-brand-primary] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--color-brand-primary] min-h-[44px]"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl border-2 border-slate-200 text-slate-600 font-semibold text-sm hover:border-(--color-) hover:text-(--color-) transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-) min-h-[44px]"
               >
                 <ArrowLeft className="w-4 h-4" aria-hidden="true" />
                 More in Category
@@ -150,12 +150,12 @@ export default async function ProductPage({ params }: PageProps) {
         {related.length > 0 && (
           <section aria-labelledby="related-heading">
             <div className="flex items-center justify-between mb-6">
-              <h2 id="related-heading" className="text-lg font-bold text-[--color-brand-dark]">
+              <h2 id="related-heading" className="text-lg font-bold text-(--color-)">
                 Related Products
               </h2>
               <Link
                 href={`${ROUTES.PRODUCTS}?category=${product.category.slug}`}
-                className="text-sm font-medium text-[--color-brand-primary] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--color-brand-primary] rounded"
+                className="text-sm font-medium text-(--color-) hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--color-) rounded"
               >
                 View all →
               </Link>

@@ -70,13 +70,13 @@ export function ProductGrid() {
             value={query}
             onChange={e => setQuery(e.target.value)}
             aria-label="Search products"
-            className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-slate-200 bg-white text-sm text-[--color-brand-dark] placeholder:text-slate-400 focus:border-[--color-brand-primary] focus:ring-2 focus:ring-[--color-brand-primary]/20 outline-none transition-all duration-200"
+            className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-slate-200 bg-white text-sm text-brand-dark placeholder:text-slate-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 outline-none transition-all duration-200"
           />
           {query && (
             <button
               onClick={() => setQuery('')}
               aria-label="Clear search"
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-brand-primary] rounded"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-primary rounded"
             >
               <X className="w-4 h-4" />
             </button>
@@ -100,10 +100,10 @@ export function ProductGrid() {
             onClick={() => handleCategoryChange(tab.id)}
             className={cn(
               'inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--color-brand-primary] focus-visible:ring-offset-1',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-1',
               activeCategory === tab.id
-                ? 'bg-[--color-brand-primary] text-white shadow-[0_0_20px_rgba(30,64,175,0.25)]'
-                : 'bg-white border border-slate-200 text-slate-600 hover:border-[--color-brand-primary] hover:text-[--color-brand-primary]'
+                ? 'bg-brand-primary text-white shadow-[0_0_20px_rgba(30,64,175,0.25)]'
+                : 'bg-white border border-slate-200 text-slate-600 hover:border-brand-primary hover:text-brand-primary'
             )}
           >
             {tab.label}
@@ -127,11 +127,11 @@ export function ProductGrid() {
       ) : (
         <div className="text-center py-20">
           <div className="text-4xl mb-4" aria-hidden="true">🔍</div>
-          <h3 className="font-semibold text-[--color-brand-dark] mb-2">No products found</h3>
+          <h3 className="font-semibold text-brand-dark mb-2">No products found</h3>
           <p className="text-sm text-slate-500 mb-4">Try a different search term or category.</p>
           <button
             onClick={() => { setQuery(''); handleCategoryChange(ALL_ID); }}
-            className="text-sm font-medium text-[--color-brand-primary] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[--color-brand-primary] rounded"
+            className="text-sm font-medium text-brand-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary rounded"
           >
             Clear filters
           </button>

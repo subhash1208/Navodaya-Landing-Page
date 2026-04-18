@@ -12,6 +12,8 @@
 # Dev tools / screenshots / design references
 dev-tools
 
+.playwright-mcp
+
 # dependencies
 /node_modules
 /.pnp

@@ -22,20 +22,20 @@ function GridSkeleton() {
 
 export default function ProductsPage() {
   return (
-    <div className="min-h-screen bg-[--color-surface-muted]">
+    <div className="min-h-screen bg-surface-muted">
       {/* Page header */}
       <div className="bg-white border-b border-slate-100">
         <div className="max-w-[80rem] mx-auto px-4 sm:px-6 lg:px-8 py-10">
           {/* Breadcrumb */}
           <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-slate-400 mb-4">
-            <Link href="/" className="hover:text-[--color-brand-primary] transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-brand-primary] rounded">
+            <Link href="/" className="hover:text-brand-primary transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-primary rounded">
               Home
             </Link>
             <ChevronRight className="w-3 h-3" aria-hidden="true" />
-            <span className="text-[--color-brand-dark] font-medium">Products</span>
+            <span className="text-brand-dark font-medium">Products</span>
           </nav>
 
-          <h1 className="text-[clamp(1.75rem,3vw,2.5rem)] font-bold text-[--color-brand-dark] mb-2">
+          <h1 className="text-[clamp(1.75rem,3vw,2.5rem)] font-bold text-brand-dark mb-2">
             Product Catalogue
           </h1>
           <p className="text-slate-500 text-lg">
