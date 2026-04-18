@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { Send, CheckCircle, Package, Users, Mail, Phone, MessageSquare, User, Briefcase } from 'lucide-react';
+import { Send, CheckCircle, AlertCircle, Package, Users, Mail, Phone, MessageSquare, User, Briefcase } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { BRAND, PRODUCT_CATEGORIES, PRODUCTS } from '@/constants';
+import { submitContactForm } from '@/app/actions/contact';
 import type { ContactFormData } from '@/types';
 
 const EMPTY: ContactFormData = {
@@ -35,26 +36,31 @@ export default function ContactSection() {
   const [form, setForm] = useState<ContactFormData>(EMPTY);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [submittedEmail, setSubmittedEmail] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setForm(prev => ({ ...prev, [name]: value }));
-  }, []);
+    if (error) setError(null);
+  }, [error]);
 
   const handleSubmit = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setSubmitting(true);
-    try {
-      await new Promise<void>(r => setTimeout(r, 1500));
-      setSubmittedEmail(form.companyEmail);
+    setError(null);
+
+    const result = await submitContactForm(form);
+
+    if (result.success) {
       setSubmitted(true);
       setForm(EMPTY);
       setTimeout(() => setSubmitted(false), 8000);
-    } finally {
-      setSubmitting(false);
+    } else {
+      setError(result.error ?? 'Something went wrong. Please try again.');
     }
-  }, [form.companyEmail]);
+
+    setSubmitting(false);
+  }, [form]);
 
   return (
     <section
@@ -111,11 +117,20 @@ export default function ContactSection() {
                 <CheckCircle className="w-14 h-14 text-emerald-500 mx-auto mb-4" aria-hidden="true" />
                 <h3 className="text-xl font-bold text-[--color-brand-dark] mb-2">Thank You!</h3>
                 <p className="text-slate-500 text-sm">
-                  We&apos;ll get back to you at <strong className="text-[--color-brand-primary]">{submittedEmail}</strong> shortly.
+                  Your enquiry has been sent to <strong className="text-[--color-brand-primary]">{BRAND.EMAIL}</strong>. We&apos;ll be in touch shortly.
                 </p>
               </div>
             ) : (
               <form onSubmit={handleSubmit} noValidate className="space-y-5">
+
+                {/* Error banner */}
+                {error && (
+                  <div role="alert" aria-live="assertive" className="flex items-start gap-2.5 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl p-3.5">
+                    <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" aria-hidden="true" />
+                    {error}
+                  </div>
+                )}
+
                 <div className="grid sm:grid-cols-2 gap-5">
                   <Field label="Product" icon={<Package className="w-3 h-3" />}>
                     <select id="productName" name="productName" value={form.productName} onChange={handleChange} required className={inputCls}>
@@ -149,7 +164,7 @@ export default function ContactSection() {
                     <input type="text" id="contactPersonName" name="contactPersonName" value={form.contactPersonName} onChange={handleChange} required placeholder="Full name" className={inputCls} />
                   </Field>
                   <Field label="Designation" icon={<Briefcase className="w-3 h-3" />}>
-                    <input type="text" id="contactPersonDesignation" name="contactPersonDesignation" value={form.contactPersonDesignation} onChange={handleChange} required placeholder="e.g. Manager" className={inputCls} />
+                    <input type="text" id="contactPersonDesignation" name="contactPersonDesignation" value={form.contactPersonDesignation} onChange={handleChange} placeholder="e.g. Manager" className={inputCls} />
                   </Field>
                 </div>
 
