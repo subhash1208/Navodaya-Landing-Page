@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { BRAND } from '@/constants';
+import Header from '@/components/layout/Header';
+import Footer from '@/components/layout/Footer';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -48,7 +50,11 @@ export default function RootLayout({
         >
           Skip to content
         </a>
-        {children}
+        <Header />
+        <main id="main-content" className="pt-16">
+          {children}
+        </main>
+        <Footer />
       </body>
     </html>
   );
