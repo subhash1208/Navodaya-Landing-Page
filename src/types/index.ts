@@ -1,6 +1,3 @@
-// App-level state
-export type AppScreen = 'loading' | 'popup' | 'main' | 'contact';
-
 // Form
 export interface ContactFormData {
   productName: string;
@@ -17,8 +14,19 @@ export interface ContactFormData {
 export interface ProductItem {
   id: string;
   name: string;
-  icon: string;
+  category: ProductCategory;
+  material?: string;
   description: string;
+  slug: string;
+}
+
+export interface ProductCategory {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  icon: string;
+  productCount: number;
 }
 
 // Navigation
@@ -28,8 +36,8 @@ export interface NavLink {
 }
 
 // Animation
-export interface AnimationState {
-  isLoading: boolean;
-  showPopup: boolean;
-  showContent: boolean;
+export interface UseInViewOptions {
+  threshold?: number;
+  rootMargin?: string;
+  triggerOnce?: boolean;
 }

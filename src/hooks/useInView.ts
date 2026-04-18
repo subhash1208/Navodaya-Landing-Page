@@ -1,5 +1,7 @@
+'use client';
+
 import { useEffect, useRef, useState } from 'react';
-import { ANIMATION } from '../constants';
+import { ANIMATION } from '@/constants';
 
 interface UseInViewOptions {
   threshold?: number;

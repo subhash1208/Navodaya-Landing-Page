@@ -1,31 +1,50 @@
-node_modules/
-.env
-dist/
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# System files
-.DS_Store
-Thumbs.db
-
-# IDE/Editor files
-.windsurf/
-.vscode/
-.idea/
+# Kiro IDE files
 .kiro/
-*.swp
-*.swo
-*~
 
-# Temporary files
-*.tmp
-*.bak
-*.log
+# Legacy Vite/React code (preserved for reference)
+.legacy/
 
-# Asset development files (keep only production assets)
-src/assets/images/logo_code*.txt
-src/assets/images/logo_code_backup.txt
-src/assets/images/logo_code_clean.txt
-src/assets/images/logo_code_final.txt
+# Dev tools / screenshots / design references
+dev-tools/
 
-# Tailwind CSS file (contains @tailwind directives)
-src/tailwind.css
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+.env*
+
+# vercel
 .vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
