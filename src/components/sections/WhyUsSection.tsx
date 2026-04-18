@@ -1,71 +1,41 @@
 import { ShieldCheck, Truck, Users, Leaf } from 'lucide-react';
 
 const REASONS = [
-  {
-    icon: ShieldCheck,
-    title: 'Uncompromising Quality',
-    description: 'Every product is sourced and verified to meet international hygiene and safety standards. No shortcuts.',
-    color: 'text-[--color-brand-primary]',
-    bg: 'bg-[--color-brand-light]',
-  },
-  {
-    icon: Truck,
-    title: 'Prompt Delivery',
-    description: 'We understand that your operations depend on timely supply. We deliver on schedule, every time.',
-    color: 'text-[--color-brand-secondary]',
-    bg: 'bg-sky-50',
-  },
-  {
-    icon: Users,
-    title: 'B2B Expertise',
-    description: 'We work exclusively with businesses — hotels, hospitals, spas, and industries. We speak your language.',
-    color: 'text-violet-600',
-    bg: 'bg-violet-50',
-  },
-  {
-    icon: Leaf,
-    title: 'Eco-Conscious Options',
-    description: 'Biodegradable shower caps, jute products, and sustainable alternatives available across our range.',
-    color: 'text-emerald-600',
-    bg: 'bg-emerald-50',
-  },
+  { icon: ShieldCheck, title: 'Uncompromising Quality',  description: 'Every product is sourced and verified to meet international hygiene and safety standards. No shortcuts.',                                    iconBg: '#EFF6FF', iconColor: '#1E40AF', accent: '#1E40AF' },
+  { icon: Truck,       title: 'Prompt Delivery',         description: 'We understand that your operations depend on timely supply. We deliver on schedule, every time.',                                          iconBg: '#F0F9FF', iconColor: '#0EA5E9', accent: '#0EA5E9' },
+  { icon: Users,       title: 'B2B Expertise',           description: 'We work exclusively with businesses — hotels, hospitals, spas, and industries. We speak your language.',                                   iconBg: '#F5F3FF', iconColor: '#7C3AED', accent: '#7C3AED' },
+  { icon: Leaf,        title: 'Eco-Conscious Options',   description: 'Biodegradable shower caps, jute products, and sustainable alternatives available across our range.',                                       iconBg: '#F0FDF4', iconColor: '#16A34A', accent: '#16A34A' },
 ] as const;
 
 export default function WhyUsSection() {
   return (
-    <section
-      id="why-us"
-      aria-labelledby="why-us-heading"
-      className="py-24 sm:py-32 bg-white"
-    >
-      <div className="max-w-[80rem] mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="why-us" aria-labelledby="why-us-heading" style={{ padding: '96px 0', background: '#FFFFFF' }}>
+      <div style={{ maxWidth: '1152px', margin: '0 auto', padding: '0 32px' }}>
 
-        <div className="text-center mb-16">
-          <span className="inline-block text-xs font-semibold tracking-widest uppercase text-[--color-brand-secondary] mb-3">
+        <div style={{ textAlign: 'center', marginBottom: '64px' }}>
+          <span style={{ display: 'inline-block', fontSize: '11px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#0EA5E9', marginBottom: '12px' }}>
             Why Navodaya
           </span>
-          <h2
-            id="why-us-heading"
-            className="text-[clamp(1.75rem,3vw,2.5rem)] font-bold text-[--color-brand-dark] mb-4"
-          >
+          <h2 id="why-us-heading" style={{ fontSize: 'clamp(1.75rem, 3vw, 2.5rem)', fontWeight: 700, color: '#0F172A', marginBottom: '16px' }}>
             Why Businesses Choose Us
           </h2>
-          <p className="text-slate-500 max-w-xl mx-auto text-lg">
+          <p style={{ fontSize: '17px', color: '#64748B', maxWidth: '480px', margin: '0 auto' }}>
             We&apos;re not just a supplier — we&apos;re a partner committed to your operations.
           </p>
         </div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {REASONS.map(({ icon: Icon, title, description, color, bg }) => (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px' }}>
+          {REASONS.map(({ icon: Icon, title, description, iconBg, iconColor, accent }) => (
             <div
               key={title}
-              className="group bg-[--color-surface-muted] rounded-[1.25rem] p-7 border border-slate-100 hover:bg-white hover:shadow-[0_20px_48px_-8px_rgba(15,23,42,0.12)] hover:-translate-y-1 transition-all duration-300"
+              style={{ background: '#F8FAFC', borderRadius: '16px', padding: '28px', border: '1px solid #E2E8F0', transition: 'transform 0.2s, box-shadow 0.2s' }}
             >
-              <div className={`w-12 h-12 rounded-xl ${bg} flex items-center justify-center mb-5`}>
-                <Icon className={`w-6 h-6 ${color}`} aria-hidden="true" />
+              <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}>
+                <Icon style={{ width: '24px', height: '24px', color: iconColor }} aria-hidden="true" />
               </div>
-              <h3 className="font-bold text-[--color-brand-dark] mb-2 text-sm">{title}</h3>
-              <p className="text-xs text-slate-500 leading-relaxed">{description}</p>
+              <div style={{ width: '24px', height: '3px', borderRadius: '9999px', background: accent, marginBottom: '16px' }} />
+              <h3 style={{ fontWeight: 700, color: '#0F172A', marginBottom: '8px', fontSize: '14px' }}>{title}</h3>
+              <p style={{ fontSize: '12px', color: '#64748B', lineHeight: 1.65 }}>{description}</p>
             </div>
           ))}
         </div>

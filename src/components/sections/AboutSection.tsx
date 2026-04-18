@@ -2,81 +2,58 @@ import { Award, Globe, Handshake } from 'lucide-react';
 import { BRAND } from '@/constants';
 
 const PILLARS = [
-  {
-    icon: Award,
-    title: 'Quality Assured',
-    description: 'Every product meets international hygiene and safety standards before it reaches you.',
-  },
-  {
-    icon: Globe,
-    title: 'Global Reach',
-    description: 'Strategic import-export operations ensuring reliable supply across markets.',
-  },
-  {
-    icon: Handshake,
-    title: 'Customer First',
-    description: 'Prompt service and a commitment to comfort, cleanliness, and satisfaction.',
-  },
+  { icon: Award,     title: 'Quality Assured',   description: 'Every product meets international hygiene and safety standards before it reaches you.',          iconBg: '#EFF6FF', iconColor: '#1E40AF' },
+  { icon: Globe,     title: 'Global Reach',       description: 'Strategic import-export operations ensuring reliable supply across markets.',                    iconBg: '#F0F9FF', iconColor: '#0EA5E9' },
+  { icon: Handshake, title: 'Customer First',     description: 'Prompt service and a commitment to comfort, cleanliness, and satisfaction.',                     iconBg: '#F0FDF4', iconColor: '#16A34A' },
 ] as const;
+
+const STATS = [
+  { value: '51+',   label: 'Products in catalogue' },
+  { value: '3',     label: 'Product categories'    },
+  { value: '100%',  label: 'B2B focused'            },
+  { value: 'HYD',   label: 'Based in Hyderabad'    },
+];
 
 export default function AboutSection() {
   return (
-    <section
-      id="about"
-      aria-labelledby="about-heading"
-      className="py-24 sm:py-32 bg-white"
-    >
-      <div className="max-w-[80rem] mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="about" aria-labelledby="about-heading" style={{ padding: '96px 0', background: '#FFFFFF' }}>
+      <div style={{ maxWidth: '1152px', margin: '0 auto', padding: '0 32px' }}>
 
-        {/* Section label */}
-        <div className="text-center mb-16">
-          <span className="inline-block text-xs font-semibold tracking-widest uppercase text-[--color-brand-secondary] mb-3">
+        {/* Heading */}
+        <div style={{ textAlign: 'center', marginBottom: '64px' }}>
+          <span style={{ display: 'inline-block', fontSize: '11px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#0EA5E9', marginBottom: '12px' }}>
             Who We Are
           </span>
-          <h2
-            id="about-heading"
-            className="text-[clamp(1.75rem,3vw,2.5rem)] font-bold text-[--color-brand-dark] mb-4"
-          >
+          <h2 id="about-heading" style={{ fontSize: 'clamp(1.75rem, 3vw, 2.5rem)', fontWeight: 700, color: '#0F172A', marginBottom: '16px' }}>
             About {BRAND.NAME}
           </h2>
-          <p className="text-slate-500 max-w-2xl mx-auto text-lg leading-relaxed">
+          <p style={{ fontSize: '17px', color: '#64748B', maxWidth: '560px', margin: '0 auto', lineHeight: 1.7 }}>
             {BRAND.MISSION}
           </p>
         </div>
 
-        {/* Main content card */}
-        <div className="bg-gradient-to-br from-[--color-brand-light] to-slate-50 rounded-[1.25rem] p-8 md:p-12 mb-12 border border-[--color-brand-primary]/10">
-          <div className="grid md:grid-cols-2 gap-10 items-center">
+        {/* Main card */}
+        <div style={{ borderRadius: '20px', padding: '48px', marginBottom: '32px', background: 'linear-gradient(135deg, #EFF6FF 0%, #F8FAFC 100%)', border: '1px solid #DBEAFE' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '48px', alignItems: 'center' }}>
             <div>
-              <h3 className="text-xl font-bold text-[--color-brand-dark] mb-4">
+              <h3 style={{ fontSize: '20px', fontWeight: 700, color: '#0F172A', marginBottom: '16px' }}>
                 {BRAND.TAGLINE}
               </h3>
-              <p className="text-slate-600 leading-relaxed mb-6">
+              <p style={{ color: '#475569', lineHeight: 1.75, marginBottom: '16px' }}>
                 Based in {BRAND.LOCATION}, we are a dedicated supplier of disposable hygiene &amp; safety products,
                 hotel room slippers, guest amenities, and spa &amp; salon essentials — serving the hospitality
                 and wellness sectors with reliability and care.
               </p>
-              <p className="text-slate-600 leading-relaxed">
+              <p style={{ color: '#475569', lineHeight: 1.75 }}>
                 Our approach is simple: understand what businesses need, source the best products,
-                and deliver them promptly. Every order is backed by our commitment to quality and
-                customer satisfaction.
+                and deliver them promptly. Every order is backed by our commitment to quality and customer satisfaction.
               </p>
             </div>
-
-            {/* Stats */}
-            <div className="grid grid-cols-2 gap-4">
-              {[
-                { value: '51+', label: 'Products in catalogue' },
-                { value: '3', label: 'Product categories' },
-                { value: '100%', label: 'B2B focused' },
-                { value: 'HYD', label: 'Based in Hyderabad' },
-              ].map(({ value, label }) => (
-                <div
-                  key={label}
-                  className="bg-white rounded-xl p-5 border border-slate-100 shadow-[0_2px_8px_rgba(15,23,42,0.06)]"
-                >
-                  <div className="text-2xl font-black text-[--color-brand-primary] mb-1">{value}</div>
-                  <div className="text-xs text-slate-500 font-medium">{label}</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              {STATS.map(({ value, label }) => (
+                <div key={label} style={{ background: '#FFFFFF', borderRadius: '14px', padding: '20px', border: '1px solid #E2E8F0', boxShadow: '0 2px 8px rgba(15,23,42,0.06)' }}>
+                  <div style={{ fontSize: '26px', fontWeight: 900, color: '#1E40AF', marginBottom: '4px' }}>{value}</div>
+                  <div style={{ fontSize: '12px', fontWeight: 500, color: '#64748B' }}>{label}</div>
                 </div>
               ))}
             </div>
@@ -84,17 +61,14 @@ export default function AboutSection() {
         </div>
 
         {/* Pillars */}
-        <div className="grid sm:grid-cols-3 gap-6">
-          {PILLARS.map(({ icon: Icon, title, description }) => (
-            <div
-              key={title}
-              className="group bg-white border border-slate-100 rounded-[1.25rem] p-7 shadow-[0_4px_24px_-4px_rgba(15,23,42,0.08)] hover:shadow-[0_20px_48px_-8px_rgba(15,23,42,0.16)] hover:-translate-y-1 transition-all duration-300"
-            >
-              <div className="w-12 h-12 rounded-xl bg-[--color-brand-light] flex items-center justify-center mb-5 group-hover:bg-[--color-brand-primary] transition-colors duration-300">
-                <Icon className="w-6 h-6 text-[--color-brand-primary] group-hover:text-white transition-colors duration-300" aria-hidden="true" />
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
+          {PILLARS.map(({ icon: Icon, title, description, iconBg, iconColor }) => (
+            <div key={title} style={{ background: '#FFFFFF', borderRadius: '16px', padding: '28px', border: '1px solid #E2E8F0', boxShadow: '0 4px 20px rgba(15,23,42,0.06)', transition: 'transform 0.2s, box-shadow 0.2s' }}>
+              <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}>
+                <Icon style={{ width: '24px', height: '24px', color: iconColor }} aria-hidden="true" />
               </div>
-              <h3 className="font-bold text-[--color-brand-dark] mb-2">{title}</h3>
-              <p className="text-sm text-slate-500 leading-relaxed">{description}</p>
+              <h3 style={{ fontWeight: 700, color: '#0F172A', marginBottom: '8px', fontSize: '15px' }}>{title}</h3>
+              <p style={{ fontSize: '13px', color: '#64748B', lineHeight: 1.65 }}>{description}</p>
             </div>
           ))}
         </div>

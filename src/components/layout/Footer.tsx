@@ -4,36 +4,33 @@ import { BRAND, NAV_LINKS, ROUTES, PRODUCT_CATEGORIES } from '@/constants';
 
 export default function Footer() {
   return (
-    <footer className="bg-[--color-brand-dark] text-white">
-      <div className="max-w-[80rem] mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
+    <footer style={{ background: '#0F172A', color: '#FFFFFF' }}>
+      <div style={{ maxWidth: '1152px', margin: '0 auto', padding: '64px 32px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1.5fr', gap: '48px' }}>
 
           {/* Brand */}
-          <div className="lg:col-span-1">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[--color-brand-primary] to-[--color-brand-secondary] flex items-center justify-center shrink-0">
-                <span className="text-white font-black text-sm select-none">N</span>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+              <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'linear-gradient(135deg, #1E40AF, #0EA5E9)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <span style={{ color: '#FFFFFF', fontWeight: 900, fontSize: '14px', userSelect: 'none' }}>N</span>
               </div>
-              <span className="font-bold text-white text-lg">{BRAND.NAME}</span>
+              <span style={{ fontWeight: 700, fontSize: '18px', color: '#FFFFFF' }}>{BRAND.NAME}</span>
             </div>
-            <p className="text-slate-400 text-sm leading-relaxed mb-4">
+            <p style={{ color: '#64748B', fontSize: '13px', lineHeight: 1.7, marginBottom: '12px' }}>
               {BRAND.FULL_NAME}
             </p>
-            <p className="text-slate-500 text-xs italic">
+            <p style={{ color: '#475569', fontSize: '12px', fontStyle: 'italic' }}>
               &ldquo;{BRAND.TAGLINE}&rdquo;
             </p>
           </div>
 
           {/* Quick links */}
           <div>
-            <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">Quick Links</h3>
-            <ul className="space-y-2">
+            <h3 style={{ fontSize: '11px', fontWeight: 600, color: '#FFFFFF', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '16px' }}>Quick Links</h3>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {NAV_LINKS.map(({ label, href }) => (
                 <li key={href}>
-                  <Link
-                    href={href}
-                    className="text-slate-400 hover:text-[--color-brand-secondary] text-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-brand-secondary] rounded"
-                  >
+                  <Link href={href} style={{ color: '#64748B', fontSize: '13px', textDecoration: 'none', transition: 'color 0.15s' }}>
                     {label}
                   </Link>
                 </li>
@@ -41,25 +38,19 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Product categories */}
+          {/* Products */}
           <div>
-            <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">Products</h3>
-            <ul className="space-y-2">
+            <h3 style={{ fontSize: '11px', fontWeight: 600, color: '#FFFFFF', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '16px' }}>Products</h3>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {PRODUCT_CATEGORIES.map((cat) => (
                 <li key={cat.id}>
-                  <Link
-                    href={`${ROUTES.PRODUCTS}?category=${cat.slug}`}
-                    className="text-slate-400 hover:text-[--color-brand-secondary] text-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-brand-secondary] rounded"
-                  >
+                  <Link href={`${ROUTES.PRODUCTS}?category=${cat.slug}`} style={{ color: '#64748B', fontSize: '13px', textDecoration: 'none', transition: 'color 0.15s' }}>
                     {cat.name}
                   </Link>
                 </li>
               ))}
               <li>
-                <Link
-                  href={ROUTES.PRODUCTS}
-                  className="text-[--color-brand-secondary] hover:text-white text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-brand-secondary] rounded"
-                >
+                <Link href={ROUTES.PRODUCTS} style={{ color: '#38BDF8', fontSize: '13px', fontWeight: 500, textDecoration: 'none' }}>
                   View All Products →
                 </Link>
               </li>
@@ -68,28 +59,22 @@ export default function Footer() {
 
           {/* Contact */}
           <div>
-            <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">Contact Us</h3>
-            <ul className="space-y-3">
+            <h3 style={{ fontSize: '11px', fontWeight: 600, color: '#FFFFFF', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '16px' }}>Contact Us</h3>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <li>
-                <a
-                  href={`mailto:${BRAND.EMAIL}`}
-                  className="flex items-start gap-2.5 text-slate-400 hover:text-[--color-brand-secondary] text-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-brand-secondary] rounded"
-                >
-                  <Mail className="w-4 h-4 mt-0.5 shrink-0" aria-hidden="true" />
+                <a href={`mailto:${BRAND.EMAIL}`} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', color: '#64748B', fontSize: '13px', textDecoration: 'none' }}>
+                  <Mail style={{ width: '14px', height: '14px', marginTop: '2px', flexShrink: 0 }} aria-hidden="true" />
                   {BRAND.EMAIL}
                 </a>
               </li>
               <li>
-                <a
-                  href={`tel:${BRAND.PHONE.replace(/\s/g, '')}`}
-                  className="flex items-start gap-2.5 text-slate-400 hover:text-[--color-brand-secondary] text-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[--color-brand-secondary] rounded"
-                >
-                  <Phone className="w-4 h-4 mt-0.5 shrink-0" aria-hidden="true" />
+                <a href={`tel:${BRAND.PHONE.replace(/\s/g, '')}`} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', color: '#64748B', fontSize: '13px', textDecoration: 'none' }}>
+                  <Phone style={{ width: '14px', height: '14px', marginTop: '2px', flexShrink: 0 }} aria-hidden="true" />
                   {BRAND.PHONE}
                 </a>
               </li>
-              <li className="flex items-start gap-2.5 text-slate-400 text-sm">
-                <MapPin className="w-4 h-4 mt-0.5 shrink-0" aria-hidden="true" />
+              <li style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', color: '#64748B', fontSize: '13px' }}>
+                <MapPin style={{ width: '14px', height: '14px', marginTop: '2px', flexShrink: 0 }} aria-hidden="true" />
                 {BRAND.LOCATION}
               </li>
             </ul>
@@ -97,14 +82,9 @@ export default function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="border-t border-slate-800 mt-12 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
-          <p>&copy; {new Date().getFullYear()} {BRAND.FULL_NAME}. All rights reserved.</p>
-          <a
-            href={`https://${BRAND.WEBSITE}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-slate-300 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-400 rounded"
-          >
+        <div style={{ borderTop: '1px solid #1E293B', marginTop: '48px', paddingTop: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+          <p style={{ fontSize: '12px', color: '#475569' }}>&copy; {new Date().getFullYear()} {BRAND.FULL_NAME}. All rights reserved.</p>
+          <a href={`https://${BRAND.WEBSITE}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: '12px', color: '#475569', textDecoration: 'none' }}>
             {BRAND.WEBSITE}
           </a>
         </div>

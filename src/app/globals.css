@@ -2,7 +2,7 @@
 @import "tailwindcss";
 
 /* ─── Design Tokens ─────────────────────────────────────────────────────────── */
-@theme inline {
+@theme {
   --color-brand-primary:   #1E40AF;
   --color-brand-secondary: #0EA5E9;
   --color-brand-accent:    #F59E0B;
