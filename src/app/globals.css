@@ -89,6 +89,68 @@ img { display: block; max-width: 100%; backface-visibility: hidden; }
 }
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 
+/* ─── Card hover states ─────────────────────────────────────────────────────── */
+/* Applied via className="card-hover" — GPU-composited transform + shadow only */
+.card-hover {
+  transition: transform 0.25s cubic-bezier(0.34, 1.06, 0.64, 1), box-shadow 0.25s ease;
+  will-change: transform;
+}
+.card-hover:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 48px rgba(15, 23, 42, 0.14) !important;
+}
+
+/* Category card hover — also brightens the top accent */
+.card-hover-category {
+  transition: transform 0.25s cubic-bezier(0.34, 1.06, 0.64, 1), box-shadow 0.25s ease;
+  will-change: transform;
+}
+.card-hover-category:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 24px 56px rgba(15, 23, 42, 0.16) !important;
+}
+
+/* WhyUs card hover — lifts and brightens background */
+.card-hover-feature {
+  transition: transform 0.2s cubic-bezier(0.34, 1.06, 0.64, 1), background 0.2s ease, box-shadow 0.2s ease;
+  will-change: transform;
+}
+.card-hover-feature:hover {
+  transform: translateY(-4px);
+  background: #FFFFFF !important;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.1) !important;
+}
+
+/* ─── Card hover states ─────────────────────────────────────────────────────── */
+
+.card-hover {
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease;
+  will-change: transform;
+}
+.card-hover:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 48px rgba(15, 23, 42, 0.14) !important;
+}
+
+.card-hover-category {
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease;
+  will-change: transform;
+}
+.card-hover-category:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 24px 56px rgba(30, 64, 175, 0.15) !important;
+}
+
+.card-hover-feature {
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease, background 0.2s ease;
+  will-change: transform;
+}
+.card-hover-feature:hover {
+  transform: translateY(-5px);
+  background: #FFFFFF !important;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.1) !important;
+}
+
 /* ─── Keyframes ─────────────────────────────────────────────────────────────── */
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(32px); }
