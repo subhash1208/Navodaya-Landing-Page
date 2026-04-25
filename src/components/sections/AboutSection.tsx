@@ -71,7 +71,7 @@ export default function AboutSection() {
         <Stagger staggerDelay={0.12} style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
           {PILLARS.map(({ icon: Icon, title, description, iconBg, iconColor }) => (
             <StaggerItem key={title}>
-              <div style={{ background: '#FFFFFF', borderRadius: '16px', padding: '28px', border: '1px solid #E2E8F0', boxShadow: '0 4px 20px rgba(15,23,42,0.06)', height: '100%' }}>
+              <div className="card-hover" style={{ background: '#FFFFFF', borderRadius: '16px', padding: '28px', border: '1px solid #E2E8F0', boxShadow: '0 4px 20px rgba(15,23,42,0.06)', height: '100%' }}>
                 <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}>
                   <Icon style={{ width: '24px', height: '24px', color: iconColor }} aria-hidden="true" />
                 </div>

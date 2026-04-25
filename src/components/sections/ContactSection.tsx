@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { motion } from 'motion/react';
 import { Send, CheckCircle, AlertCircle, Package, Users, Mail, Phone, MessageSquare, User, Briefcase } from 'lucide-react';
 import { BRAND, PRODUCT_CATEGORIES, PRODUCTS } from '@/constants';
 import { submitContactForm } from '@/app/actions/contact';
@@ -74,7 +75,13 @@ export default function ContactSection() {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '60px', alignItems: 'start' }}>
 
           {/* Left — info */}
-          <div style={{ color: '#FFFFFF' }}>
+          <motion.div
+            initial={{ opacity: 0, x: -40 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, margin: '-60px' }}
+            transition={{ duration: 0.6, ease: [0.34, 1.06, 0.64, 1] }}
+            style={{ color: '#FFFFFF' }}
+          >
             <span style={{ display: 'inline-block', fontSize: '11px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#38BDF8', marginBottom: '12px' }}>
               Get in Touch
             </span>
@@ -116,10 +123,16 @@ export default function ContactSection() {
                 📍 Gandhi Nagar, Hyderabad · Serving hotels, hospitals, spas &amp; industries across India
               </p>
             </div>
-          </div>
+          </motion.div>
 
           {/* Right — form */}
-          <div style={{ background: '#FFFFFF', borderRadius: '20px', padding: '36px', boxShadow: '0 24px 64px rgba(0,0,0,0.35)' }}>
+          <motion.div
+            initial={{ opacity: 0, x: 40 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, margin: '-60px' }}
+            transition={{ duration: 0.6, delay: 0.1, ease: [0.34, 1.06, 0.64, 1] }}
+            style={{ background: '#FFFFFF', borderRadius: '20px', padding: '36px', boxShadow: '0 24px 64px rgba(0,0,0,0.35)' }}
+          >
             {submitted ? (
               <div style={{ textAlign: 'center', padding: '32px 0' }} role="alert" aria-live="polite">
                 <CheckCircle style={{ width: '56px', height: '56px', color: '#10B981', margin: '0 auto 16px' }} aria-hidden="true" />
@@ -211,7 +224,7 @@ export default function ContactSection() {
                 </button>
               </form>
             )}
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>

@@ -27,7 +27,7 @@ export default function ProductCategoriesSection() {
         <Stagger staggerDelay={0.12} style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px', marginBottom: '40px' }}>
           {PRODUCT_CATEGORIES.map((category) => (
             <StaggerItem key={category.id}>
-              <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', background: '#FFFFFF', borderRadius: '20px', padding: '32px', border: '1px solid #E2E8F0', boxShadow: '0 4px 24px rgba(15,23,42,0.07)', overflow: 'hidden', height: '100%' }}>
+              <div className="card-hover-category" style={{ position: 'relative', display: 'flex', flexDirection: 'column', background: '#FFFFFF', borderRadius: '20px', padding: '32px', border: '1px solid #E2E8F0', boxShadow: '0 4px 24px rgba(15,23,42,0.07)', overflow: 'hidden', height: '100%' }}>
                 <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: 'linear-gradient(90deg, #1E40AF, #0EA5E9)' }} aria-hidden="true" />
                 <div style={{ fontSize: '48px', marginBottom: '24px', lineHeight: 1 }} role="img" aria-label={category.name}>
                   {category.icon}

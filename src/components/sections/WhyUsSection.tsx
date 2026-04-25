@@ -30,7 +30,7 @@ export default function WhyUsSection() {
         <Stagger staggerDelay={0.1} style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px' }}>
           {REASONS.map(({ icon: Icon, title, description, iconBg, iconColor, accent }) => (
             <StaggerItem key={title}>
-              <div style={{ background: '#F8FAFC', borderRadius: '16px', padding: '28px', border: '1px solid #E2E8F0', height: '100%' }}>
+              <div className="card-hover-feature" style={{ background: '#F8FAFC', borderRadius: '16px', padding: '28px', border: '1px solid #E2E8F0', height: '100%' }}>
                 <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}>
                   <Icon style={{ width: '24px', height: '24px', color: iconColor }} aria-hidden="true" />
                 </div>
