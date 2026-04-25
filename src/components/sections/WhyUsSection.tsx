@@ -1,4 +1,5 @@
 import { ShieldCheck, Truck, Users, Leaf } from 'lucide-react';
+import { AnimateIn, Stagger, StaggerItem } from '@/components/ui/AnimateIn';
 
 const REASONS = [
   { icon: ShieldCheck, title: 'Uncompromising Quality',  description: 'Every product is sourced and verified to meet international hygiene and safety standards. No shortcuts.',                                    iconBg: '#EFF6FF', iconColor: '#1E40AF', accent: '#1E40AF' },
@@ -12,33 +13,34 @@ export default function WhyUsSection() {
     <section id="why-us" aria-labelledby="why-us-heading" style={{ padding: '96px 0', background: '#FFFFFF' }}>
       <div style={{ maxWidth: '1152px', margin: '0 auto', padding: '0 32px' }}>
 
-        <div style={{ textAlign: 'center', marginBottom: '64px' }}>
-          <span style={{ display: 'inline-block', fontSize: '11px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#0EA5E9', marginBottom: '12px' }}>
-            Why Navodaya
-          </span>
-          <h2 id="why-us-heading" style={{ fontSize: 'clamp(1.75rem, 3vw, 2.5rem)', fontWeight: 700, color: '#0F172A', marginBottom: '16px' }}>
-            Why Businesses Choose Us
-          </h2>
-          <p style={{ fontSize: '17px', color: '#64748B', maxWidth: '480px', margin: '0 auto' }}>
-            We&apos;re not just a supplier — we&apos;re a partner committed to your operations.
-          </p>
-        </div>
+        <AnimateIn direction="up">
+          <div style={{ textAlign: 'center', marginBottom: '64px' }}>
+            <span style={{ display: 'inline-block', fontSize: '11px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#0EA5E9', marginBottom: '12px' }}>
+              Why Navodaya
+            </span>
+            <h2 id="why-us-heading" className="font-display" style={{ fontSize: 'clamp(1.75rem, 3vw, 2.5rem)', fontWeight: 700, color: '#0F172A', marginBottom: '16px' }}>
+              Why Businesses Choose Us
+            </h2>
+            <p style={{ fontSize: '17px', color: '#64748B', maxWidth: '480px', margin: '0 auto' }}>
+              We&apos;re not just a supplier — we&apos;re a partner committed to your operations.
+            </p>
+          </div>
+        </AnimateIn>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px' }}>
+        <Stagger staggerDelay={0.1} style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px' }}>
           {REASONS.map(({ icon: Icon, title, description, iconBg, iconColor, accent }) => (
-            <div
-              key={title}
-              style={{ background: '#F8FAFC', borderRadius: '16px', padding: '28px', border: '1px solid #E2E8F0', transition: 'transform 0.2s, box-shadow 0.2s' }}
-            >
-              <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}>
-                <Icon style={{ width: '24px', height: '24px', color: iconColor }} aria-hidden="true" />
+            <StaggerItem key={title}>
+              <div style={{ background: '#F8FAFC', borderRadius: '16px', padding: '28px', border: '1px solid #E2E8F0', height: '100%' }}>
+                <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}>
+                  <Icon style={{ width: '24px', height: '24px', color: iconColor }} aria-hidden="true" />
+                </div>
+                <div style={{ width: '24px', height: '3px', borderRadius: '9999px', background: accent, marginBottom: '16px' }} />
+                <h3 style={{ fontWeight: 700, color: '#0F172A', marginBottom: '8px', fontSize: '15px' }}>{title}</h3>
+                <p style={{ fontSize: '13px', color: '#64748B', lineHeight: 1.65 }}>{description}</p>
               </div>
-              <div style={{ width: '24px', height: '3px', borderRadius: '9999px', background: accent, marginBottom: '16px' }} />
-              <h3 style={{ fontWeight: 700, color: '#0F172A', marginBottom: '8px', fontSize: '15px' }}>{title}</h3>
-              <p style={{ fontSize: '13px', color: '#64748B', lineHeight: 1.65 }}>{description}</p>
-            </div>
+            </StaggerItem>
           ))}
-        </div>
+        </Stagger>
       </div>
     </section>
   );

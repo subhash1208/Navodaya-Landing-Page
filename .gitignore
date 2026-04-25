@@ -3,6 +3,9 @@
 # Kiro IDE files
 .kiro/
 
+# AI-DLC rule details (large, not project-specific)
+.kiro/aws-aidlc-rule-details/
+
 # VSCode settings
 .vscode/
 
@@ -13,6 +16,8 @@
 dev-tools
 
 .playwright-mcp
+
+.agents
 
 # dependencies
 /node_modules
