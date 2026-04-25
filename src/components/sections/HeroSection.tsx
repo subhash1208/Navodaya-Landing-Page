@@ -7,8 +7,13 @@ export default function HeroSection() {
     <section
       id="home"
       aria-label="Hero"
-      className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden"
-      style={{ background: 'linear-gradient(135deg, #F0F9FF 0%, #ffffff 40%, #F8FAFC 100%)' }}
+      className="relative flex flex-col items-center justify-center overflow-hidden"
+      style={{ 
+        background: 'linear-gradient(135deg, #F0F9FF 0%, #ffffff 40%, #F8FAFC 100%)',
+        minHeight: '100vh',
+        paddingTop: '16px',
+        paddingBottom: '80px'
+      }}
     >
       {/* Background blobs */}
       <div aria-hidden="true" className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -65,10 +70,13 @@ export default function HeroSection() {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
           <Link
             href={ROUTES.PRODUCTS}
-            className="group inline-flex items-center gap-2.5 px-8 py-4 rounded-full font-semibold text-base text-white transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+            className="group inline-flex items-center gap-2.5 rounded-full font-semibold text-base transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
             style={{
-              background: 'linear-gradient(135deg, #1E40AF 0%, #1D4ED8 100%)',
+              background: 'linear-gradient(135deg, #1E40AF, #1D4ED8)',
               boxShadow: '0 4px 24px rgba(30,64,175,0.4)',
+              color: '#FFFFFF',
+              textDecoration: 'none',
+              padding: '16px 32px',
               minHeight: '52px',
             }}
           >
@@ -77,12 +85,15 @@ export default function HeroSection() {
           </Link>
           <Link
             href={ROUTES.CONTACT}
-            className="inline-flex items-center gap-2 px-8 py-4 rounded-full font-semibold text-base transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+            className="inline-flex items-center gap-2 rounded-full font-semibold text-base transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
             style={{
               border: '2px solid #1E40AF',
               color: '#1E40AF',
-              background: 'transparent',
+              background: '#FFFFFF',
+              textDecoration: 'none',
+              padding: '16px 32px',
               minHeight: '52px',
+              boxShadow: '0 2px 8px rgba(30,64,175,0.12)',
             }}
           >
             Get a Quote
@@ -90,19 +101,18 @@ export default function HeroSection() {
         </div>
 
         {/* Trust stats */}
-        <div className="inline-flex items-center gap-12 px-10 py-5 rounded-2xl"
-          style={{ background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(12px)', border: '1px solid rgba(30,64,175,0.1)', boxShadow: '0 4px 24px rgba(15,23,42,0.06)' }}>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0', padding: '20px 40px', borderRadius: '16px', background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(12px)', border: '1px solid rgba(30,64,175,0.1)', boxShadow: '0 4px 24px rgba(15,23,42,0.06)' }}>
           {[
             { value: '51+', label: 'Products' },
             { value: '3', label: 'Categories' },
             { value: 'B2B', label: 'Focused' },
           ].map(({ value, label }, i) => (
-            <div key={label} className="text-center flex items-center gap-12">
-              <div>
-                <div className="text-2xl font-black" style={{ color: '#1E40AF' }}>{value}</div>
-                <div className="text-xs font-medium mt-0.5" style={{ color: '#94A3B8' }}>{label}</div>
+            <div key={label} style={{ display: 'flex', alignItems: 'center' }}>
+              <div style={{ textAlign: 'center', padding: '0 32px' }}>
+                <div style={{ fontSize: '22px', fontWeight: 900, color: '#1E40AF' }}>{value}</div>
+                <div style={{ fontSize: '11px', fontWeight: 500, marginTop: '2px', color: '#94A3B8' }}>{label}</div>
               </div>
-              {i < 2 && <div className="w-px h-8" style={{ background: '#E2E8F0' }} />}
+              {i < 2 && <div style={{ width: '1px', height: '32px', background: '#E2E8F0', flexShrink: 0 }} />}
             </div>
           ))}
         </div>

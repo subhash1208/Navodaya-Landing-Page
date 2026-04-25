@@ -34,7 +34,7 @@ export default function AboutSection() {
 
         {/* Main card */}
         <div style={{ borderRadius: '20px', padding: '48px', marginBottom: '32px', background: 'linear-gradient(135deg, #EFF6FF 0%, #F8FAFC 100%)', border: '1px solid #DBEAFE' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '48px', alignItems: 'center' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '3fr 2fr', gap: '48px', alignItems: 'center' }}>
             <div>
               <h3 style={{ fontSize: '20px', fontWeight: 700, color: '#0F172A', marginBottom: '16px' }}>
                 {BRAND.TAGLINE}

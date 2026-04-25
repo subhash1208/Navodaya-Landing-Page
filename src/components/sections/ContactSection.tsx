@@ -71,7 +71,7 @@ export default function ContactSection() {
       style={{ padding: '96px 0', background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)' }}
     >
       <div style={{ maxWidth: '1152px', margin: '0 auto', padding: '0 32px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '80px', alignItems: 'start' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '60px', alignItems: 'start' }}>
 
           {/* Left — info */}
           <div style={{ color: '#FFFFFF' }}>

@@ -34,8 +34,8 @@ export default function WhyUsSection() {
                 <Icon style={{ width: '24px', height: '24px', color: iconColor }} aria-hidden="true" />
               </div>
               <div style={{ width: '24px', height: '3px', borderRadius: '9999px', background: accent, marginBottom: '16px' }} />
-              <h3 style={{ fontWeight: 700, color: '#0F172A', marginBottom: '8px', fontSize: '14px' }}>{title}</h3>
-              <p style={{ fontSize: '12px', color: '#64748B', lineHeight: 1.65 }}>{description}</p>
+              <h3 style={{ fontWeight: 700, color: '#0F172A', marginBottom: '8px', fontSize: '15px' }}>{title}</h3>
+              <p style={{ fontSize: '13px', color: '#64748B', lineHeight: 1.65 }}>{description}</p>
             </div>
           ))}
         </div>

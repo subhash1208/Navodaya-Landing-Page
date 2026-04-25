@@ -30,7 +30,7 @@ export default function Header() {
         borderBottom: scrolled ? '1px solid rgba(226,232,240,0.8)' : 'none',
       }}
     >
-      <div className="max-w-6xl mx-auto px-6 lg:px-8 h-full flex items-center justify-between">
+      <div style={{ maxWidth: '1152px', margin: '0 auto', padding: '0 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '100%', width: '100%' }}>
 
         {/* Logo */}
         <Link
@@ -61,6 +61,7 @@ export default function Header() {
                 style={{
                   color: isActive ? '#1E40AF' : '#475569',
                   background: isActive ? '#EFF6FF' : 'transparent',
+                  textDecoration: 'none',
                 }}
               >
                 {label}
@@ -69,10 +70,15 @@ export default function Header() {
           })}
           <Link
             href={ROUTES.CONTACT}
-            className="ml-3 px-5 py-2.5 rounded-full text-white text-sm font-semibold transition-all duration-150 hover:-translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+            className="ml-3 rounded-full text-sm font-semibold transition-all duration-150 hover:-translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
             style={{
               background: 'linear-gradient(135deg, #1E40AF, #1D4ED8)',
-              boxShadow: '0 2px 12px rgba(30,64,175,0.3)',
+              boxShadow: '0 2px 12px rgba(30,64,175,0.35)',
+              color: '#FFFFFF',
+              textDecoration: 'none',
+              padding: '10px 22px',
+              display: 'inline-flex',
+              alignItems: 'center',
             }}
           >
             Get a Quote
