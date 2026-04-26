@@ -8,8 +8,11 @@ export default function HeroSection() {
     <section
       id="home"
       aria-label="Hero"
-      className="relative flex flex-col items-center justify-center overflow-hidden min-h-screen pb-20 pt-4"
-      style={{ background: 'linear-gradient(135deg, #F0F9FF 0%, #ffffff 40%, #F8FAFC 100%)' }}
+      className="relative flex flex-col items-center justify-center overflow-hidden pb-20"
+      style={{
+        minHeight: 'calc(100vh - 4rem)',
+        background: 'linear-gradient(135deg, #F0F9FF 0%, #ffffff 40%, #F8FAFC 100%)'
+      }}
     >
       {/* Background blobs */}
       <div aria-hidden="true" className="absolute inset-0 overflow-hidden pointer-events-none">

@@ -46,10 +46,13 @@ export default function Header() {
           style={{ ['--tw-ring-color' as string]: '#1E40AF' }}
           aria-label="Navodaya home"
         >
-          <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
-            style={{ background: 'linear-gradient(135deg, #1E40AF, #0EA5E9)' }}>
-            <span className="text-white font-black text-sm select-none">N</span>
-          </div>
+          <img
+            src="/navodaya-logo.png"
+            alt="Navodaya logo"
+            width={36}
+            height={36}
+            style={{ width: '36px', height: '36px', objectFit: 'contain', display: 'block' }}
+          />
           <div className="flex flex-col leading-tight">
             <span className="font-bold text-base" style={{ color: '#0F172A' }}>{BRAND.NAME}</span>
             <span className="text-[10px] tracking-wide hidden sm:block" style={{ color: '#94A3B8' }}>Industries &amp; Care Kits</span>
