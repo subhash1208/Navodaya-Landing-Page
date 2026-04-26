@@ -5,7 +5,7 @@
 
 # AI-DLC rule details (large, not project-specific)
 .kiro/aws-aidlc-rule-details/
-
+aidlc-docs
 # VSCode settings
 .vscode/
 

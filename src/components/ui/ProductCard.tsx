@@ -14,9 +14,8 @@ export function ProductCard({ product, className }: ProductCardProps) {
     <Link
       href={ROUTES.PRODUCT(product.slug)}
       className={cn(
-        'group flex flex-col bg-white border border-slate-100 rounded-[1.25rem] p-6',
+        'group flex flex-col bg-white border border-slate-100 rounded-[1.25rem] p-6 card-hover',
         'shadow-[0_4px_24px_-4px_rgba(15,23,42,0.08)]',
-        'hover:shadow-[0_20px_48px_-8px_rgba(15,23,42,0.16)] hover:-translate-y-1',
         'transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2',
         className
       )}
