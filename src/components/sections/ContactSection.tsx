@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useCallback } from 'react';
+import { useActionState, useCallback, useRef } from 'react';
 import { motion } from 'motion/react';
 import { Send, CheckCircle, AlertCircle, Package, Users, Mail, Phone, MessageSquare, User, Briefcase } from 'lucide-react';
 import { BRAND, PRODUCT_CATEGORIES, PRODUCTS } from '@/constants';
@@ -38,17 +38,29 @@ async function contactAction(_prev: FormState, formData: FormData): Promise<Form
 
 export default function ContactSection() {
   const [state, formAction, isPending] = useActionState<FormState, FormData>(contactAction, null);
+  const sectionRef = useRef<HTMLElement>(null);
 
   const handleReset = useCallback(() => {
-    // Reset by navigating to same anchor — clears useActionState
     window.location.hash = '#contact';
+  }, []);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLElement>) => {
+    const el = sectionRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    el.style.setProperty('--cursor-x', `${x}%`);
+    el.style.setProperty('--cursor-y', `${y}%`);
   }, []);
 
   return (
     <section
+      ref={sectionRef}
       id="contact"
       aria-labelledby="contact-heading"
-      className="py-24 bg-gradient-to-br from-brand-dark to-slate-800"
+      className="py-24 bg-gradient-to-br from-brand-dark to-slate-800 cursor-spotlight"
+      onMouseMove={handleMouseMove}
     >
       <div className="container mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-start">

@@ -116,6 +116,44 @@
   }
 }
 
+/* ─── Cursor spotlight (Contact section) ───────────────────────────────────── */
+.cursor-spotlight {
+  --cursor-x: 50%;
+  --cursor-y: 50%;
+  position: relative;
+}
+
+.cursor-spotlight::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    200px circle at var(--cursor-x) var(--cursor-y),
+    rgba(30, 64, 175, 0.12),
+    transparent 70%
+  );
+  pointer-events: none;
+  z-index: 0;
+  transition: background 0.05s ease;
+}
+
+/* ─── Marquee strip ─────────────────────────────────────────────────────────── */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+.marquee-track {
+  animation: marquee 40s linear infinite;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    animation: none;
+  }
+}
+
 /* ─── Scrollbar ─────────────────────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }

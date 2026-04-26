@@ -1,6 +1,7 @@
 import { Award, Globe, Handshake } from 'lucide-react';
 import { BRAND } from '@/constants';
 import { AnimateIn, Stagger, StaggerItem } from '@/components/ui/AnimateIn';
+import { CounterStat } from '@/components/ui/CounterStat';
 
 const PILLARS = [
   { icon: Award,     title: 'Quality Assured',   description: 'Every product meets international hygiene and safety standards before it reaches you.',          iconBg: '#EFF6FF', iconColor: '#1E40AF' },
@@ -56,10 +57,7 @@ export default function AboutSection() {
               <Stagger staggerDelay={0.08} className="grid grid-cols-2 gap-4">
                 {STATS.map(({ value, label }) => (
                   <StaggerItem key={label}>
-                    <div className="bg-white rounded-[14px] p-5 border border-slate-200 shadow-[0_2px_8px_rgba(15,23,42,0.06)]">
-                      <div className="text-[26px] font-black text-brand-primary mb-1">{value}</div>
-                      <div className="text-xs font-medium text-slate-500">{label}</div>
-                    </div>
+                    <CounterStat value={value} label={label} />
                   </StaggerItem>
                 ))}
               </Stagger>
