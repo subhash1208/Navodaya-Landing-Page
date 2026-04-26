@@ -55,7 +55,7 @@ export default async function ProductPage({ params }: PageProps) {
 
       {/* Page header */}
       <div className="bg-white border-b border-slate-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="section-container-wide py-6">
           <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-slate-400 flex-wrap">
             <Link href="/" className="hover:text-brand-primary transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-primary rounded">
               Home
@@ -77,7 +77,7 @@ export default async function ProductPage({ params }: PageProps) {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <div className="section-container-wide py-10">
 
         {/* Main product layout */}
         <div className="grid lg:grid-cols-2 gap-12 mb-16">
