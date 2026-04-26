@@ -1,35 +1,18 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useActionState, useCallback } from 'react';
 import { motion } from 'motion/react';
 import { Send, CheckCircle, AlertCircle, Package, Users, Mail, Phone, MessageSquare, User, Briefcase } from 'lucide-react';
 import { BRAND, PRODUCT_CATEGORIES, PRODUCTS } from '@/constants';
 import { submitContactForm } from '@/app/actions/contact';
-import type { ContactFormData } from '@/types';
 
-const EMPTY: ContactFormData = {
-  productName: '', quantity: '', companyName: '', companyEmail: '',
-  contactPersonName: '', contactPersonDesignation: '', contactPersonNumber: '', message: '',
-};
-
-const inputStyle: React.CSSProperties = {
-  width: '100%',
-  padding: '12px 16px',
-  borderRadius: '10px',
-  background: '#F8FAFC',
-  border: '1.5px solid #E2E8F0',
-  fontSize: '14px',
-  color: '#0F172A',
-  outline: 'none',
-  transition: 'border-color 0.15s, box-shadow 0.15s',
-  minHeight: '44px',
-};
+const inputClass = 'w-full px-4 py-3 rounded-[10px] bg-surface-muted border border-slate-200 text-sm text-brand-dark outline-none transition-[border-color,box-shadow] duration-150 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 min-h-[44px]';
 
 interface FieldProps { label: string; icon?: React.ReactNode; children: React.ReactNode; }
 function Field({ label, icon, children }: FieldProps) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-      <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+    <div className="flex flex-col gap-1.5">
+      <label className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-500 uppercase tracking-[0.06em]">
         {icon && <span aria-hidden="true">{icon}</span>}
         {label}
       </label>
@@ -38,41 +21,37 @@ function Field({ label, icon, children }: FieldProps) {
   );
 }
 
+type FormState = { success: boolean; error?: string } | null;
+
+async function contactAction(_prev: FormState, formData: FormData): Promise<FormState> {
+  return submitContactForm({
+    productName: formData.get('productName') as string ?? '',
+    quantity: formData.get('quantity') as string ?? '',
+    companyName: formData.get('companyName') as string ?? '',
+    companyEmail: formData.get('companyEmail') as string ?? '',
+    contactPersonName: formData.get('contactPersonName') as string ?? '',
+    contactPersonDesignation: formData.get('contactPersonDesignation') as string ?? '',
+    contactPersonNumber: formData.get('contactPersonNumber') as string ?? '',
+    message: formData.get('message') as string ?? '',
+  });
+}
+
 export default function ContactSection() {
-  const [form, setForm] = useState<ContactFormData>(EMPTY);
-  const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [state, formAction, isPending] = useActionState<FormState, FormData>(contactAction, null);
 
-  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setForm(prev => ({ ...prev, [name]: value }));
-    if (error) setError(null);
-  }, [error]);
-
-  const handleSubmit = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setSubmitting(true);
-    setError(null);
-    const result = await submitContactForm(form);
-    if (result.success) {
-      setSubmitted(true);
-      setForm(EMPTY);
-      setTimeout(() => setSubmitted(false), 8000);
-    } else {
-      setError(result.error ?? 'Something went wrong. Please try again.');
-    }
-    setSubmitting(false);
-  }, [form]);
+  const handleReset = useCallback(() => {
+    // Reset by navigating to same anchor — clears useActionState
+    window.location.hash = '#contact';
+  }, []);
 
   return (
     <section
       id="contact"
       aria-labelledby="contact-heading"
-      style={{ padding: '96px 0', background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)' }}
+      className="py-24 bg-gradient-to-br from-brand-dark to-slate-800"
     >
-      <div style={{ maxWidth: '1152px', margin: '0 auto', padding: '0 32px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '60px', alignItems: 'start' }}>
+      <div className="max-w-[72rem] mx-auto px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-start">
 
           {/* Left — info */}
           <motion.div
@@ -80,23 +59,23 @@ export default function ContactSection() {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: '-60px' }}
             transition={{ duration: 0.6, ease: [0.34, 1.06, 0.64, 1] }}
-            style={{ color: '#FFFFFF' }}
+            className="text-white"
           >
-            <span style={{ display: 'inline-block', fontSize: '11px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#38BDF8', marginBottom: '12px' }}>
+            <span className="inline-block text-[11px] font-semibold tracking-[0.1em] uppercase text-brand-secondary mb-3">
               Get in Touch
             </span>
             <h2
               id="contact-heading"
-              style={{ fontSize: 'clamp(1.75rem, 3vw, 2.5rem)', fontWeight: 700, marginBottom: '16px', lineHeight: 1.2 }}
+              className="text-[clamp(1.75rem,3vw,2.5rem)] font-bold mb-4 leading-snug"
             >
               Request a Quote
             </h2>
-            <p style={{ color: '#94A3B8', fontSize: '17px', lineHeight: 1.7, marginBottom: '40px' }}>
+            <p className="text-slate-400 text-[17px] leading-[1.7] mb-10">
               Tell us what you need and we&apos;ll get back to you with pricing and availability.
               We work with hotels, hospitals, spas, salons, and industries across India.
             </p>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div className="flex flex-col gap-4">
               {[
                 { icon: Mail, label: 'Email', value: BRAND.EMAIL, href: `mailto:${BRAND.EMAIL}` },
                 { icon: Phone, label: 'Phone', value: BRAND.PHONE, href: `tel:${BRAND.PHONE.replace(/\s/g, '')}` },
@@ -104,22 +83,21 @@ export default function ContactSection() {
                 <a
                   key={label}
                   href={href}
-                  style={{ display: 'flex', alignItems: 'center', gap: '12px', color: '#94A3B8', textDecoration: 'none', transition: 'color 0.15s' }}
+                  className="flex items-center gap-3 text-slate-400 hover:text-white transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-secondary rounded-lg"
                 >
-                  <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <Icon style={{ width: '18px', height: '18px' }} aria-hidden="true" />
+                  <div className="w-11 h-11 rounded-[12px] bg-white/8 flex items-center justify-center shrink-0">
+                    <Icon className="w-[18px] h-[18px]" aria-hidden="true" />
                   </div>
                   <div>
-                    <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 500 }}>{label}</div>
-                    <div style={{ fontSize: '14px', fontWeight: 600, color: '#E2E8F0' }}>{value}</div>
+                    <div className="text-[11px] text-slate-600 font-medium">{label}</div>
+                    <div className="text-sm font-semibold text-slate-200">{value}</div>
                   </div>
                 </a>
               ))}
             </div>
 
-            {/* Trust note */}
-            <div style={{ marginTop: '48px', padding: '20px', borderRadius: '16px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
-              <p style={{ fontSize: '13px', color: '#64748B', lineHeight: 1.6 }}>
+            <div className="mt-12 p-5 rounded-[16px] bg-white/5 border border-white/8">
+              <p className="text-[13px] text-slate-500 leading-[1.6]">
                 📍 Gandhi Nagar, Hyderabad · Serving hotels, hospitals, spas &amp; industries across India
               </p>
             </div>
@@ -131,31 +109,37 @@ export default function ContactSection() {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: '-60px' }}
             transition={{ duration: 0.6, delay: 0.1, ease: [0.34, 1.06, 0.64, 1] }}
-            style={{ background: '#FFFFFF', borderRadius: '20px', padding: '36px', boxShadow: '0 24px 64px rgba(0,0,0,0.35)' }}
+            className="bg-white rounded-[20px] p-8 shadow-[0_24px_64px_rgba(0,0,0,0.35)]"
           >
-            {submitted ? (
-              <div style={{ textAlign: 'center', padding: '32px 0' }} role="alert" aria-live="polite">
-                <CheckCircle style={{ width: '56px', height: '56px', color: '#10B981', margin: '0 auto 16px' }} aria-hidden="true" />
-                <h3 style={{ fontSize: '20px', fontWeight: 700, color: '#0F172A', marginBottom: '8px' }}>Thank You!</h3>
-                <p style={{ fontSize: '14px', color: '#64748B' }}>
-                  Your enquiry has been sent to <strong style={{ color: '#1E40AF' }}>{BRAND.EMAIL}</strong>. We&apos;ll be in touch shortly.
+            {state?.success ? (
+              <div className="text-center py-8" role="alert" aria-live="polite">
+                <CheckCircle className="w-14 h-14 text-emerald-500 mx-auto mb-4" aria-hidden="true" />
+                <h3 className="text-xl font-bold text-brand-dark mb-2">Thank You!</h3>
+                <p className="text-sm text-slate-500 mb-6">
+                  Your enquiry has been sent to <strong className="text-brand-primary">{BRAND.EMAIL}</strong>. We&apos;ll be in touch shortly.
                 </p>
+                <button
+                  onClick={handleReset}
+                  className="text-sm font-medium text-brand-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary rounded"
+                >
+                  Send another enquiry
+                </button>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} noValidate style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#0F172A', marginBottom: '4px' }}>Send an Enquiry</h3>
+              <form action={formAction} noValidate className="flex flex-col gap-5">
+                <h3 className="text-lg font-bold text-brand-dark">Send an Enquiry</h3>
 
-                {error && (
-                  <div role="alert" aria-live="assertive" style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', background: '#FEF2F2', border: '1px solid #FECACA', color: '#DC2626', fontSize: '13px', borderRadius: '10px', padding: '12px 14px' }}>
-                    <AlertCircle style={{ width: '16px', height: '16px', marginTop: '1px', flexShrink: 0 }} aria-hidden="true" />
-                    {error}
+                {state?.error && (
+                  <div role="alert" aria-live="assertive" className="flex items-start gap-2.5 bg-red-50 border border-red-200 text-red-600 text-[13px] rounded-[10px] p-3">
+                    <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" aria-hidden="true" />
+                    {state.error}
                   </div>
                 )}
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                  <Field label="Product" icon={<Package style={{ width: '12px', height: '12px' }} />}>
-                    <select id="productName" name="productName" value={form.productName} onChange={handleChange} required style={inputStyle}>
-                      <option value="">Select a product</option>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <Field label="Product" icon={<Package className="w-3 h-3" />}>
+                    <select name="productName" required className={inputClass} defaultValue="">
+                      <option value="" disabled>Select a product</option>
                       {PRODUCT_CATEGORIES.map(cat => (
                         <optgroup key={cat.id} label={cat.name}>
                           {PRODUCTS.filter(p => p.category.id === cat.id).map(p => (
@@ -167,60 +151,48 @@ export default function ContactSection() {
                     </select>
                   </Field>
                   <Field label="Quantity">
-                    <input type="text" id="quantity" name="quantity" value={form.quantity} onChange={handleChange} required placeholder="e.g. 1000 pieces" style={inputStyle} />
+                    <input type="text" name="quantity" required placeholder="e.g. 1000 pieces" className={inputClass} />
                   </Field>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                  <Field label="Company" icon={<Users style={{ width: '12px', height: '12px' }} />}>
-                    <input type="text" id="companyName" name="companyName" value={form.companyName} onChange={handleChange} required placeholder="Company name" style={inputStyle} />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <Field label="Company" icon={<Users className="w-3 h-3" />}>
+                    <input type="text" name="companyName" required placeholder="Company name" className={inputClass} />
                   </Field>
-                  <Field label="Email" icon={<Mail style={{ width: '12px', height: '12px' }} />}>
-                    <input type="email" id="companyEmail" name="companyEmail" value={form.companyEmail} onChange={handleChange} required placeholder="company@example.com" style={inputStyle} />
-                  </Field>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                  <Field label="Contact Person" icon={<User style={{ width: '12px', height: '12px' }} />}>
-                    <input type="text" id="contactPersonName" name="contactPersonName" value={form.contactPersonName} onChange={handleChange} required placeholder="Full name" style={inputStyle} />
-                  </Field>
-                  <Field label="Designation" icon={<Briefcase style={{ width: '12px', height: '12px' }} />}>
-                    <input type="text" id="contactPersonDesignation" name="contactPersonDesignation" value={form.contactPersonDesignation} onChange={handleChange} placeholder="e.g. Manager" style={inputStyle} />
+                  <Field label="Email" icon={<Mail className="w-3 h-3" />}>
+                    <input type="email" name="companyEmail" required placeholder="company@example.com" className={inputClass} />
                   </Field>
                 </div>
 
-                <Field label="Phone" icon={<Phone style={{ width: '12px', height: '12px' }} />}>
-                  <input type="tel" id="contactPersonNumber" name="contactPersonNumber" value={form.contactPersonNumber} onChange={handleChange} required placeholder="+91 XXXXX XXXXX" style={inputStyle} />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <Field label="Contact Person" icon={<User className="w-3 h-3" />}>
+                    <input type="text" name="contactPersonName" required placeholder="Full name" className={inputClass} />
+                  </Field>
+                  <Field label="Designation" icon={<Briefcase className="w-3 h-3" />}>
+                    <input type="text" name="contactPersonDesignation" placeholder="e.g. Manager" className={inputClass} />
+                  </Field>
+                </div>
+
+                <Field label="Phone" icon={<Phone className="w-3 h-3" />}>
+                  <input type="tel" name="contactPersonNumber" required placeholder="+91 XXXXX XXXXX" className={inputClass} />
                 </Field>
 
-                <Field label="Message" icon={<MessageSquare style={{ width: '12px', height: '12px' }} />}>
-                  <textarea id="message" name="message" value={form.message} onChange={handleChange} rows={3} placeholder="Tell us more about your requirements..." style={{ ...inputStyle, resize: 'none', minHeight: '88px' }} />
+                <Field label="Message" icon={<MessageSquare className="w-3 h-3" />}>
+                  <textarea name="message" rows={3} placeholder="Tell us more about your requirements..." className={`${inputClass} resize-none min-h-[88px]`} />
                 </Field>
 
                 <button
                   type="submit"
-                  disabled={submitting}
+                  disabled={isPending}
+                  className="w-full flex items-center justify-center gap-2 py-3.5 rounded-[12px] font-semibold text-sm text-white transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 min-h-[48px] disabled:opacity-60 disabled:cursor-not-allowed"
                   style={{
-                    width: '100%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px',
-                    padding: '14px',
-                    borderRadius: '12px',
-                    fontWeight: 600,
-                    fontSize: '14px',
-                    color: '#FFFFFF',
-                    background: submitting ? '#94A3B8' : 'linear-gradient(135deg, #1E40AF, #1D4ED8)',
-                    border: 'none',
-                    cursor: submitting ? 'not-allowed' : 'pointer',
-                    boxShadow: submitting ? 'none' : '0 4px 16px rgba(30,64,175,0.35)',
-                    transition: 'all 0.2s',
-                    minHeight: '48px',
+                    background: isPending ? undefined : 'linear-gradient(135deg, #1E40AF, #1D4ED8)',
+                    backgroundColor: isPending ? '#94A3B8' : undefined,
+                    boxShadow: isPending ? 'none' : '0 4px 16px rgba(30,64,175,0.35)',
                   }}
                 >
-                  <span>{submitting ? 'Sending…' : 'Send Enquiry'}</span>
-                  <Send style={{ width: '16px', height: '16px' }} aria-hidden="true" />
+                  <span>{isPending ? 'Sending…' : 'Send Enquiry'}</span>
+                  <Send className="w-4 h-4" aria-hidden="true" />
                 </button>
               </form>
             )}

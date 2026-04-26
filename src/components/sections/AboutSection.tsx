@@ -17,19 +17,19 @@ const STATS = [
 
 export default function AboutSection() {
   return (
-    <section id="about" aria-labelledby="about-heading" style={{ padding: '96px 0', background: '#FFFFFF' }}>
-      <div style={{ maxWidth: '1152px', margin: '0 auto', padding: '0 32px' }}>
+    <section id="about" aria-labelledby="about-heading" className="py-24 bg-white">
+      <div className="max-w-[72rem] mx-auto px-6 lg:px-8">
 
         {/* Heading */}
         <AnimateIn direction="up" delay={0}>
-          <div style={{ textAlign: 'center', marginBottom: '64px' }}>
-            <span style={{ display: 'inline-block', fontSize: '11px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#0EA5E9', marginBottom: '12px' }}>
+          <div className="text-center mb-16">
+            <span className="inline-block text-[11px] font-semibold tracking-[0.1em] uppercase text-brand-secondary mb-3">
               Who We Are
             </span>
-            <h2 id="about-heading" className="font-display" style={{ fontSize: 'clamp(1.75rem, 3vw, 2.5rem)', fontWeight: 700, color: '#0F172A', marginBottom: '16px' }}>
+            <h2 id="about-heading" className="font-display text-[clamp(1.75rem,3vw,2.5rem)] font-bold text-brand-dark mb-4">
               About {BRAND.NAME}
             </h2>
-            <p style={{ fontSize: '17px', color: '#64748B', maxWidth: '560px', margin: '0 auto', lineHeight: 1.7 }}>
+            <p className="text-[17px] text-slate-500 max-w-[560px] mx-auto leading-[1.7]">
               {BRAND.MISSION}
             </p>
           </div>
@@ -37,28 +37,28 @@ export default function AboutSection() {
 
         {/* Main card */}
         <AnimateIn direction="up" delay={0.1}>
-          <div style={{ borderRadius: '20px', padding: '48px', marginBottom: '32px', background: 'linear-gradient(135deg, #EFF6FF 0%, #F8FAFC 100%)', border: '1px solid #DBEAFE' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '3fr 2fr', gap: '48px', alignItems: 'center' }}>
+          <div className="rounded-[20px] p-8 md:p-12 mb-8 bg-gradient-to-br from-brand-light to-surface-muted border border-blue-100">
+            <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-10 md:gap-12 items-center">
               <div>
-                <h3 style={{ fontSize: '20px', fontWeight: 700, color: '#0F172A', marginBottom: '16px' }}>
+                <h3 className="text-xl font-bold text-brand-dark mb-4">
                   {BRAND.TAGLINE}
                 </h3>
-                <p style={{ color: '#475569', lineHeight: 1.75, marginBottom: '16px' }}>
+                <p className="text-slate-600 leading-[1.75] mb-4">
                   Based in {BRAND.LOCATION}, we are a dedicated supplier of disposable hygiene &amp; safety products,
                   hotel room slippers, guest amenities, and spa &amp; salon essentials — serving the hospitality
                   and wellness sectors with reliability and care.
                 </p>
-                <p style={{ color: '#475569', lineHeight: 1.75 }}>
+                <p className="text-slate-600 leading-[1.75]">
                   Our approach is simple: understand what businesses need, source the best products,
                   and deliver them promptly. Every order is backed by our commitment to quality and customer satisfaction.
                 </p>
               </div>
-              <Stagger staggerDelay={0.08} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <Stagger staggerDelay={0.08} className="grid grid-cols-2 gap-4">
                 {STATS.map(({ value, label }) => (
                   <StaggerItem key={label}>
-                    <div style={{ background: '#FFFFFF', borderRadius: '14px', padding: '20px', border: '1px solid #E2E8F0', boxShadow: '0 2px 8px rgba(15,23,42,0.06)' }}>
-                      <div style={{ fontSize: '26px', fontWeight: 900, color: '#1E40AF', marginBottom: '4px' }}>{value}</div>
-                      <div style={{ fontSize: '12px', fontWeight: 500, color: '#64748B' }}>{label}</div>
+                    <div className="bg-white rounded-[14px] p-5 border border-slate-200 shadow-[0_2px_8px_rgba(15,23,42,0.06)]">
+                      <div className="text-[26px] font-black text-brand-primary mb-1">{value}</div>
+                      <div className="text-xs font-medium text-slate-500">{label}</div>
                     </div>
                   </StaggerItem>
                 ))}
@@ -68,15 +68,18 @@ export default function AboutSection() {
         </AnimateIn>
 
         {/* Pillars — staggered */}
-        <Stagger staggerDelay={0.12} style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
+        <Stagger staggerDelay={0.12} className="grid grid-cols-1 sm:grid-cols-3 gap-5">
           {PILLARS.map(({ icon: Icon, title, description, iconBg, iconColor }) => (
             <StaggerItem key={title}>
-              <div className="card-hover" style={{ background: '#FFFFFF', borderRadius: '16px', padding: '28px', border: '1px solid #E2E8F0', boxShadow: '0 4px 20px rgba(15,23,42,0.06)', height: '100%' }}>
-                <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}>
-                  <Icon style={{ width: '24px', height: '24px', color: iconColor }} aria-hidden="true" />
+              <div className="card-hover bg-white rounded-[16px] p-7 border border-slate-200 shadow-[0_4px_20px_rgba(15,23,42,0.06)] h-full">
+                <div
+                  className="w-12 h-12 rounded-[12px] flex items-center justify-center mb-5"
+                  style={{ background: iconBg }}
+                >
+                  <Icon className="w-6 h-6" style={{ color: iconColor }} aria-hidden="true" />
                 </div>
-                <h3 style={{ fontWeight: 700, color: '#0F172A', marginBottom: '8px', fontSize: '15px' }}>{title}</h3>
-                <p style={{ fontSize: '13px', color: '#64748B', lineHeight: 1.65 }}>{description}</p>
+                <h3 className="font-bold text-brand-dark mb-2 text-[15px]">{title}</h3>
+                <p className="text-[13px] text-slate-500 leading-[1.65]">{description}</p>
               </div>
             </StaggerItem>
           ))}

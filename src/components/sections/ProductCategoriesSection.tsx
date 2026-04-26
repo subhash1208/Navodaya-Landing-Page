@@ -5,47 +5,50 @@ import { AnimateIn, Stagger, StaggerItem } from '@/components/ui/AnimateIn';
 
 export default function ProductCategoriesSection() {
   return (
-    <section id="products" aria-labelledby="products-heading" style={{ padding: '96px 0', background: '#F8FAFC' }}>
-      <div style={{ maxWidth: '1152px', margin: '0 auto', padding: '0 32px' }}>
+    <section id="products" aria-labelledby="products-heading" className="py-24 bg-surface-muted">
+      <div className="max-w-[72rem] mx-auto px-6 lg:px-8">
 
         {/* Heading */}
         <AnimateIn direction="up">
-          <div style={{ textAlign: 'center', marginBottom: '64px' }}>
-            <span style={{ display: 'inline-block', fontSize: '11px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#0EA5E9', marginBottom: '12px' }}>
+          <div className="text-center mb-16">
+            <span className="inline-block text-[11px] font-semibold tracking-[0.1em] uppercase text-brand-secondary mb-3">
               What We Supply
             </span>
-            <h2 id="products-heading" className="font-display" style={{ fontSize: 'clamp(1.75rem, 3vw, 2.5rem)', fontWeight: 700, color: '#0F172A', marginBottom: '16px' }}>
+            <h2 id="products-heading" className="font-display text-[clamp(1.75rem,3vw,2.5rem)] font-bold text-brand-dark mb-4">
               Our Product Categories
             </h2>
-            <p style={{ fontSize: '17px', color: '#64748B', maxWidth: '480px', margin: '0 auto' }}>
+            <p className="text-[17px] text-slate-500 max-w-[480px] mx-auto">
               Three focused ranges covering every hygiene and care need across industries.
             </p>
           </div>
         </AnimateIn>
 
         {/* Cards — staggered */}
-        <Stagger staggerDelay={0.12} style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px', marginBottom: '40px' }}>
+        <Stagger staggerDelay={0.12} className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10">
           {PRODUCT_CATEGORIES.map((category) => (
             <StaggerItem key={category.id}>
-              <div className="card-hover-category" style={{ position: 'relative', display: 'flex', flexDirection: 'column', background: '#FFFFFF', borderRadius: '20px', padding: '32px', border: '1px solid #E2E8F0', boxShadow: '0 4px 24px rgba(15,23,42,0.07)', overflow: 'hidden', height: '100%' }}>
-                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: 'linear-gradient(90deg, #1E40AF, #0EA5E9)' }} aria-hidden="true" />
-                <div style={{ fontSize: '48px', marginBottom: '24px', lineHeight: 1 }} role="img" aria-label={category.name}>
+              <div className="card-hover-category relative flex flex-col bg-white rounded-[20px] p-8 border border-slate-200 shadow-[0_4px_24px_rgba(15,23,42,0.07)] overflow-hidden h-full">
+                <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-brand-primary to-brand-secondary" aria-hidden="true" />
+                <div className="text-5xl mb-6 leading-none" role="img" aria-label={category.name}>
                   {category.icon}
                 </div>
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px', marginBottom: '12px' }}>
-                  <h3 style={{ fontWeight: 700, fontSize: '17px', color: '#0F172A', lineHeight: 1.3 }}>
+                <div className="flex items-start justify-between gap-3 mb-3">
+                  <h3 className="font-bold text-[17px] text-brand-dark leading-snug">
                     {category.name}
                   </h3>
-                  <span style={{ flexShrink: 0, fontSize: '11px', fontWeight: 600, padding: '4px 10px', borderRadius: '9999px', background: '#EFF6FF', color: '#1E40AF' }}>
+                  <span className="shrink-0 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-brand-light text-brand-primary">
                     {category.productCount} products
                   </span>
                 </div>
-                <p style={{ fontSize: '13px', color: '#64748B', lineHeight: 1.65, marginBottom: '28px', flex: 1 }}>
+                <p className="text-[13px] text-slate-500 leading-[1.65] mb-7 flex-1">
                   {category.description}
                 </p>
-                <Link href={`${ROUTES.PRODUCTS}?category=${category.slug}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 600, color: '#1E40AF', textDecoration: 'none' }}>
+                <Link
+                  href={`${ROUTES.PRODUCTS}?category=${category.slug}`}
+                  className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-brand-primary hover:gap-2.5 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary rounded"
+                >
                   Browse Products
-                  <ArrowRight style={{ width: '14px', height: '14px' }} aria-hidden="true" />
+                  <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
                 </Link>
               </div>
             </StaggerItem>
@@ -54,9 +57,12 @@ export default function ProductCategoriesSection() {
 
         {/* View full catalogue */}
         <AnimateIn direction="up" delay={0.2}>
-          <div style={{ textAlign: 'center' }}>
-            <Link href={ROUTES.PRODUCTS} style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', padding: '14px 32px', borderRadius: '9999px', fontWeight: 600, fontSize: '14px', color: '#1E40AF', border: '2px solid #1E40AF', background: 'transparent', textDecoration: 'none', minHeight: '48px' }}>
-              <BookOpen style={{ width: '16px', height: '16px' }} aria-hidden="true" />
+          <div className="text-center">
+            <Link
+              href={ROUTES.PRODUCTS}
+              className="inline-flex items-center gap-2.5 px-8 py-3.5 rounded-full font-semibold text-sm text-brand-primary border-2 border-brand-primary bg-transparent hover:bg-brand-light transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 min-h-[48px]"
+            >
+              <BookOpen className="w-4 h-4" aria-hidden="true" />
               View Full Product Catalogue
             </Link>
           </div>

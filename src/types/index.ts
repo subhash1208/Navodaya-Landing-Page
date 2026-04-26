@@ -35,9 +35,4 @@ export interface NavLink {
   href: string;
 }
 
-// Animation
-export interface UseInViewOptions {
-  threshold?: number;
-  rootMargin?: string;
-  triggerOnce?: boolean;
-}
+
