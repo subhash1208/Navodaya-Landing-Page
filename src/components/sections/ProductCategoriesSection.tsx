@@ -1,11 +1,111 @@
+'use client';
+
+import { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { ArrowRight, BookOpen } from 'lucide-react';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { PRODUCT_CATEGORIES, ROUTES } from '@/constants';
-import { AnimateIn, Stagger, StaggerItem } from '@/components/ui/AnimateIn';
+import { AnimateIn } from '@/components/ui/AnimateIn';
+
+gsap.registerPlugin(ScrollTrigger);
+
+// Card entrance directions: left, up, right
+const CARD_ORIGINS = [
+  { x: -120, y: 0 },   // left card slides from left
+  { x: 0,   y: 80 },   // center card slides from below
+  { x: 120,  y: 0 },   // right card slides from right
+] as const;
 
 export default function ProductCategoriesSection() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const cardsRef = useRef<HTMLDivElement>(null);
+  const card0 = useRef<HTMLDivElement>(null);
+  const card1 = useRef<HTMLDivElement>(null);
+  const card2 = useRef<HTMLDivElement>(null);
+  const cardRefs = [card0, card1, card2];
+
+  useEffect(() => {
+    const section = sectionRef.current;
+    const cardsContainer = cardsRef.current;
+    if (!section || !cardsContainer) return;
+
+    // Respect prefers-reduced-motion
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReduced) return;
+
+    // Mobile: no pin, just simple fade-up (handled by AnimateIn fallback)
+    const isMobile = window.matchMedia('(max-width: 640px)').matches;
+
+    const cards = cardRefs.map(r => r.current).filter(Boolean) as HTMLElement[];
+
+    if (isMobile) {
+      // Simple fade-up on mobile
+      gsap.fromTo(cards,
+        { opacity: 0, y: 40 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.6,
+          stagger: 0.15,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: cardsContainer,
+            start: 'top 80%',
+            once: true,
+          },
+        }
+      );
+      return;
+    }
+
+    // Desktop: set initial state
+    cards.forEach((card, i) => {
+      gsap.set(card, {
+        opacity: 0,
+        x: CARD_ORIGINS[i].x,
+        y: CARD_ORIGINS[i].y,
+      });
+    });
+
+    // Scroll-pinned reveal
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: section,
+        start: 'top top',
+        end: '+=600',
+        pin: true,
+        anticipatePin: 1,
+        scrub: false,
+        once: true,
+        onEnter: () => {
+          // Animate cards in with stagger after pin starts
+          gsap.to(cards, {
+            opacity: 1,
+            x: 0,
+            y: 0,
+            duration: 0.7,
+            stagger: 0.15,
+            ease: 'power3.out',
+          });
+        },
+      },
+    });
+
+    return () => {
+      tl.kill();
+      ScrollTrigger.getAll().forEach(t => t.kill());
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
-    <section id="products" aria-labelledby="products-heading" className="py-24 bg-surface-muted">
+    <section
+      ref={sectionRef}
+      id="products"
+      aria-labelledby="products-heading"
+      className="py-24 bg-surface-muted"
+    >
       <div className="container mx-auto">
 
         {/* Heading */}
@@ -23,10 +123,10 @@ export default function ProductCategoriesSection() {
           </div>
         </AnimateIn>
 
-        {/* Cards — staggered */}
-        <Stagger staggerDelay={0.12} className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10">
-          {PRODUCT_CATEGORIES.map((category) => (
-            <StaggerItem key={category.id}>
+        {/* Cards — scroll-pinned reveal */}
+        <div ref={cardsRef} className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10">
+          {PRODUCT_CATEGORIES.map((category, i) => (
+            <div key={category.id} ref={cardRefs[i]}>
               <div className="card-hover-category relative flex flex-col bg-white rounded-[20px] p-8 border border-slate-200 shadow-[0_4px_24px_rgba(15,23,42,0.07)] overflow-hidden h-full">
                 <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-brand-primary to-brand-secondary" aria-hidden="true" />
                 <div className="text-5xl mb-6 leading-none" role="img" aria-label={category.name}>
@@ -51,9 +151,9 @@ export default function ProductCategoriesSection() {
                   <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
                 </Link>
               </div>
-            </StaggerItem>
+            </div>
           ))}
-        </Stagger>
+        </div>
 
         {/* View full catalogue */}
         <AnimateIn direction="up" delay={0.2}>

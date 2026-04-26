@@ -5,6 +5,7 @@ import { BRAND } from '@/constants';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { SkipNav } from '@/components/ui/SkipNav';
+import { PageTransition } from '@/components/ui/PageTransition';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -58,11 +59,13 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen antialiased" suppressHydrationWarning>
         <SkipNav />
-        <Header />
-        <main id="main-content" className="pt-16">
-          {children}
-        </main>
-        <Footer />
+        <PageTransition>
+          <Header />
+          <main id="main-content" className="pt-16">
+            {children}
+          </main>
+          <Footer />
+        </PageTransition>
       </body>
     </html>
   );
