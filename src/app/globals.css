@@ -1,6 +1,14 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* ─── Explicit source scanning (Tailwind v4 — fixes Next.js auto-detection) ─── */
+@source "../../src";
+@source "../../src/app";
+@source "../../src/components";
+@source "../../src/components/sections";
+@source "../../src/components/ui";
+@source "../../src/components/layout";
+
 /* ─── Design Tokens ─────────────────────────────────────────────────────────── */
 @theme {
   /* Hex tokens (for direct use) */

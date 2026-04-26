@@ -6,6 +6,10 @@
 # AI-DLC rule details (large, not project-specific)
 .kiro/aws-aidlc-rule-details/
 aidlc-docs
+
+#leet-track repo refernce
+.leet-track
+
 # VSCode settings
 .vscode/
 
