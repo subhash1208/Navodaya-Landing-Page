@@ -18,7 +18,7 @@ const STATS = [
 export default function AboutSection() {
   return (
     <section id="about" aria-labelledby="about-heading" className="py-24 bg-white">
-      <div className="section-container">
+      <div className="container mx-auto">
 
         {/* Heading */}
         <AnimateIn direction="up" delay={0}>

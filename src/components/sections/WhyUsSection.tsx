@@ -11,7 +11,7 @@ const REASONS = [
 export default function WhyUsSection() {
   return (
     <section id="why-us" aria-labelledby="why-us-heading" className="py-24 bg-white">
-      <div className="section-container">
+      <div className="container mx-auto">
 
         <AnimateIn direction="up">
           <div className="text-center mb-16">

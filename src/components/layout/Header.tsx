@@ -37,7 +37,7 @@ export default function Header() {
         borderBottom: scrolled ? '1px solid rgba(226,232,240,0.8)' : 'none',
       }}
     >
-      <div style={{ maxWidth: '1152px', margin: '0 auto', padding: '0 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '100%', width: '100%' }}>
+      <div className="container mx-auto px-8 flex items-center justify-between h-full w-full">
 
         {/* Logo */}
         <Link

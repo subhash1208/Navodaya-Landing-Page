@@ -37,7 +37,7 @@ export default function HeroSection() {
       </div>
 
       {/* Main content */}
-      <div className="relative z-10 w-full section-container text-center">
+      <div className="relative z-10 w-full container mx-auto text-center">
 
         {/* Badge */}
         <AnimateIn delay={0}>

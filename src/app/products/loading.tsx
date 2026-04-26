@@ -1,16 +1,14 @@
 export default function ProductsLoading() {
   return (
     <div className="min-h-screen bg-surface-muted">
-      {/* Header skeleton */}
       <div className="bg-white border-b border-slate-100">
-        <div className="section-container-wide py-10">
+        <div className="container mx-auto py-10">
           <div className="h-3 w-32 bg-slate-100 rounded animate-pulse mb-4" />
           <div className="h-8 w-56 bg-slate-100 rounded animate-pulse mb-3" />
           <div className="h-4 w-80 bg-slate-100 rounded animate-pulse" />
         </div>
       </div>
-      {/* Grid skeleton */}
-      <div className="section-container-wide py-10">
+      <div className="container mx-auto py-10">
         <div className="flex gap-3 mb-8">
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="h-9 w-28 bg-slate-100 rounded-full animate-pulse" />
