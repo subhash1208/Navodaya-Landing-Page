@@ -10,15 +10,13 @@ import { AnimateIn } from '@/components/ui/AnimateIn';
 
 gsap.registerPlugin(ScrollTrigger);
 
-// Card entrance directions: left, up, right
 const CARD_ORIGINS = [
-  { x: -120, y: 0 },   // left card slides from left
-  { x: 0,   y: 80 },   // center card slides from below
-  { x: 120,  y: 0 },   // right card slides from right
+  { x: -100, y: 0 },
+  { x: 0,    y: 60 },
+  { x: 100,  y: 0 },
 ] as const;
 
 export default function ProductCategoriesSection() {
-  const sectionRef = useRef<HTMLElement>(null);
   const cardsRef = useRef<HTMLDivElement>(null);
   const card0 = useRef<HTMLDivElement>(null);
   const card1 = useRef<HTMLDivElement>(null);
@@ -26,89 +24,52 @@ export default function ProductCategoriesSection() {
   const cardRefs = [card0, card1, card2];
 
   useEffect(() => {
-    const section = sectionRef.current;
     const cardsContainer = cardsRef.current;
-    if (!section || !cardsContainer) return;
-
-    // Respect prefers-reduced-motion
-    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReduced) return;
-
-    // Mobile: no pin, just simple fade-up (handled by AnimateIn fallback)
-    const isMobile = window.matchMedia('(max-width: 640px)').matches;
+    if (!cardsContainer) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     const cards = cardRefs.map(r => r.current).filter(Boolean) as HTMLElement[];
+    const triggers: ScrollTrigger[] = [];
 
-    if (isMobile) {
-      // Simple fade-up on mobile
-      gsap.fromTo(cards,
-        { opacity: 0, y: 40 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.6,
-          stagger: 0.15,
-          ease: 'power2.out',
-          scrollTrigger: {
-            trigger: cardsContainer,
-            start: 'top 80%',
-            once: true,
-          },
-        }
-      );
-      return;
-    }
-
-    // Desktop: set initial state
+    // Set initial hidden state
     cards.forEach((card, i) => {
-      gsap.set(card, {
-        opacity: 0,
-        x: CARD_ORIGINS[i].x,
-        y: CARD_ORIGINS[i].y,
-      });
+      gsap.set(card, { opacity: 0, x: CARD_ORIGINS[i].x, y: CARD_ORIGINS[i].y });
     });
 
-    // Scroll-pinned reveal
-    const tl = gsap.timeline({
-      scrollTrigger: {
-        trigger: section,
-        start: 'top top',
-        end: '+=600',
-        pin: true,
-        anticipatePin: 1,
-        scrub: false,
+    // Staggered scroll-triggered reveal — NO pin (avoids React DOM conflict)
+    cards.forEach((card, i) => {
+      const st = ScrollTrigger.create({
+        trigger: cardsContainer,
+        start: 'top 75%',
         once: true,
         onEnter: () => {
-          // Animate cards in with stagger after pin starts
-          gsap.to(cards, {
+          gsap.to(card, {
             opacity: 1,
             x: 0,
             y: 0,
             duration: 0.7,
-            stagger: 0.15,
+            delay: i * 0.15,
             ease: 'power3.out',
           });
         },
-      },
+      });
+      triggers.push(st);
     });
 
     return () => {
-      tl.kill();
-      ScrollTrigger.getAll().forEach(t => t.kill());
+      triggers.forEach(t => t.kill());
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <section
-      ref={sectionRef}
       id="products"
       aria-labelledby="products-heading"
       className="py-24 bg-surface-muted"
     >
       <div className="container mx-auto">
 
-        {/* Heading */}
         <AnimateIn direction="up">
           <div className="text-center mb-16">
             <span className="inline-block text-[11px] font-semibold tracking-[0.1em] uppercase text-brand-secondary mb-3">
@@ -123,7 +84,6 @@ export default function ProductCategoriesSection() {
           </div>
         </AnimateIn>
 
-        {/* Cards — scroll-pinned reveal */}
         <div ref={cardsRef} className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10">
           {PRODUCT_CATEGORIES.map((category, i) => (
             <div key={category.id} ref={cardRefs[i]}>
@@ -155,7 +115,6 @@ export default function ProductCategoriesSection() {
           ))}
         </div>
 
-        {/* View full catalogue */}
         <AnimateIn direction="up" delay={0.2}>
           <div className="text-center">
             <Link
