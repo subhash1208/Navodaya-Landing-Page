@@ -50,7 +50,7 @@ export default function ContactSection() {
       aria-labelledby="contact-heading"
       className="py-24 bg-gradient-to-br from-brand-dark to-slate-800"
     >
-      <div className="max-w-[72rem] mx-auto px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-start">
 
           {/* Left — info */}

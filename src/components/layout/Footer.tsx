@@ -5,8 +5,8 @@ import { BRAND, NAV_LINKS, ROUTES, PRODUCT_CATEGORIES } from '@/constants';
 export default function Footer() {
   return (
     <footer className="bg-brand-dark text-white">
-      <div className="max-w-[72rem] mx-auto px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1.5fr] gap-10 lg:gap-12">
+      <div className="max-w-6xl mx-auto px-6 lg:px-8 py-16">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-12">
 
           {/* Brand */}
           <div>

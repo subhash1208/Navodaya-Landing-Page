@@ -6,7 +6,7 @@ import { AnimateIn, Stagger, StaggerItem } from '@/components/ui/AnimateIn';
 export default function ProductCategoriesSection() {
   return (
     <section id="products" aria-labelledby="products-heading" className="py-24 bg-surface-muted">
-      <div className="max-w-[72rem] mx-auto px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto px-6 lg:px-8">
 
         {/* Heading */}
         <AnimateIn direction="up">
@@ -17,7 +17,7 @@ export default function ProductCategoriesSection() {
             <h2 id="products-heading" className="font-display text-[clamp(1.75rem,3vw,2.5rem)] font-bold text-brand-dark mb-4">
               Our Product Categories
             </h2>
-            <p className="text-[17px] text-slate-500 max-w-[480px] mx-auto">
+            <p className="text-[17px] text-slate-500 max-w-lg mx-auto">
               Three focused ranges covering every hygiene and care need across industries.
             </p>
           </div>

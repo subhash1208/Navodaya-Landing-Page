@@ -11,7 +11,7 @@ const REASONS = [
 export default function WhyUsSection() {
   return (
     <section id="why-us" aria-labelledby="why-us-heading" className="py-24 bg-white">
-      <div className="max-w-[72rem] mx-auto px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto px-6 lg:px-8">
 
         <AnimateIn direction="up">
           <div className="text-center mb-16">
@@ -21,7 +21,7 @@ export default function WhyUsSection() {
             <h2 id="why-us-heading" className="font-display text-[clamp(1.75rem,3vw,2.5rem)] font-bold text-brand-dark mb-4">
               Why Businesses Choose Us
             </h2>
-            <p className="text-[17px] text-slate-500 max-w-[480px] mx-auto">
+            <p className="text-[17px] text-slate-500 max-w-lg mx-auto">
               We&apos;re not just a supplier — we&apos;re a partner committed to your operations.
             </p>
           </div>

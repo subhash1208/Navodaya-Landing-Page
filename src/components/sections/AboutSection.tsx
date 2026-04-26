@@ -18,7 +18,7 @@ const STATS = [
 export default function AboutSection() {
   return (
     <section id="about" aria-labelledby="about-heading" className="py-24 bg-white">
-      <div className="max-w-[72rem] mx-auto px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto px-6 lg:px-8">
 
         {/* Heading */}
         <AnimateIn direction="up" delay={0}>
@@ -29,7 +29,7 @@ export default function AboutSection() {
             <h2 id="about-heading" className="font-display text-[clamp(1.75rem,3vw,2.5rem)] font-bold text-brand-dark mb-4">
               About {BRAND.NAME}
             </h2>
-            <p className="text-[17px] text-slate-500 max-w-[560px] mx-auto leading-[1.7]">
+            <p className="text-[17px] text-slate-500 max-w-xl mx-auto leading-[1.7]">
               {BRAND.MISSION}
             </p>
           </div>
@@ -38,7 +38,7 @@ export default function AboutSection() {
         {/* Main card */}
         <AnimateIn direction="up" delay={0.1}>
           <div className="rounded-[20px] p-8 md:p-12 mb-8 bg-gradient-to-br from-brand-light to-surface-muted border border-blue-100">
-            <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-10 md:gap-12 items-center">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-12 items-center">
               <div>
                 <h3 className="text-xl font-bold text-brand-dark mb-4">
                   {BRAND.TAGLINE}
