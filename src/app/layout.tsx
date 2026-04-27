@@ -7,6 +7,8 @@ import Footer from '@/components/layout/Footer';
 import { SkipNav } from '@/components/ui/SkipNav';
 import { PageTransition } from '@/components/ui/PageTransition';
 import { CustomCursor } from '@/components/ui/CustomCursor';
+import { Analytics } from '@vercel/analytics/react';
+import { LenisProvider } from '@/components/ui/LenisProvider';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -61,13 +63,16 @@ export default function RootLayout({
       <body className="min-h-screen antialiased" suppressHydrationWarning>
         <SkipNav />
         <CustomCursor />
+        <LenisProvider>
         <PageTransition>
           <Header />
-          <main id="main-content" className="pt-16">
+          <main id="main-content" className="pt-20">
             {children}
           </main>
           <Footer />
         </PageTransition>
+        </LenisProvider>
+        <Analytics />
       </body>
     </html>
   );

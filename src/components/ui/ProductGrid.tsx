@@ -7,6 +7,7 @@ import { cn } from '@/utils/cn';
 import { PRODUCTS, PRODUCT_CATEGORIES } from '@/constants';
 import { ProductCard } from './ProductCard';
 import { MagneticWrapper } from './MagneticWrapper';
+import { PinContainer } from './PinContainer';
 
 const ALL_ID = 'all';
 
@@ -122,9 +123,11 @@ export function ProductGrid() {
       {filtered.length > 0 ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
           {filtered.map(product => (
-            <MagneticWrapper key={product.id}>
-              <ProductCard product={product} />
-            </MagneticWrapper>
+            <PinContainer key={product.id}>
+              <MagneticWrapper>
+                <ProductCard product={product} />
+              </MagneticWrapper>
+            </PinContainer>
           ))}
         </div>
       ) : (

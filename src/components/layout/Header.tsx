@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Menu, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { BRAND, NAV_LINKS, ROUTES } from '@/constants';
 
 export default function Header() {
@@ -28,16 +29,26 @@ export default function Header() {
 
   return (
     <header
-      className="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
-      style={{
-        height: scrolled ? '56px' : '64px',
-        background: scrolled ? 'rgba(255,255,255,0.97)' : 'rgba(255,255,255,0.85)',
-        backdropFilter: 'blur(12px)',
-        boxShadow: scrolled ? '0 1px 12px rgba(15,23,42,0.08)' : 'none',
-        borderBottom: scrolled ? '1px solid rgba(226,232,240,0.8)' : 'none',
-      }}
+      className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center transition-all duration-300 pt-4"
+      style={{ pointerEvents: 'none' }}
     >
-      <div className="container mx-auto px-8 flex items-center justify-between h-full w-full">
+      {/* Centered glassmorphism pill */}
+      <div
+        className="flex items-center justify-between rounded-2xl transition-all duration-300"
+        style={{
+          width: scrolled ? '65%' : '70%',
+          maxWidth: '900px',
+          minWidth: '320px',
+          height: scrolled ? '52px' : '60px',
+          background: scrolled ? 'rgba(15,23,42,0.92)' : 'rgba(15,23,42,0.75)',
+          backdropFilter: 'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
+          border: '1px solid rgba(255,255,255,0.08)',
+          boxShadow: scrolled ? '0 4px 32px rgba(0,0,0,0.3)' : '0 2px 16px rgba(0,0,0,0.2)',
+          padding: '0 20px',
+          pointerEvents: 'all',
+        }}
+      >
 
         {/* Logo */}
         <Link
@@ -54,8 +65,8 @@ export default function Header() {
             style={{ width: '36px', height: '36px', objectFit: 'contain', display: 'block' }}
           />
           <div className="flex flex-col leading-tight">
-            <span className="font-bold text-base" style={{ color: '#0F172A' }}>{BRAND.NAME}</span>
-            <span className="text-[10px] tracking-wide hidden sm:block" style={{ color: '#94A3B8' }}>Industries &amp; Care Kits</span>
+            <span className="font-bold text-base text-white">{BRAND.NAME}</span>
+            <span className="text-[10px] tracking-wide hidden sm:block" style={{ color: '#64748B' }}>Industries &amp; Care Kits</span>
           </div>
         </Link>
 
@@ -69,8 +80,8 @@ export default function Header() {
                 href={href}
                 className="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2"
                 style={{
-                  color: isActive ? '#1E40AF' : '#475569',
-                  background: isActive ? '#EFF6FF' : 'transparent',
+                  color: isActive ? '#60A5FA' : '#94A3B8',
+                  background: isActive ? 'rgba(96,165,250,0.1)' : 'transparent',
                   textDecoration: 'none',
                 }}
               >
@@ -98,7 +109,7 @@ export default function Header() {
         {/* Mobile hamburger */}
         <button
           className="md:hidden p-2 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2"
-          style={{ color: '#475569' }}
+          style={{ color: '#94A3B8' }}
           onClick={() => setMobileOpen((v) => !v)}
           aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
           aria-expanded={mobileOpen}
@@ -108,44 +119,72 @@ export default function Header() {
         </button>
       </div>
 
-      {/* Mobile nav */}
-      {mobileOpen && (
-        <nav
-          id="mobile-nav"
-          aria-label="Mobile navigation"
-          className="md:hidden absolute top-full left-0 right-0 animate-[fadeIn_0.15s_ease]"
-          style={{
-            background: '#FFFFFF',
-            borderBottom: '1px solid #E2E8F0',
-            boxShadow: '0 4px 16px rgba(15,23,42,0.08)',
-          }}
-        >
-          <ul className="flex flex-col py-2 px-4 gap-1">
-            {NAV_LINKS.map(({ label, href }) => (
-              <li key={href}>
-                <Link
-                  href={href}
-                  onClick={closeMobile}
-                  className="block px-4 py-3 rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2"
-                  style={{ color: '#374151' }}
+      {/* Mobile nav — perspective flip-in links */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.nav
+            id="mobile-nav"
+            aria-label="Mobile navigation"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.35, ease: [0.76, 0, 0.24, 1] }}
+            className="md:hidden absolute top-full left-0 right-0 overflow-hidden"
+            style={{
+              background: '#FFFFFF',
+              borderBottom: '1px solid #E2E8F0',
+              boxShadow: '0 4px 16px rgba(15,23,42,0.08)',
+            }}
+          >
+            <ul className="flex flex-col py-2 px-4 gap-1" style={{ perspective: '1000px' }}>
+              {NAV_LINKS.map(({ label, href }, i) => (
+                <li key={href} style={{ perspective: '120px', perspectiveOrigin: 'bottom' }}>
+                  <motion.div
+                    initial={{ opacity: 0, rotateX: 90, translateY: 40 }}
+                    animate={{ opacity: 1, rotateX: 0, translateY: 0 }}
+                    exit={{ opacity: 0 }}
+                    transition={{
+                      duration: 0.5,
+                      delay: 0.1 + i * 0.08,
+                      ease: [0.215, 0.61, 0.355, 1],
+                    }}
+                  >
+                    <Link
+                      href={href}
+                      onClick={closeMobile}
+                      className="block px-4 py-3 rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2"
+                      style={{ color: '#374151' }}
+                    >
+                      {label}
+                    </Link>
+                  </motion.div>
+                </li>
+              ))}
+              <li className="pt-1 pb-2">
+                <motion.div
+                  initial={{ opacity: 0, rotateX: 90, translateY: 40 }}
+                  animate={{ opacity: 1, rotateX: 0, translateY: 0 }}
+                  exit={{ opacity: 0 }}
+                  transition={{
+                    duration: 0.5,
+                    delay: 0.1 + NAV_LINKS.length * 0.08,
+                    ease: [0.215, 0.61, 0.355, 1],
+                  }}
                 >
-                  {label}
-                </Link>
+                  <Link
+                    href={ROUTES.CONTACT}
+                    onClick={closeMobile}
+                    className="block w-full text-center px-4 py-3 rounded-full text-white text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2"
+                    style={{ background: '#1E40AF' }}
+                  >
+                    Get a Quote
+                  </Link>
+                </motion.div>
               </li>
-            ))}
-            <li className="pt-1 pb-2">
-              <Link
-                href={ROUTES.CONTACT}
-                onClick={closeMobile}
-                className="block w-full text-center px-4 py-3 rounded-full text-white text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2"
-                style={{ background: '#1E40AF' }}
-              >
-                Get a Quote
-              </Link>
-            </li>
-          </ul>
-        </nav>
-      )}
+            </ul>
+          </motion.nav>
+        )}
+      </AnimatePresence>
     </header>
   );
 }
