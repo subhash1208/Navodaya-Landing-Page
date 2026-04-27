@@ -1,0 +1,244 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── CSS Variables ─────────────────────────────────────────────────────────── */
+:root {
+  --font-sans:    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-display: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+  --font-body:    'Plus Jakarta Sans', 'Inter', sans-serif;
+
+  /* HSL tokens for opacity variants */
+  --primary:   217 91% 60%;
+  --secondary: 199 89% 48%;
+  --accent:    38 92% 50%;
+  --dark:      222 47% 11%;
+}
+
+/* ─── Base layer ────────────────────────────────────────────────────────────── */
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+    overflow-x: hidden;
+  }
+
+  body {
+    font-family: var(--font-body);
+    @apply antialiased text-brand-dark bg-white;
+    overflow-x: hidden;
+  }
+
+  img {
+    display: block;
+    max-width: 100%;
+    backface-visibility: hidden;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    @apply tracking-tight font-bold;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-brand-primary ring-offset-2;
+  }
+}
+
+/* ─── Component layer ───────────────────────────────────────────────────────── */
+@layer components {
+  /* Glass panel — frosted glass effect */
+  .glass-panel {
+    @apply bg-white/60 backdrop-blur-md border border-white/20;
+  }
+
+  .glass-panel-dark {
+    @apply bg-brand-dark/60 backdrop-blur-md border border-white/5;
+  }
+
+  /* Card hover states */
+  .card-hover {
+    @apply transition-all duration-300 ease-out;
+    will-change: transform;
+  }
+  .card-hover:hover {
+    @apply -translate-y-1.5 shadow-xl;
+  }
+
+  .card-hover-category {
+    @apply transition-all duration-300 ease-out;
+    will-change: transform;
+  }
+  .card-hover-category:hover {
+    @apply -translate-y-2 shadow-2xl;
+  }
+
+  .card-hover-feature {
+    @apply transition-all duration-200 ease-out;
+    will-change: transform;
+  }
+  .card-hover-feature:hover {
+    @apply -translate-y-1 bg-white shadow-lg;
+  }
+}
+
+/* ─── Utility layer ─────────────────────────────────────────────────────────── */
+@layer utilities {
+  /* Text glow */
+  .text-glow {
+    text-shadow:
+      0 0 20px hsl(var(--primary) / 0.4),
+      0 0 40px hsl(var(--primary) / 0.2);
+  }
+
+  /* Display font */
+  .font-display {
+    font-family: var(--font-display);
+  }
+
+  /* Scrollbar hide */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Loading particle */
+  .loading-particle {
+    will-change: transform;
+    backface-visibility: hidden;
+  }
+}
+
+/* ─── Custom cursor ─────────────────────────────────────────────────────────── */
+.custom-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid rgba(30, 64, 175, 0.6);
+  pointer-events: none;
+  z-index: 99999;
+  transition: width 0.2s ease, height 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+  will-change: transform;
+}
+
+.custom-cursor::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #1E40AF;
+  transition: all 0.2s ease;
+}
+
+.custom-cursor--hover {
+  width: 56px;
+  height: 56px;
+  border-color: rgba(14, 165, 233, 0.8);
+  background: rgba(30, 64, 175, 0.08);
+}
+
+@media (hover: none) {
+  .custom-cursor { display: none; }
+}
+
+/* ─── Cursor spotlight (Contact section) ───────────────────────────────────── */
+.cursor-spotlight {
+  --cursor-x: 50%;
+  --cursor-y: 50%;
+  position: relative;
+}
+
+.cursor-spotlight::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    200px circle at var(--cursor-x) var(--cursor-y),
+    rgba(30, 64, 175, 0.12),
+    transparent 70%
+  );
+  pointer-events: none;
+  z-index: 0;
+  transition: background 0.05s ease;
+}
+
+/* ─── Testimonial marquee ───────────────────────────────────────────────────── */
+@keyframes testimonialLeft {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+@keyframes testimonialRight {
+  from { transform: translateX(-50%); }
+  to   { transform: translateX(0); }
+}
+
+.testimonial-row-1 {
+  animation: testimonialLeft 30s ease-in-out infinite alternate;
+  width: max-content;
+}
+.testimonial-row-1:hover { animation-play-state: paused; }
+
+.testimonial-row-2 {
+  animation: testimonialRight 30s ease-in-out infinite alternate;
+  width: max-content;
+}
+.testimonial-row-2:hover { animation-play-state: paused; }
+
+@media (prefers-reduced-motion: reduce) {
+  .testimonial-row-1, .testimonial-row-2 { animation: none; }
+}
+
+/* ─── Slot machine (preloader) ──────────────────────────────────────────────── */
+@keyframes slotMachine {
+  0%   { transform: translateY(0); }
+  100% { transform: translateY(-120px); } /* 6 items × 20px */
+}
+
+/* ─── Marquee strip ─────────────────────────────────────────────────────────── */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-100%); }
+}
+
+/* Two identical tracks animate together — when first reaches -100%, second is at 0% */
+.marquee-track-a {
+  animation: marquee 35s linear infinite;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track-a {
+    animation: none;
+  }
+}
+
+/* ─── Scrollbar ─────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(30,64,175,0.25); border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(30,64,175,0.45); }
+
+/* ─── Reduced motion ────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

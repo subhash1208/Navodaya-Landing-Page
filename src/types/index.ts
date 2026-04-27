@@ -1,3 +1,4 @@
+// Form
 export interface ContactFormData {
   productName: string;
   quantity: string;
@@ -9,8 +10,29 @@ export interface ContactFormData {
   message: string;
 }
 
-export interface AnimationState {
-  isLoading: boolean;
-  showPopup: boolean;
-  showContent: boolean;
+// Products
+export interface ProductItem {
+  id: string;
+  name: string;
+  category: ProductCategory;
+  material?: string;
+  description: string;
+  slug: string;
 }
+
+export interface ProductCategory {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  icon: string;
+  productCount: number;
+}
+
+// Navigation
+export interface NavLink {
+  label: string;
+  href: string;
+}
+
+

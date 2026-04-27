@@ -1,0 +1,130 @@
+import type { ProductItem, ProductCategory, NavLink } from '@/types';
+
+// ─── Brand ───────────────────────────────────────────────────────────────────
+export const BRAND = {
+  NAME: 'Navodaya',
+  FULL_NAME: 'Navodaya Industries and Care Kits',
+  TAGLINE: 'Your Trusted Partner in Progress and Care',
+  MISSION: 'To support businesses in the hospitality and wellness sectors with high-quality, reliable, and hygienic solutions.',
+  EMAIL: 'info@navodaya.group',
+  PHONE: '+91 83286 05812',
+  WEBSITE: 'www.navodaya.group',
+  LOCATION: 'Gandhi Nagar, Hyderabad',
+} as const;
+
+// ─── Animation ───────────────────────────────────────────────────────────────
+export const ANIMATION = {
+  DURATION: {
+    MICRO: 150,
+    COMPONENT: 300,
+    PAGE: 700,
+    LOADING: 3000,
+  },
+  STAGGER: 80,
+  THRESHOLD: 0.15,
+  ROOT_MARGIN: '-50px 0px',
+} as const;
+
+// ─── Routes ──────────────────────────────────────────────────────────────────
+export const ROUTES = {
+  HOME: '/',
+  PRODUCTS: '/products',
+  PRODUCT: (slug: string) => `/products/${slug}`,
+  CONTACT: '/#contact',
+  ABOUT: '/#about',
+} as const;
+
+// ─── Navigation ──────────────────────────────────────────────────────────────
+export const NAV_LINKS: NavLink[] = [
+  { label: 'Home',     href: ROUTES.HOME },
+  { label: 'About',    href: ROUTES.ABOUT },
+  { label: 'Products', href: ROUTES.PRODUCTS },
+  { label: 'Contact',  href: ROUTES.CONTACT },
+];
+
+// ─── Product Categories ───────────────────────────────────────────────────────
+export const PRODUCT_CATEGORIES: ProductCategory[] = [
+  {
+    id: 'hygiene-safety',
+    name: 'Disposable Hygiene & Safety',
+    slug: 'hygiene-safety',
+    description: 'Medical-grade disposable protective wear for hospitals, clinics, food processing, and industrial environments.',
+    icon: '🏥',
+    productCount: 17,
+  },
+  {
+    id: 'hotel-amenities',
+    name: 'Hotel Slippers & Guest Amenities',
+    slug: 'hotel-amenities',
+    description: 'Premium guest amenities and room essentials for hotels, resorts, and hospitality businesses.',
+    icon: '🏨',
+    productCount: 16,
+  },
+  {
+    id: 'spa-salon',
+    name: 'Disposable Spa & Salon',
+    slug: 'spa-salon',
+    description: 'Hygienic disposable essentials for spas, salons, beauty parlours, and wellness centres.',
+    icon: '💆',
+    productCount: 18,
+  },
+];
+
+// ─── Products ─────────────────────────────────────────────────────────────────
+export const PRODUCTS: ProductItem[] = [
+  // Category 1 — Hygiene & Safety
+  { id: 'surgeon-cap',      name: 'Disposable Surgeon Cap',          category: PRODUCT_CATEGORIES[0], material: 'Non-woven', description: 'Sterile disposable surgeon cap for operating theatres and clean rooms.', slug: 'surgeon-cap' },
+  { id: 'bouffant-cap',     name: 'Disposable Bouffant Cap',         category: PRODUCT_CATEGORIES[0], material: 'Non-woven', description: 'Full-coverage bouffant cap for food processing and medical use.', slug: 'bouffant-cap' },
+  { id: 'chef-cap',         name: 'Disposable Chef Cap',             category: PRODUCT_CATEGORIES[0], material: 'Non-woven', description: 'Lightweight chef cap for kitchen and food service environments.', slug: 'chef-cap' },
+  { id: 'beard-mask',       name: 'Disposable Beard Mask',           category: PRODUCT_CATEGORIES[0], material: 'Non-woven', description: 'Hygienic beard cover for food and medical industries. Breathable and comfortable.', slug: 'beard-mask' },
+  { id: 'face-mask',        name: 'Disposable Face Mask',            category: PRODUCT_CATEGORIES[0], material: 'Non-woven', description: '3-ply disposable face mask for general protection and hygiene.', slug: 'face-mask' },
+  { id: 'surgical-gown',    name: 'Disposable Surgical Gown',        category: PRODUCT_CATEGORIES[0], material: 'SMS Non-woven', description: 'Full-body surgical gown for sterile medical environments.', slug: 'surgical-gown' },
+  { id: 'lab-coat',         name: 'Lab Coat / Visitor Coat',         category: PRODUCT_CATEGORIES[0], material: 'Non-woven', description: 'Disposable lab coat for visitors and laboratory personnel.', slug: 'lab-coat' },
+  { id: 'trouser',          name: 'Disposable Trouser',              category: PRODUCT_CATEGORIES[0], material: 'Non-woven', description: 'Lightweight disposable trousers for clean room and medical use.', slug: 'trouser' },
+  { id: 'ldpe-apron',       name: 'LDPE Apron',                      category: PRODUCT_CATEGORIES[0], material: 'LDPE', description: 'Waterproof LDPE apron for food processing and industrial use.', slug: 'ldpe-apron' },
+  { id: 'hand-sleeves',     name: 'Disposable Hand Sleeves',         category: PRODUCT_CATEGORIES[0], material: 'Non-woven', description: 'Arm protection sleeves for industrial and food handling.', slug: 'hand-sleeves' },
+  { id: 'nitrile-gloves',   name: 'Nitrile Hand Gloves',             category: PRODUCT_CATEGORIES[0], material: 'Nitrile', description: 'Powder-free nitrile gloves with excellent chemical resistance.', slug: 'nitrile-gloves' },
+  { id: 'latex-gloves',     name: 'Latex Hand Gloves',               category: PRODUCT_CATEGORIES[0], material: 'Latex', description: 'Premium latex gloves for medical and industrial use. Powder-free with excellent grip.', slug: 'latex-gloves' },
+  { id: 'plastic-gloves',   name: 'Plastic HM Hand Gloves',          category: PRODUCT_CATEGORIES[0], material: 'HDPE', description: 'Economical plastic gloves for light-duty food handling.', slug: 'plastic-gloves' },
+  { id: 'shoe-cover-nw',    name: 'Disposable Shoe Cover',           category: PRODUCT_CATEGORIES[0], material: 'Non-woven', description: 'Non-slip shoe covers for clean rooms and medical facilities.', slug: 'shoe-cover-nw' },
+  { id: 'shoe-cover-ldpe',  name: 'LDPE Shoe Cover',                 category: PRODUCT_CATEGORIES[0], material: 'LDPE', description: 'Waterproof LDPE shoe covers for wet environments.', slug: 'shoe-cover-ldpe' },
+  { id: 'bed-sheets-hosp',  name: 'Disposable Hospital Bed Sheets',  category: PRODUCT_CATEGORIES[0], material: 'Non-woven', description: 'Single-use bed sheets for hospitals and clinics.', slug: 'bed-sheets-hosp' },
+  { id: 'pillow-covers',    name: 'Disposable Pillow Covers',        category: PRODUCT_CATEGORIES[0], material: 'Non-woven', description: 'Hygienic single-use pillow covers for medical settings.', slug: 'pillow-covers' },
+
+  // Category 2 — Hotel & Amenities
+  { id: 'jute-slippers',    name: 'Jute Slippers',                   category: PRODUCT_CATEGORIES[1], description: 'Eco-friendly jute slippers available in close toe and open toe styles.', slug: 'jute-slippers' },
+  { id: 'terry-slippers',   name: 'Terry Room Slippers',             category: PRODUCT_CATEGORIES[1], material: 'Terry', description: 'Soft terry cloth slippers for premium hotel rooms.', slug: 'terry-slippers' },
+  { id: 'waffle-slippers',  name: 'Waffle Room Slippers',            category: PRODUCT_CATEGORIES[1], material: 'Waffle', description: 'Waffle-weave slippers in close toe and open toe for hotel guests.', slug: 'waffle-slippers' },
+  { id: 'fleece-slippers',  name: 'Fleece Room Slippers',            category: PRODUCT_CATEGORIES[1], material: 'Fleece', description: 'Warm fleece slippers for premium hospitality.', slug: 'fleece-slippers' },
+  { id: 'nw-slippers',      name: 'Disposable Non-Woven Slippers',   category: PRODUCT_CATEGORIES[1], material: 'Non-woven', description: 'Lightweight disposable slippers for hotel and spa use.', slug: 'nw-slippers' },
+  { id: 'shaving-kit',      name: 'Shaving Kit',                     category: PRODUCT_CATEGORIES[1], description: 'Complete shaving kit with BIC razor and 30ml shave gel.', slug: 'shaving-kit' },
+  { id: 'dental-kit',       name: 'Dental Kit',                      category: PRODUCT_CATEGORIES[1], description: 'Dental kit with Colgate toothpaste and toothbrush.', slug: 'dental-kit' },
+  { id: 'vanity-kit',       name: 'Vanity Kit',                      category: PRODUCT_CATEGORIES[1], description: 'Complete vanity kit for hotel guest rooms.', slug: 'vanity-kit' },
+  { id: 'toiletries',       name: 'Hotel Toiletries Set',            category: PRODUCT_CATEGORIES[1], description: 'Shampoo, conditioner, shower gel, and hand wash in 30ml bottles.', slug: 'toiletries' },
+  { id: 'comb',             name: 'Comb',                            category: PRODUCT_CATEGORIES[1], description: 'Individually wrapped comb for hotel amenity kits.', slug: 'comb' },
+  { id: 'jute-loofah',      name: 'Jute Loofah',                     category: PRODUCT_CATEGORIES[1], material: 'Jute', description: 'Natural jute loofah for spa and hotel bath amenities.', slug: 'jute-loofah' },
+  { id: 'shoe-mitt',        name: 'Shoe Mitt',                       category: PRODUCT_CATEGORIES[1], material: 'Spun lace', description: 'Spun lace shoe polishing mitt for hotel rooms.', slug: 'shoe-mitt' },
+  { id: 'shower-cap-hotel', name: 'Disposable Shower Cap',           category: PRODUCT_CATEGORIES[1], material: 'PE / Spun lace', description: 'Shower cap for hotel guest amenity kits.', slug: 'shower-cap-hotel' },
+  { id: 'bio-shower-cap',   name: 'Biodegradable Shower Cap',        category: PRODUCT_CATEGORIES[1], description: 'Eco-friendly biodegradable shower cap for sustainable hotels.', slug: 'bio-shower-cap' },
+  { id: 'paper-cups',       name: 'Paper Cups',                      category: PRODUCT_CATEGORIES[1], description: 'Eco-friendly disposable cups for hot and cold beverages.', slug: 'paper-cups' },
+  { id: 'garbage-bags',     name: 'Garbage Bags',                    category: PRODUCT_CATEGORIES[1], description: 'Heavy-duty waste disposal bags for hotel housekeeping.', slug: 'garbage-bags' },
+
+  // Category 3 — Spa & Salon
+  { id: 'waxing-gown',      name: 'Disposable Waxing Gown',          category: PRODUCT_CATEGORIES[2], material: 'Non-woven', description: 'Half and full waxing gowns for salon and spa use.', slug: 'waxing-gown' },
+  { id: 'wrap-bra',         name: 'Disposable Wrap-up Bra',          category: PRODUCT_CATEGORIES[2], material: 'Non-woven', description: 'Disposable bra for spa treatments and body wraps.', slug: 'wrap-bra' },
+  { id: 'unisex-brief',     name: 'Disposable Unisex Brief',         category: PRODUCT_CATEGORIES[2], material: 'Non-woven', description: 'Hygienic disposable briefs for spa and salon clients.', slug: 'unisex-brief' },
+  { id: 'langot',           name: 'Disposable Langot / T-Band',      category: PRODUCT_CATEGORIES[2], material: 'Non-woven', description: 'Disposable langot for massage and spa treatments.', slug: 'langot' },
+  { id: 'bermuda-shorts',   name: 'Disposable Bermuda & Boxer Shorts', category: PRODUCT_CATEGORIES[2], material: 'Non-woven', description: 'Disposable shorts for spa and salon treatments.', slug: 'bermuda-shorts' },
+  { id: 'cutting-sheet',    name: 'Disposable Cutting Sheet / Client Cap', category: PRODUCT_CATEGORIES[2], material: 'Non-woven', description: 'Protective cutting sheet and client cap for hair salons.', slug: 'cutting-sheet' },
+  { id: 'kitchen-apron',    name: 'Kitchen / Self Apron',            category: PRODUCT_CATEGORIES[2], material: 'Non-woven', description: 'Disposable apron for salon and kitchen use.', slug: 'kitchen-apron' },
+  { id: 'steam-apron',      name: 'Disposable Steam Apron',          category: PRODUCT_CATEGORIES[2], material: 'Non-woven', description: 'Heat-resistant steam apron for spa treatments.', slug: 'steam-apron' },
+  { id: 'bed-sheets-spa',   name: 'Disposable Bed Sheets',           category: PRODUCT_CATEGORIES[2], material: 'Non-woven', description: 'Single-use bed sheets for massage tables and spa beds.', slug: 'bed-sheets-spa' },
+  { id: 'tissue-towel',     name: 'Disposable Tissue Towel',         category: PRODUCT_CATEGORIES[2], material: 'Non-woven', description: 'Soft disposable towels for spa and salon use.', slug: 'tissue-towel' },
+  { id: 'tissue',           name: 'Disposable Tissue',               category: PRODUCT_CATEGORIES[2], description: 'Soft facial tissue for salon and spa use.', slug: 'tissue' },
+  { id: 'facial-belt',      name: 'Disposable Facial Belt / Shirodhara Belt', category: PRODUCT_CATEGORIES[2], material: 'Non-woven', description: 'Facial and shirodhara belt for spa treatments.', slug: 'facial-belt' },
+  { id: 'cradle-cover',     name: 'Disposable Cradle Cover',         category: PRODUCT_CATEGORIES[2], description: 'Hygienic cradle cover for baby care and spa use.', slug: 'cradle-cover' },
+  { id: 'spa-slippers',     name: 'Disposable Spa Slippers',         category: PRODUCT_CATEGORIES[2], material: 'Non-woven', description: 'Lightweight disposable slippers for spa clients.', slug: 'spa-slippers' },
+  { id: 'shower-cap-spa',   name: 'PE Disposable Shower Cap',        category: PRODUCT_CATEGORIES[2], material: 'PE', description: 'Waterproof PE shower cap for spa and salon use.', slug: 'shower-cap-spa' },
+  { id: 'bio-shower-spa',   name: 'Biodegradable Shower Cap',        category: PRODUCT_CATEGORIES[2], description: 'Eco-friendly biodegradable shower cap for sustainable spas.', slug: 'bio-shower-spa' },
+  { id: 'bouffant-spa',     name: 'Disposable Bouffant Cap',         category: PRODUCT_CATEGORIES[2], material: 'Non-woven', description: 'Full-coverage bouffant cap for spa and salon hygiene.', slug: 'bouffant-spa' },
+];
