@@ -54,10 +54,10 @@ function buildNodes(cx: number, cy: number): SolarNode[] {
     swayAmp: 0, swayPhase: 0,
   });
 
-  // Planets = product categories
+  // Planets = product categories — exactly 120° apart to prevent collision
   PRODUCT_CATEGORIES.forEach((cat, p) => {
-    const pa = (p / 3) * Math.PI * 2 + 0.3;
-    const pr = 165;  // increased from 115 — more space around the logo
+    const pa = (p / 3) * Math.PI * 2; // exactly 0°, 120°, 240° — no offset
+    const pr = 165;
     const px = cx + Math.cos(pa) * pr;
     const py = cy + Math.sin(pa) * pr;
     const col = PLANET_COLORS[p];
@@ -168,9 +168,11 @@ export function ProductCategoryGraph({
         } else if (n.type === 'planet') {
           const sun = byId('sun');
           if (!sun) continue;
-          const a = n.orbitAngle + t * 0.07 * (1 + n.pIdx * 0.15);
-          n.homeX = sun.x + Math.cos(a) * n.orbitR + Math.sin(t * n.driftSpd + n.driftPh) * n.driftAmp;
-          n.homeY = sun.y + Math.sin(a) * n.orbitR + Math.cos(t * n.driftSpd * 0.8 + n.driftPh) * n.driftAmp;
+          // All planets orbit at the SAME speed — just different starting angles (120° apart)
+          // This prevents collision
+          const a = n.orbitAngle + t * 0.06;
+          n.homeX = sun.x + Math.cos(a) * n.orbitR;
+          n.homeY = sun.y + Math.sin(a) * n.orbitR;
 
         } else {
           // Moon — seaweed sinusoidal sway anchored to parent planet

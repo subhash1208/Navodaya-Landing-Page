@@ -40,10 +40,10 @@ export default function Header() {
           maxWidth: '900px',
           minWidth: '320px',
           height: scrolled ? '52px' : '60px',
-          background: scrolled ? 'rgba(15,23,42,0.92)' : 'rgba(15,23,42,0.75)',
+          background: scrolled ? 'rgba(26,10,46,0.95)' : 'rgba(26,10,46,0.80)',
           backdropFilter: 'blur(24px)',
           WebkitBackdropFilter: 'blur(24px)',
-          border: '1px solid rgba(255,255,255,0.08)',
+          border: '1px solid rgba(139,92,246,0.15)',
           boxShadow: scrolled ? '0 4px 32px rgba(0,0,0,0.3)' : '0 2px 16px rgba(0,0,0,0.2)',
           padding: '0 20px',
           pointerEvents: 'all',
@@ -66,7 +66,7 @@ export default function Header() {
           />
           <div className="flex flex-col leading-tight">
             <span className="font-bold text-base text-white">{BRAND.NAME}</span>
-            <span className="text-[10px] tracking-wide hidden sm:block" style={{ color: '#64748B' }}>Industries &amp; Care Kits</span>
+            <span className="text-[10px] tracking-wide hidden sm:block" style={{ color: '#CBD5E1' }}>Industries &amp; Care Kits</span>
           </div>
         </Link>
 
@@ -80,7 +80,7 @@ export default function Header() {
                 href={href}
                 className="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2"
                 style={{
-                  color: isActive ? '#60A5FA' : '#94A3B8',
+                  color: isActive ? '#60A5FA' : '#CBD5E1',
                   background: isActive ? 'rgba(96,165,250,0.1)' : 'transparent',
                   textDecoration: 'none',
                 }}
@@ -109,7 +109,7 @@ export default function Header() {
         {/* Mobile hamburger */}
         <button
           className="md:hidden p-2 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2"
-          style={{ color: '#94A3B8' }}
+          style={{ color: '#CBD5E1' }}
           onClick={() => setMobileOpen((v) => !v)}
           aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
           aria-expanded={mobileOpen}

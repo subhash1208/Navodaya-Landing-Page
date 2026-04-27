@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { ArrowRight, ChevronDown, Box } from 'lucide-react';
+import { ArrowRight, ChevronDown } from 'lucide-react';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'motion/react';
 import { BRAND, ROUTES } from '@/constants';
 import { useTypewriter } from '@/hooks/useTypewriter';
@@ -54,12 +55,14 @@ export default function HeroSection() {
       {/* Aurora background effect */}
       <AuroraBackground className="absolute inset-0" />
 
-      {/* 2-column layout: text left, graph+placeholder right */}
-      <div className="relative z-10 container mx-auto flex flex-col md:flex-row items-center gap-8 md:gap-0"
-        style={{ minHeight: 'calc(100vh - 4rem)', padding: '3rem 1.5rem' }}>
+      {/* 2-column layout: text left (anchored to left), graph+placeholder right (larger) */}
+      <div
+        className="relative z-10 w-full flex flex-col md:flex-row items-center"
+        style={{ minHeight: 'calc(100vh - 4rem)', padding: '3rem 2rem 3rem 4rem' }}
+      >
 
         {/* LEFT — Text content */}
-        <div className="flex-1 flex flex-col justify-center md:pr-8 text-center md:text-left">
+        <div className="flex flex-col justify-center text-center md:text-left md:pr-6" style={{ width: '42%', minWidth: '320px', flexShrink: 0 }}>
 
           {/* Badge */}
           <motion.div
@@ -213,19 +216,19 @@ export default function HeroSection() {
         {/* RIGHT — Graph + 3D Placeholder */}
         <div
           ref={rightPanelRef}
-          className="flex-1 relative hidden md:flex items-center justify-center"
-          style={{ minHeight: '480px' }}
+          className="relative hidden md:flex items-center justify-center"
+          style={{ flex: 1, minHeight: '520px' }}
         >
           {/* Canvas graph — centered, sized to fill right panel */}
           <div className="absolute inset-0 flex items-center justify-center">
-            <ProductCategoryGraph width={480} height={480} isMobile={false} />
+            <ProductCategoryGraph width={520} height={520} isMobile={false} />
           </div>
 
           {/* 3D Logo Placeholder — centered in right panel */}
           <div className="relative z-10 flex items-center justify-center">
-            {/* Orbiting tagline ring */}
+            {/* Orbiting tagline ring — counter-clockwise */}
             <motion.div
-              animate={{ rotate: 360 }}
+              animate={{ rotate: -360 }}
               transition={{ duration: 18, repeat: Infinity, ease: 'linear' }}
               className="absolute rounded-full"
               style={{ width: '130px', height: '130px' }}
@@ -258,7 +261,7 @@ export default function HeroSection() {
               </svg>
             </motion.div>
 
-            {/* Logo box — smaller */}
+            {/* Logo — actual Navodaya logo as placeholder until 3D arrives */}
             <motion.div
               animate={{ scale: [1, 1.04, 1] }}
               transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
@@ -274,16 +277,20 @@ export default function HeroSection() {
                   transform: 'scale(1.8)',
                 }}
               />
-              {/* Inner shape */}
-              <div
-                className="absolute inset-2 rounded-xl flex items-center justify-center"
-                style={{
-                  background: 'linear-gradient(135deg, rgba(30,64,175,0.5), rgba(14,165,233,0.25))',
-                  border: '1px solid rgba(96,165,250,0.35)',
-                  backdropFilter: 'blur(8px)',
-                }}
-              >
-                <Box className="w-7 h-7" style={{ color: '#60A5FA' }} aria-hidden="true" />
+              {/* Logo image */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Image
+                  src="/navodaya-logo.png"
+                  alt="Navodaya logo"
+                  width={72}
+                  height={72}
+                  style={{
+                    width: '72px',
+                    height: '72px',
+                    objectFit: 'contain',
+                    filter: 'drop-shadow(0 0 12px rgba(30,64,175,0.6))',
+                  }}
+                />
               </div>
             </motion.div>
           </div>

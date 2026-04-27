@@ -13,9 +13,6 @@ references
 # VSCode settings
 .vscode/
 
-# Legacy Vite/React code (preserved for reference)
-.legacy/
-
 # Dev tools / screenshots / design references
 dev-tools
 
