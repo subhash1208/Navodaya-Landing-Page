@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { BRAND, ROUTES } from '@/constants';
 import { useTypewriter } from '@/hooks/useTypewriter';
 import { ProductCategoryGraph } from '@/components/ui/ProductCategoryGraph';
+import { AuroraBackground } from '@/components/ui/AuroraBackground';
 
 const HEADLINE_LINE1 = 'Premium Hygiene & Care';
 const HEADLINE_LINE2 = 'Solutions for Every Industry';
@@ -50,6 +51,9 @@ export default function HeroSection() {
         }}
       />
 
+      {/* Aurora background effect */}
+      <AuroraBackground className="absolute inset-0" />
+
       {/* 2-column layout: text left, graph+placeholder right */}
       <div className="relative z-10 container mx-auto flex flex-col md:flex-row items-center gap-8 md:gap-0"
         style={{ minHeight: 'calc(100vh - 4rem)', padding: '3rem 1.5rem' }}>
@@ -92,12 +96,13 @@ export default function HeroSection() {
             <AnimatePresence>
               {line2Visible && (
                 <motion.span
-                  className="block"
+                  className="block animate-gradient-shift"
                   initial={{ opacity: 0, clipPath: 'inset(0 100% 0 0)' }}
                   animate={{ opacity: 1, clipPath: 'inset(0 0% 0 0)' }}
                   transition={{ duration: 0.8, ease: [0.4, 0, 0.2, 1] }}
                   style={{
-                    background: 'linear-gradient(135deg, #60A5FA 0%, #38BDF8 50%, #818CF8 100%)',
+                    background: 'linear-gradient(-45deg, #60A5FA, #818CF8, #38BDF8, #60A5FA)',
+                    backgroundSize: '400% 400%',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
                     backgroundClip: 'text',

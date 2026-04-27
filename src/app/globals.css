@@ -116,6 +116,45 @@
   }
 }
 
+/* ─── Custom cursor ─────────────────────────────────────────────────────────── */
+.custom-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid rgba(30, 64, 175, 0.6);
+  pointer-events: none;
+  z-index: 99999;
+  transition: width 0.2s ease, height 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+  will-change: transform;
+}
+
+.custom-cursor::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #1E40AF;
+  transition: all 0.2s ease;
+}
+
+.custom-cursor--hover {
+  width: 56px;
+  height: 56px;
+  border-color: rgba(14, 165, 233, 0.8);
+  background: rgba(30, 64, 175, 0.08);
+}
+
+@media (hover: none) {
+  .custom-cursor { display: none; }
+}
+
 /* ─── Cursor spotlight (Contact section) ───────────────────────────────────── */
 .cursor-spotlight {
   --cursor-x: 50%;
@@ -135,6 +174,39 @@
   pointer-events: none;
   z-index: 0;
   transition: background 0.05s ease;
+}
+
+/* ─── Testimonial marquee ───────────────────────────────────────────────────── */
+@keyframes testimonialLeft {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+@keyframes testimonialRight {
+  from { transform: translateX(-50%); }
+  to   { transform: translateX(0); }
+}
+
+.testimonial-row-1 {
+  animation: testimonialLeft 30s ease-in-out infinite alternate;
+  width: max-content;
+}
+.testimonial-row-1:hover { animation-play-state: paused; }
+
+.testimonial-row-2 {
+  animation: testimonialRight 30s ease-in-out infinite alternate;
+  width: max-content;
+}
+.testimonial-row-2:hover { animation-play-state: paused; }
+
+@media (prefers-reduced-motion: reduce) {
+  .testimonial-row-1, .testimonial-row-2 { animation: none; }
+}
+
+/* ─── Slot machine (preloader) ──────────────────────────────────────────────── */
+@keyframes slotMachine {
+  0%   { transform: translateY(0); }
+  100% { transform: translateY(-120px); } /* 6 items × 20px */
 }
 
 /* ─── Marquee strip ─────────────────────────────────────────────────────────── */

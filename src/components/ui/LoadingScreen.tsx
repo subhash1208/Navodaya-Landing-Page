@@ -212,6 +212,45 @@ export function LoadingScreen({ children }: LoadingScreenProps) {
                 Industries &amp; Care Kits
               </motion.p>
 
+              {/* Slot machine — industry keywords */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={stage >= 3 ? { opacity: 1 } : {}}
+                transition={{ duration: 0.3, ease: 'easeOut' }}
+                style={{
+                  height: '20px',
+                  overflow: 'hidden',
+                  position: 'relative',
+                  width: '200px',
+                }}
+              >
+                <div
+                  style={{
+                    animation: stage >= 3 ? 'slotMachine 8s linear forwards' : 'none',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                  }}
+                >
+                  {['HOTELS', 'HOSPITALS', 'SPAS', 'SALONS', 'INDUSTRIES', 'CORPORATE', 'WELLNESS'].map(word => (
+                    <span
+                      key={word}
+                      style={{
+                        fontSize: '11px',
+                        fontWeight: 600,
+                        letterSpacing: '0.2em',
+                        color: '#38BDF8',
+                        lineHeight: '20px',
+                        height: '20px',
+                        display: 'block',
+                      }}
+                    >
+                      {word}
+                    </span>
+                  ))}
+                </div>
+              </motion.div>
+
               {/* Stage 4: Motto */}
               <motion.p
                 initial={{ opacity: 0 }}

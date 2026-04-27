@@ -5,6 +5,7 @@ import WhyUsSection from '@/components/sections/WhyUsSection';
 import ContactSection from '@/components/sections/ContactSection';
 import { LoadingScreen } from '@/components/ui/LoadingScreen';
 import { MarqueeStrip } from '@/components/ui/MarqueeStrip';
+import { TestimonialMarquee } from '@/components/sections/TestimonialMarquee';
 
 export default function HomePage() {
   return (
@@ -14,6 +15,7 @@ export default function HomePage() {
       <AboutSection />
       <ProductCategoriesSection />
       <WhyUsSection />
+      <TestimonialMarquee />
       <ContactSection />
     </LoadingScreen>
   );
