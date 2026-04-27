@@ -272,9 +272,9 @@ export function ProductCategoryGraph({ onCategoryClick, isMobile = false }: Prod
   return (
     <canvas
       ref={canvasRef}
-      className="absolute inset-0 w-full h-full"
+      className="w-full h-full"
       aria-hidden="true"
-      style={{ opacity: 0.85 }}
+      style={{ opacity: 0.9, display: 'block' }}
     />
   );
 }

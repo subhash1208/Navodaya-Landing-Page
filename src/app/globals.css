@@ -140,16 +140,17 @@
 /* ─── Marquee strip ─────────────────────────────────────────────────────────── */
 @keyframes marquee {
   from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
+  to   { transform: translateX(-100%); }
 }
 
-.marquee-track {
-  animation: marquee 40s linear infinite;
+/* Two identical tracks animate together — when first reaches -100%, second is at 0% */
+.marquee-track-a {
+  animation: marquee 35s linear infinite;
   will-change: transform;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .marquee-track {
+  .marquee-track-a {
     animation: none;
   }
 }
