@@ -211,9 +211,9 @@ export default function HeroSection() {
           className="flex-1 relative hidden md:flex items-center justify-center"
           style={{ minHeight: '480px' }}
         >
-          {/* Canvas graph — fills right panel */}
-          <div className="absolute inset-0">
-            <ProductCategoryGraph isMobile={false} />
+          {/* Canvas graph — centered, sized to fill right panel */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <ProductCategoryGraph width={480} height={480} isMobile={false} />
           </div>
 
           {/* 3D Logo Placeholder — centered in right panel */}
