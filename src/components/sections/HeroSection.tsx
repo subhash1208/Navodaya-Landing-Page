@@ -217,70 +217,70 @@ export default function HeroSection() {
           </div>
 
           {/* 3D Logo Placeholder — centered in right panel */}
-          <div className="relative z-10 flex flex-col items-center justify-center">
+          <div className="relative z-10 flex items-center justify-center">
+            {/* Orbiting tagline ring */}
             <motion.div
-              animate={{
-                rotateY: [0, 360],
-                scale: [1, 1.05, 1],
-              }}
-              transition={{
-                rotateY: { duration: 8, repeat: Infinity, ease: 'linear' },
-                scale: { duration: 3, repeat: Infinity, ease: 'easeInOut' },
-              }}
-              className="relative"
-              style={{ width: '160px', height: '160px' }}
+              animate={{ rotate: 360 }}
+              transition={{ duration: 18, repeat: Infinity, ease: 'linear' }}
+              className="absolute rounded-full"
+              style={{ width: '130px', height: '130px' }}
             >
-              {/* Outer glow ring */}
+              {/* Tagline text positioned on the orbit path */}
+              <svg
+                width="130" height="130"
+                viewBox="0 0 130 130"
+                className="absolute inset-0"
+                aria-hidden="true"
+              >
+                <defs>
+                  {/* Clockwise path — text reads correctly all the way around */}
+                  <path
+                    id="orbitPath"
+                    d="M 13,65 a 52,52 0 1,1 104,0 a 52,52 0 1,1 -104,0"
+                  />
+                </defs>
+                <text
+                  fontSize="7"
+                  fontFamily="Inter, sans-serif"
+                  fontWeight="500"
+                  letterSpacing="2"
+                  fill="rgba(56,189,248,0.7)"
+                >
+                  <textPath href="#orbitPath" startOffset="0%">
+                    YOUR TRUSTED PARTNER IN PROGRESS AND CARE · 
+                  </textPath>
+                </text>
+              </svg>
+            </motion.div>
+
+            {/* Logo box — smaller */}
+            <motion.div
+              animate={{ scale: [1, 1.04, 1] }}
+              transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+              className="relative"
+              style={{ width: '80px', height: '80px' }}
+            >
+              {/* Glow */}
               <div
                 className="absolute inset-0 rounded-full"
                 style={{
-                  background: 'radial-gradient(circle, rgba(30,64,175,0.3) 0%, transparent 70%)',
-                  filter: 'blur(20px)',
-                  transform: 'scale(1.5)',
+                  background: 'radial-gradient(circle, rgba(30,64,175,0.35) 0%, transparent 70%)',
+                  filter: 'blur(14px)',
+                  transform: 'scale(1.8)',
                 }}
               />
-              {/* Orbit ring */}
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 6, repeat: Infinity, ease: 'linear' }}
-                className="absolute inset-0 rounded-full"
-                style={{
-                  border: '1px solid rgba(96,165,250,0.3)',
-                  borderTopColor: 'rgba(96,165,250,0.8)',
-                }}
-              />
-              {/* Inner hexagon shape */}
+              {/* Inner shape */}
               <div
-                className="absolute inset-4 rounded-2xl flex items-center justify-center"
+                className="absolute inset-2 rounded-xl flex items-center justify-center"
                 style={{
-                  background: 'linear-gradient(135deg, rgba(30,64,175,0.4), rgba(14,165,233,0.2))',
-                  border: '1px solid rgba(96,165,250,0.3)',
+                  background: 'linear-gradient(135deg, rgba(30,64,175,0.5), rgba(14,165,233,0.25))',
+                  border: '1px solid rgba(96,165,250,0.35)',
                   backdropFilter: 'blur(8px)',
                 }}
               >
-                <Box className="w-12 h-12" style={{ color: '#60A5FA' }} aria-hidden="true" />
+                <Box className="w-7 h-7" style={{ color: '#60A5FA' }} aria-hidden="true" />
               </div>
             </motion.div>
-
-            {/* Tagline orbiting text */}
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 1.5, duration: 0.8 }}
-              className="mt-6 text-xs font-medium tracking-widest uppercase text-center"
-              style={{ color: '#38BDF8', maxWidth: '200px' }}
-            >
-              3D Logo Coming Soon
-            </motion.p>
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 1.8, duration: 0.8 }}
-              className="mt-2 text-[11px] text-center"
-              style={{ color: '#475569', maxWidth: '180px' }}
-            >
-              &ldquo;{BRAND.TAGLINE}&rdquo;
-            </motion.p>
           </div>
         </div>
       </div>
