@@ -40,23 +40,24 @@ interface SolarNode {
 function buildNodes(cx: number, cy: number): SolarNode[] {
   const nodes: SolarNode[] = [];
 
-  // Sun — center placeholder for 3D logo
+  // Sun node — invisible anchor point (no visual, just physics origin)
+  // The 3D logo placeholder is rendered as HTML on top — no canvas node needed
   nodes.push({
     id: 'sun', type: 'sun',
     x: cx, y: cy, vx: 0, vy: 0,
     homeX: cx, homeY: cy,
-    radius: 28,
-    color: SUN.fill, glow: SUN.glow, innerGlow: SUN.innerGlow,
-    driftAmp: 3, driftSpd: 0.28, driftPh: 0,
+    radius: 0,  // zero radius = invisible
+    color: 'transparent', glow: 'transparent', innerGlow: 'transparent',
+    driftAmp: 2, driftSpd: 0.28, driftPh: 0,
     orbitAngle: 0, orbitR: 0,
-    parentId: null, label: 'N', pIdx: -1,
+    parentId: null, label: null, pIdx: -1,
     swayAmp: 0, swayPhase: 0,
   });
 
   // Planets = product categories
   PRODUCT_CATEGORIES.forEach((cat, p) => {
     const pa = (p / 3) * Math.PI * 2 + 0.3;
-    const pr = 115;
+    const pr = 165;  // increased from 115 — more space around the logo
     const px = cx + Math.cos(pa) * pr;
     const py = cy + Math.sin(pa) * pr;
     const col = PLANET_COLORS[p];
@@ -225,7 +226,7 @@ export function ProductCategoryGraph({
         ctx.globalAlpha = 0.05;
         ctx.strokeStyle = '#94A3B8';
         ctx.lineWidth   = 0.8;
-        ctx.beginPath(); ctx.arc(sun.x, sun.y, 115, 0, Math.PI * 2); ctx.stroke();
+        ctx.beginPath(); ctx.arc(sun.x, sun.y, 165, 0, Math.PI * 2); ctx.stroke();
         for (let p = 0; p < 3; p++) {
           const pl = byId(`p${p}`);
           if (!pl) continue;
@@ -352,6 +353,9 @@ function drawNode(
   t: number,
 ) {
   const { x, y, radius, color, glow, type } = n;
+
+  // Skip invisible nodes (sun is now a physics anchor only)
+  if (radius === 0) return;
 
   const pulse = type === 'sun'
     ? 1 + Math.sin(t * 1.8) * 0.08
