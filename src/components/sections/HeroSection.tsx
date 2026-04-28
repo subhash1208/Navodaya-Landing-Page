@@ -20,8 +20,7 @@ export default function HeroSection() {
   const [expandedCategory, setExpandedCategory] = useState<number | null>(null);
   const [productPositions, setProductPositions] = useState<ProductPosition[]>([]);
   const [logoScale, setLogoScale] = useState(1);
-  const [overlayVisible, setOverlayVisible] = useState(false);
-  const overlayTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const labelRefs = useRef<Map<string, HTMLElement>>(new Map());
   const rightPanelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -30,14 +29,13 @@ export default function HeroSection() {
 
   const handleExpandChange = useCallback((idx: number | null, positions: ProductPosition[]) => {
     setExpandedCategory(idx);
-    if (overlayTimerRef.current) clearTimeout(overlayTimerRef.current);
     if (idx === null) {
-      setOverlayVisible(false);
+      // Reset all label opacities immediately
+      labelRefs.current.forEach(el => { el.style.opacity = '0'; });
       setProductPositions([]);
     } else {
       setProductPositions(positions);
-      // Delay overlay appearance to let spiral animation play first
-      overlayTimerRef.current = setTimeout(() => setOverlayVisible(true), 500);
+      // Labels start at opacity 0 — the rAF loop in ProductCategoryGraph drives them to 1
     }
   }, []);
 
@@ -46,9 +44,7 @@ export default function HeroSection() {
   }, []);
 
   useEffect(() => {
-    return () => {
-      if (overlayTimerRef.current) clearTimeout(overlayTimerRef.current);
-    };
+    return () => { labelRefs.current.clear(); };
   }, []);
 
   const { displayed, showCursor } = useTypewriter({
@@ -255,6 +251,7 @@ export default function HeroSection() {
               isMobile={isMobile}
               onExpandChange={handleExpandChange}
               onLogoScale={handleLogoScale}
+              labelRefs={labelRefs}
             />
           </div>
 
@@ -264,7 +261,7 @@ export default function HeroSection() {
             aria-label={expandedCategory !== null ? 'Product links' : undefined}
           >
             <div style={{ width: '520px', height: '520px', position: 'relative' }}>
-              {overlayVisible && productPositions.map((pos) => {
+              {productPositions.map((pos) => {
                 // Radial label positioning — push label outward from center
                 // and align text based on which side of the ring it's on
                 const LABEL_OFFSET = 22; // px outward from dot
@@ -277,6 +274,10 @@ export default function HeroSection() {
                   <Link
                     key={pos.slug}
                     href={`/products/${pos.slug}`}
+                    ref={(el) => {
+                      if (el) labelRefs.current.set(pos.slug, el);
+                      else labelRefs.current.delete(pos.slug);
+                    }}
                     className="absolute pointer-events-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 rounded-sm"
                     style={{
                       left: labelX,
@@ -292,7 +293,7 @@ export default function HeroSection() {
                       background: 'rgba(15,23,42,0.82)',
                       backdropFilter: 'blur(4px)',
                       border: `1px solid ${borderColor}`,
-                      transition: 'background 0.15s, color 0.15s',
+                      opacity: 0, // rAF loop drives this to 1 as node arrives
                       lineHeight: '1.4',
                     }}
                     onMouseEnter={e => {

@@ -52,6 +52,7 @@ export interface ProductPosition {
   label: string;
   slug: string;
   pIdx: number;
+  nodeIndex: number; // index within this category's product list — for stagger
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -150,6 +151,7 @@ interface ProductCategoryGraphProps {
   isMobile?: boolean;
   onExpandChange?: (categoryIndex: number | null, positions: ProductPosition[]) => void;
   onLogoScale?: (scale: number) => void;
+  labelRefs?: React.MutableRefObject<Map<string, HTMLElement>>;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -159,6 +161,7 @@ export function ProductCategoryGraph({
   isMobile = false,
   onExpandChange,
   onLogoScale,
+  labelRefs,
 }: ProductCategoryGraphProps) {
   const canvasRef          = useRef<HTMLCanvasElement>(null);
   const stateRef           = useRef<{ nodes: SolarNode[]; t: number } | null>(null);
@@ -226,6 +229,7 @@ export function ProductCategoryGraph({
         label: prod.name,
         slug: prod.slug,
         pIdx,
+        nodeIndex: i,
       }));
       onExpandChange?.(pIdx, positions);
     }
@@ -293,6 +297,16 @@ export function ProductCategoryGraph({
             n.homeX = cx + Math.cos(n.expandedFinalAngle + spiralOffset) * r;
             n.homeY = cy + Math.sin(n.expandedFinalAngle + spiralOffset) * r;
 
+            // Drive label opacity directly on DOM — no React re-render needed
+            // Label fades in when node is 75%+ of the way to its final position
+            if (labelRefs) {
+              const labelEl = labelRefs.current.get(n.slug ?? '');
+              if (labelEl) {
+                const labelOpacity = Math.max(0, (ease - 0.75) / 0.25); // 0 at ease=0.75, 1 at ease=1.0
+                labelEl.style.opacity = String(labelOpacity);
+              }
+            }
+
           } else if (expanded !== null) {
             // Other category moons — collapse toward their parent planet
             const parent = byId(n.parentId!);
@@ -302,8 +316,12 @@ export function ProductCategoryGraph({
             n.homeY = parent.y;
 
           } else {
-            // Normal sway
+            // Normal sway — also fade out labels
             n.spiralProgress = Math.max(0, n.spiralProgress - 0.04);
+            if (labelRefs && n.spiralProgress === 0) {
+              const labelEl = labelRefs.current.get(n.slug ?? '');
+              if (labelEl) labelEl.style.opacity = '0';
+            }
             const parent = byId(n.parentId!);
             if (!parent) continue;
             const swayX = Math.sin(t * SWAY_SPD_X + n.swayPhase) * n.swayAmp;
