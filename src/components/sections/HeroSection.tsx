@@ -264,40 +264,50 @@ export default function HeroSection() {
             aria-label={expandedCategory !== null ? 'Product links' : undefined}
           >
             <div style={{ width: '520px', height: '520px', position: 'relative' }}>
-              {overlayVisible && productPositions.map((pos) => (
-                <Link
-                  key={pos.slug}
-                  href={`/products/${pos.slug}`}
-                  className="absolute pointer-events-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 rounded-sm"
-                  style={{
-                    left: pos.x,
-                    top: pos.y,
-                    transform: 'translate(-50%, -50%)',
-                    fontSize: '9px',
-                    fontWeight: 600,
-                    color: '#E2E8F0',
-                    whiteSpace: 'nowrap',
-                    textDecoration: 'none',
-                    padding: '3px 6px',
-                    borderRadius: '4px',
-                    background: 'rgba(15,23,42,0.75)',
-                    backdropFilter: 'blur(4px)',
-                    border: `1px solid ${['rgba(96,165,250,0.3)', 'rgba(34,211,238,0.3)', 'rgba(192,132,252,0.3)'][pos.pIdx]}`,
-                    transition: 'background 0.15s, color 0.15s',
-                    marginTop: '14px',
-                  }}
-                  onMouseEnter={e => {
-                    (e.currentTarget as HTMLAnchorElement).style.background = 'rgba(30,64,175,0.6)';
-                    (e.currentTarget as HTMLAnchorElement).style.color = '#ffffff';
-                  }}
-                  onMouseLeave={e => {
-                    (e.currentTarget as HTMLAnchorElement).style.background = 'rgba(15,23,42,0.75)';
-                    (e.currentTarget as HTMLAnchorElement).style.color = '#E2E8F0';
-                  }}
-                >
-                  {pos.label}
-                </Link>
-              ))}
+              {overlayVisible && productPositions.map((pos) => {
+                // Radial label positioning — push label outward from center
+                // and align text based on which side of the ring it's on
+                const LABEL_OFFSET = 22; // px outward from dot
+                const labelX = pos.x + Math.cos(pos.angle) * LABEL_OFFSET;
+                const labelY = pos.y + Math.sin(pos.angle) * LABEL_OFFSET;
+                // Right half → left-align anchor at left edge; Left half → right-align anchor at right edge
+                const onRight = Math.cos(pos.angle) >= 0;
+                const borderColor = ['rgba(96,165,250,0.35)', 'rgba(34,211,238,0.35)', 'rgba(192,132,252,0.35)'][pos.pIdx];
+                return (
+                  <Link
+                    key={pos.slug}
+                    href={`/products/${pos.slug}`}
+                    className="absolute pointer-events-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 rounded-sm"
+                    style={{
+                      left: labelX,
+                      top: labelY,
+                      transform: onRight ? 'translateY(-50%)' : 'translate(-100%, -50%)',
+                      fontSize: '8.5px',
+                      fontWeight: 600,
+                      color: '#CBD5E1',
+                      whiteSpace: 'nowrap',
+                      textDecoration: 'none',
+                      padding: '2px 6px',
+                      borderRadius: '4px',
+                      background: 'rgba(15,23,42,0.82)',
+                      backdropFilter: 'blur(4px)',
+                      border: `1px solid ${borderColor}`,
+                      transition: 'background 0.15s, color 0.15s',
+                      lineHeight: '1.4',
+                    }}
+                    onMouseEnter={e => {
+                      (e.currentTarget as HTMLAnchorElement).style.background = 'rgba(30,64,175,0.65)';
+                      (e.currentTarget as HTMLAnchorElement).style.color = '#ffffff';
+                    }}
+                    onMouseLeave={e => {
+                      (e.currentTarget as HTMLAnchorElement).style.background = 'rgba(15,23,42,0.82)';
+                      (e.currentTarget as HTMLAnchorElement).style.color = '#CBD5E1';
+                    }}
+                  >
+                    {pos.label}
+                  </Link>
+                );
+              })}
             </div>
           </div>
 

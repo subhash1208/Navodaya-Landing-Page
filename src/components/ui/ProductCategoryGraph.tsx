@@ -19,7 +19,8 @@ const HOVER_R       = 28;
 const SWAY_SPD_X    = 0.8;
 const SWAY_SPD_Y    = 0.6;
 const PLANET_RADIUS = 22;   // increased from 16 to fit label text
-const EXPAND_RING_R = 160;  // radius of product ring when expanded
+const EXPAND_RING_R = 185;  // radius of product ring when expanded — larger for label spacing
+const OUTER_ORBIT_R = 195;  // max radius for non-selected planets when expanded (safe within 520px canvas: 260-195=65px margin)
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface SolarNode {
@@ -47,6 +48,7 @@ interface SolarNode {
 export interface ProductPosition {
   x: number;
   y: number;
+  angle: number;  // radians from center — used for radial label offset
   label: string;
   slug: string;
   pIdx: number;
@@ -220,6 +222,7 @@ export function ProductCategoryGraph({
       const positions: ProductPosition[] = catProducts.map((prod, i) => ({
         x: radialPos[i].x,
         y: radialPos[i].y,
+        angle: radialPos[i].angle,
         label: prod.name,
         slug: prod.slug,
         pIdx,
@@ -267,10 +270,10 @@ export function ProductCategoryGraph({
             n.homeX = cx;
             n.homeY = cy;
           } else if (expanded !== null) {
-            // Other planets drift to outer edge at their current angle
+            // Other planets drift to outer edge — clamped to stay within canvas
             const a = n.orbitAngle + t * 0.06;
-            n.homeX = sun.x + Math.cos(a) * n.orbitR * 1.55;
-            n.homeY = sun.y + Math.sin(a) * n.orbitR * 1.55;
+            n.homeX = sun.x + Math.cos(a) * OUTER_ORBIT_R;
+            n.homeY = sun.y + Math.sin(a) * OUTER_ORBIT_R;
           } else {
             // Normal orbit
             const a = n.orbitAngle + t * 0.06;
