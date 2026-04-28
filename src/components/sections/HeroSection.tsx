@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { ArrowRight, ChevronDown } from 'lucide-react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'motion/react';
 import { BRAND, ROUTES } from '@/constants';
 import { useTypewriter } from '@/hooks/useTypewriter';
-import { ProductCategoryGraph } from '@/components/ui/ProductCategoryGraph';
+import { ProductCategoryGraph, type ProductPosition } from '@/components/ui/ProductCategoryGraph';
 import { AuroraBackground } from '@/components/ui/AuroraBackground';
 
 const HEADLINE_LINE1 = 'Premium Hygiene & Care';
@@ -17,10 +17,38 @@ export default function HeroSection() {
   const [line2Visible, setLine2Visible] = useState(false);
   const [contentVisible, setContentVisible] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [expandedCategory, setExpandedCategory] = useState<number | null>(null);
+  const [productPositions, setProductPositions] = useState<ProductPosition[]>([]);
+  const [logoScale, setLogoScale] = useState(1);
+  const [overlayVisible, setOverlayVisible] = useState(false);
+  const overlayTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const rightPanelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setIsMobile(window.matchMedia('(max-width: 768px)').matches);
+  }, []);
+
+  const handleExpandChange = useCallback((idx: number | null, positions: ProductPosition[]) => {
+    setExpandedCategory(idx);
+    if (overlayTimerRef.current) clearTimeout(overlayTimerRef.current);
+    if (idx === null) {
+      setOverlayVisible(false);
+      setProductPositions([]);
+    } else {
+      setProductPositions(positions);
+      // Delay overlay appearance to let spiral animation play first
+      overlayTimerRef.current = setTimeout(() => setOverlayVisible(true), 500);
+    }
+  }, []);
+
+  const handleLogoScale = useCallback((scale: number) => {
+    setLogoScale(scale);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (overlayTimerRef.current) clearTimeout(overlayTimerRef.current);
+    };
   }, []);
 
   const { displayed, showCursor } = useTypewriter({
@@ -219,21 +247,68 @@ export default function HeroSection() {
           className="relative hidden md:flex items-center justify-center"
           style={{ flex: 1, minHeight: '520px' }}
         >
-          {/* Canvas graph — centered, sized to fill right panel */}
+          {/* Canvas graph */}
           <div className="absolute inset-0 flex items-center justify-center">
-            <ProductCategoryGraph width={520} height={520} isMobile={false} />
+            <ProductCategoryGraph
+              width={520}
+              height={520}
+              isMobile={isMobile}
+              onExpandChange={handleExpandChange}
+              onLogoScale={handleLogoScale}
+            />
           </div>
 
-          {/* 3D Logo Placeholder — centered in right panel */}
+          {/* HTML product link overlay — keyboard accessible, appears after spiral */}
+          <div
+            className="absolute inset-0 flex items-center justify-center pointer-events-none"
+            aria-label={expandedCategory !== null ? 'Product links' : undefined}
+          >
+            <div style={{ width: '520px', height: '520px', position: 'relative' }}>
+              {overlayVisible && productPositions.map((pos) => (
+                <Link
+                  key={pos.slug}
+                  href={`/products/${pos.slug}`}
+                  className="absolute pointer-events-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 rounded-sm"
+                  style={{
+                    left: pos.x,
+                    top: pos.y,
+                    transform: 'translate(-50%, -50%)',
+                    fontSize: '9px',
+                    fontWeight: 600,
+                    color: '#E2E8F0',
+                    whiteSpace: 'nowrap',
+                    textDecoration: 'none',
+                    padding: '3px 6px',
+                    borderRadius: '4px',
+                    background: 'rgba(15,23,42,0.75)',
+                    backdropFilter: 'blur(4px)',
+                    border: `1px solid ${['rgba(96,165,250,0.3)', 'rgba(34,211,238,0.3)', 'rgba(192,132,252,0.3)'][pos.pIdx]}`,
+                    transition: 'background 0.15s, color 0.15s',
+                    marginTop: '14px',
+                  }}
+                  onMouseEnter={e => {
+                    (e.currentTarget as HTMLAnchorElement).style.background = 'rgba(30,64,175,0.6)';
+                    (e.currentTarget as HTMLAnchorElement).style.color = '#ffffff';
+                  }}
+                  onMouseLeave={e => {
+                    (e.currentTarget as HTMLAnchorElement).style.background = 'rgba(15,23,42,0.75)';
+                    (e.currentTarget as HTMLAnchorElement).style.color = '#E2E8F0';
+                  }}
+                >
+                  {pos.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* 3D Logo Placeholder */}
           <div className="relative z-10 flex items-center justify-center">
-            {/* Orbiting tagline ring — counter-clockwise */}
             <motion.div
               animate={{ rotate: -360 }}
               transition={{ duration: 18, repeat: Infinity, ease: 'linear' }}
               className="absolute rounded-full"
               style={{ width: '130px', height: '130px' }}
             >
-              {/* Tagline text positioned on the orbit path */}
               <svg
                 width="130" height="130"
                 viewBox="0 0 130 130"
@@ -241,7 +316,6 @@ export default function HeroSection() {
                 aria-hidden="true"
               >
                 <defs>
-                  {/* Clockwise path — text reads correctly all the way around */}
                   <path
                     id="orbitPath"
                     d="M 13,65 a 52,52 0 1,1 104,0 a 52,52 0 1,1 -104,0"
@@ -261,37 +335,41 @@ export default function HeroSection() {
               </svg>
             </motion.div>
 
-            {/* Logo — actual Navodaya logo as placeholder until 3D arrives */}
+            {/* Logo — scales down when a category is expanded */}
             <motion.div
-              animate={{ scale: [1, 1.04, 1] }}
-              transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+              animate={{ scale: logoScale * 1 }}
+              transition={{ type: 'spring', stiffness: 200, damping: 20 }}
               className="relative"
               style={{ width: '80px', height: '80px' }}
             >
-              {/* Glow */}
-              <div
-                className="absolute inset-0 rounded-full"
-                style={{
-                  background: 'radial-gradient(circle, rgba(30,64,175,0.35) 0%, transparent 70%)',
-                  filter: 'blur(14px)',
-                  transform: 'scale(1.8)',
-                }}
-              />
-              {/* Logo image */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <Image
-                  src="/navodaya-logo.png"
-                  alt="Navodaya logo"
-                  width={72}
-                  height={72}
+              <motion.div
+                animate={{ scale: [1, 1.04, 1] }}
+                transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+                className="relative w-full h-full"
+              >
+                <div
+                  className="absolute inset-0 rounded-full"
                   style={{
-                    width: '72px',
-                    height: '72px',
-                    objectFit: 'contain',
-                    filter: 'drop-shadow(0 0 12px rgba(30,64,175,0.6))',
+                    background: 'radial-gradient(circle, rgba(30,64,175,0.35) 0%, transparent 70%)',
+                    filter: 'blur(14px)',
+                    transform: 'scale(1.8)',
                   }}
                 />
-              </div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Image
+                    src="/navodaya-logo.png"
+                    alt="Navodaya logo"
+                    width={72}
+                    height={72}
+                    style={{
+                      width: '72px',
+                      height: '72px',
+                      objectFit: 'contain',
+                      filter: 'drop-shadow(0 0 12px rgba(30,64,175,0.6))',
+                    }}
+                  />
+                </div>
+              </motion.div>
             </motion.div>
           </div>
         </div>
