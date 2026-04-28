@@ -48,11 +48,10 @@ interface SolarNode {
 export interface ProductPosition {
   x: number;
   y: number;
-  angle: number;  // radians from center — used for radial label offset
+  angle: number;
   label: string;
   slug: string;
   pIdx: number;
-  nodeIndex: number; // index within this category's product list — for stagger
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -151,7 +150,7 @@ interface ProductCategoryGraphProps {
   isMobile?: boolean;
   onExpandChange?: (categoryIndex: number | null, positions: ProductPosition[]) => void;
   onLogoScale?: (scale: number) => void;
-  labelRefs?: React.MutableRefObject<Map<string, HTMLElement>>;
+  collapseRef?: React.MutableRefObject<(() => void) | null>;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -161,15 +160,15 @@ export function ProductCategoryGraph({
   isMobile = false,
   onExpandChange,
   onLogoScale,
-  labelRefs,
+  collapseRef,
 }: ProductCategoryGraphProps) {
   const canvasRef          = useRef<HTMLCanvasElement>(null);
   const stateRef           = useRef<{ nodes: SolarNode[]; t: number } | null>(null);
   const cursorRef          = useRef({ x: -9999, y: -9999 });
   const rafRef             = useRef<number>(0);
-  const expandedRef        = useRef<number | null>(null);   // physics loop reads this
+  const expandedRef        = useRef<number | null>(null);
   const reducedMotionRef   = useRef(false);
-  const [, forceUpdate]    = useState(0); // used to trigger re-render after expand
+  const [, forceUpdate]    = useState(0);
 
   // ── Build nodes on mount / resize ─────────────────────────────────────────
   useEffect(() => {
@@ -190,13 +189,7 @@ export function ProductCategoryGraph({
     expandedRef.current = pIdx;
 
     if (pIdx === null) {
-      // Collapse all
-      for (const n of s.nodes) {
-        if (n.type === 'moon') {
-          // spiralProgress will decay back to 0 in the rAF loop
-        }
-        n.expandedOpacity = 1;
-      }
+      for (const n of s.nodes) { n.expandedOpacity = 1; }
       onLogoScale?.(1);
       onExpandChange?.(null, []);
     } else {
@@ -229,13 +222,21 @@ export function ProductCategoryGraph({
         label: prod.name,
         slug: prod.slug,
         pIdx,
-        nodeIndex: i,
       }));
       onExpandChange?.(pIdx, positions);
     }
 
     forceUpdate(v => v + 1);
   }, [width, height, onExpandChange, onLogoScale]);
+
+  // Expose collapse to parent via collapseRef
+  useEffect(() => {
+    if (collapseRef) {
+      collapseRef.current = () => {
+        if (expandedRef.current !== null) triggerExpand(null);
+      };
+    }
+  }, [triggerExpand, collapseRef]);
 
   // ── rAF draw loop ──────────────────────────────────────────────────────────
   useEffect(() => {
@@ -297,16 +298,6 @@ export function ProductCategoryGraph({
             n.homeX = cx + Math.cos(n.expandedFinalAngle + spiralOffset) * r;
             n.homeY = cy + Math.sin(n.expandedFinalAngle + spiralOffset) * r;
 
-            // Drive label opacity directly on DOM — no React re-render needed
-            // Label fades in when node is 75%+ of the way to its final position
-            if (labelRefs) {
-              const labelEl = labelRefs.current.get(n.slug ?? '');
-              if (labelEl) {
-                const labelOpacity = Math.max(0, (ease - 0.75) / 0.25); // 0 at ease=0.75, 1 at ease=1.0
-                labelEl.style.opacity = String(labelOpacity);
-              }
-            }
-
           } else if (expanded !== null) {
             // Other category moons — collapse toward their parent planet
             const parent = byId(n.parentId!);
@@ -316,12 +307,8 @@ export function ProductCategoryGraph({
             n.homeY = parent.y;
 
           } else {
-            // Normal sway — also fade out labels
+            // Normal sway
             n.spiralProgress = Math.max(0, n.spiralProgress - 0.04);
-            if (labelRefs && n.spiralProgress === 0) {
-              const labelEl = labelRefs.current.get(n.slug ?? '');
-              if (labelEl) labelEl.style.opacity = '0';
-            }
             const parent = byId(n.parentId!);
             if (!parent) continue;
             const swayX = Math.sin(t * SWAY_SPD_X + n.swayPhase) * n.swayAmp;
@@ -491,20 +478,20 @@ export function ProductCategoryGraph({
       const dx = n.x - mx, dy = n.y - my;
       if (Math.sqrt(dx * dx + dy * dy) < HOVER_R) {
         if (expandedRef.current === n.pIdx) {
-          // Same planet clicked — collapse
           triggerExpand(null);
         } else {
-          // New planet clicked — expand
           triggerExpand(n.pIdx);
         }
+        e.stopPropagation(); // prevent right-panel onClick from also firing
         return;
       }
     }
 
-    // Background click — collapse if expanded
+    // Background click on canvas — collapse if expanded
     if (expandedRef.current !== null) {
       triggerExpand(null);
     }
+    e.stopPropagation();
   }, [triggerExpand]);
 
   return (

@@ -20,7 +20,7 @@ export default function HeroSection() {
   const [expandedCategory, setExpandedCategory] = useState<number | null>(null);
   const [productPositions, setProductPositions] = useState<ProductPosition[]>([]);
   const [logoScale, setLogoScale] = useState(1);
-  const labelRefs = useRef<Map<string, HTMLElement>>(new Map());
+  const collapseRef = useRef<(() => void) | null>(null);
   const rightPanelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -29,22 +29,11 @@ export default function HeroSection() {
 
   const handleExpandChange = useCallback((idx: number | null, positions: ProductPosition[]) => {
     setExpandedCategory(idx);
-    if (idx === null) {
-      // Reset all label opacities immediately
-      labelRefs.current.forEach(el => { el.style.opacity = '0'; });
-      setProductPositions([]);
-    } else {
-      setProductPositions(positions);
-      // Labels start at opacity 0 — the rAF loop in ProductCategoryGraph drives them to 1
-    }
+    setProductPositions(idx === null ? [] : positions);
   }, []);
 
   const handleLogoScale = useCallback((scale: number) => {
     setLogoScale(scale);
-  }, []);
-
-  useEffect(() => {
-    return () => { labelRefs.current.clear(); };
   }, []);
 
   const { displayed, showCursor } = useTypewriter({
@@ -242,6 +231,7 @@ export default function HeroSection() {
           ref={rightPanelRef}
           className="relative hidden md:flex items-center justify-center"
           style={{ flex: 1, minHeight: '520px' }}
+          onClick={() => collapseRef.current?.()}
         >
           {/* Canvas graph */}
           <div className="absolute inset-0 flex items-center justify-center">
@@ -251,33 +241,28 @@ export default function HeroSection() {
               isMobile={isMobile}
               onExpandChange={handleExpandChange}
               onLogoScale={handleLogoScale}
-              labelRefs={labelRefs}
+              collapseRef={collapseRef}
             />
           </div>
 
-          {/* HTML product link overlay — keyboard accessible, appears after spiral */}
+          {/* HTML product link overlay — labels use CSS animation to appear with nodes */}
           <div
             className="absolute inset-0 flex items-center justify-center pointer-events-none"
             aria-label={expandedCategory !== null ? 'Product links' : undefined}
           >
             <div style={{ width: '520px', height: '520px', position: 'relative' }}>
               {productPositions.map((pos) => {
-                // Radial label positioning — push label outward from center
-                // and align text based on which side of the ring it's on
-                const LABEL_OFFSET = 22; // px outward from dot
+                const LABEL_OFFSET = 22;
                 const labelX = pos.x + Math.cos(pos.angle) * LABEL_OFFSET;
                 const labelY = pos.y + Math.sin(pos.angle) * LABEL_OFFSET;
-                // Right half → left-align anchor at left edge; Left half → right-align anchor at right edge
                 const onRight = Math.cos(pos.angle) >= 0;
                 const borderColor = ['rgba(96,165,250,0.35)', 'rgba(34,211,238,0.35)', 'rgba(192,132,252,0.35)'][pos.pIdx];
+                // CSS animation: fade in after 0.5s (spiral takes ~0.67s, labels appear as nodes arrive)
+                const animName = onRight ? 'labelFadeInRight' : 'labelFadeInLeft';
                 return (
                   <Link
                     key={pos.slug}
                     href={`/products/${pos.slug}`}
-                    ref={(el) => {
-                      if (el) labelRefs.current.set(pos.slug, el);
-                      else labelRefs.current.delete(pos.slug);
-                    }}
                     className="absolute pointer-events-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 rounded-sm"
                     style={{
                       left: labelX,
@@ -293,7 +278,8 @@ export default function HeroSection() {
                       background: 'rgba(15,23,42,0.82)',
                       backdropFilter: 'blur(4px)',
                       border: `1px solid ${borderColor}`,
-                      opacity: 0, // rAF loop drives this to 1 as node arrives
+                      opacity: 0,
+                      animation: `${animName} 0.25s ease-out 0.5s forwards`,
                       lineHeight: '1.4',
                     }}
                     onMouseEnter={e => {
@@ -312,8 +298,8 @@ export default function HeroSection() {
             </div>
           </div>
 
-          {/* 3D Logo Placeholder */}
-          <div className="relative z-10 flex items-center justify-center">
+          {/* 3D Logo Placeholder — pointer-events-none so clicks pass through to canvas */}
+          <div className="relative z-10 flex items-center justify-center pointer-events-none">
             <motion.div
               animate={{ rotate: -360 }}
               transition={{ duration: 18, repeat: Infinity, ease: 'linear' }}
@@ -346,9 +332,8 @@ export default function HeroSection() {
               </svg>
             </motion.div>
 
-            {/* Logo — scales down when a category is expanded */}
             <motion.div
-              animate={{ scale: logoScale * 1 }}
+              animate={{ scale: logoScale }}
               transition={{ type: 'spring', stiffness: 200, damping: 20 }}
               className="relative"
               style={{ width: '80px', height: '80px' }}

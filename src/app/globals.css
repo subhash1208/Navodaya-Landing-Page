@@ -242,3 +242,13 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* ─── Graph product label fade-in (synced with spiral animation) ─────────────── */
+@keyframes labelFadeInRight {
+  from { opacity: 0; transform: translateY(-50%) scale(0.85); }
+  to   { opacity: 1; transform: translateY(-50%) scale(1); }
+}
+@keyframes labelFadeInLeft {
+  from { opacity: 0; transform: translate(-100%, -50%) scale(0.85); }
+  to   { opacity: 1; transform: translate(-100%, -50%) scale(1); }
+}
