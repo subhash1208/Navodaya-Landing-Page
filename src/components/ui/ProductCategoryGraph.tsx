@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useCallback, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { PRODUCT_CATEGORIES, PRODUCTS } from '@/constants';
 
 // ─── Brand colors ─────────────────────────────────────────────────────────────
@@ -18,9 +19,9 @@ const MOON_REPEL_F  = 1.05;
 const HOVER_R       = 28;
 const SWAY_SPD_X    = 0.8;
 const SWAY_SPD_Y    = 0.6;
-const PLANET_RADIUS = 22;   // increased from 16 to fit label text
-const EXPAND_RING_R = 185;  // radius of product ring when expanded — larger for label spacing
-const OUTER_ORBIT_R = 195;  // max radius for non-selected planets when expanded (safe within 520px canvas: 260-195=65px margin)
+const PLANET_RADIUS = 22;
+const EXPAND_RING_R = 185;
+const OUTER_ORBIT_R = 195;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface SolarNode {
@@ -37,27 +38,15 @@ interface SolarNode {
   slug: string | null;
   pIdx: number;
   swayAmp: number; swayPhase: number;
-  // Expansion animation fields
-  expandedTargetX: number;
-  expandedTargetY: number;
   expandedFinalAngle: number;
-  spiralProgress: number;   // 0 = collapsed, 1 = fully expanded
-  expandedOpacity: number;  // 1 = visible, 0 = hidden (other category moons)
-}
-
-export interface ProductPosition {
-  x: number;
-  y: number;
-  angle: number;
-  label: string;
-  slug: string;
-  pIdx: number;
+  spiralProgress: number;
+  expandedOpacity: number;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function calcRadialPositions(cx: number, cy: number, count: number): Array<{ x: number; y: number; angle: number }> {
   return Array.from({ length: count }, (_, i) => {
-    const angle = (i / count) * Math.PI * 2 - Math.PI / 2; // start from top
+    const angle = (i / count) * Math.PI * 2 - Math.PI / 2;
     return {
       x: cx + Math.cos(angle) * EXPAND_RING_R,
       y: cy + Math.sin(angle) * EXPAND_RING_R,
@@ -69,7 +58,6 @@ function calcRadialPositions(cx: number, cy: number, count: number): Array<{ x: 
 function buildNodes(cx: number, cy: number): SolarNode[] {
   const nodes: SolarNode[] = [];
 
-  // Sun — invisible physics anchor
   nodes.push({
     id: 'sun', type: 'sun',
     x: cx, y: cy, vx: 0, vy: 0,
@@ -80,7 +68,6 @@ function buildNodes(cx: number, cy: number): SolarNode[] {
     orbitAngle: 0, orbitR: 0,
     parentId: null, label: null, slug: null, pIdx: -1,
     swayAmp: 0, swayPhase: 0,
-    expandedTargetX: cx, expandedTargetY: cy,
     expandedFinalAngle: 0, spiralProgress: 0, expandedOpacity: 1,
   });
 
@@ -105,7 +92,6 @@ function buildNodes(cx: number, cy: number): SolarNode[] {
       slug: cat.slug,
       pIdx: p,
       swayAmp: 0, swayPhase: 0,
-      expandedTargetX: px, expandedTargetY: py,
       expandedFinalAngle: pa, spiralProgress: 0, expandedOpacity: 1,
     });
 
@@ -134,7 +120,6 @@ function buildNodes(cx: number, cy: number): SolarNode[] {
         slug: product.slug,
         pIdx: p,
         swayAmp, swayPhase,
-        expandedTargetX: px, expandedTargetY: py,
         expandedFinalAngle: ma, spiralProgress: 0, expandedOpacity: 1,
       });
     });
@@ -148,7 +133,6 @@ interface ProductCategoryGraphProps {
   width?: number;
   height?: number;
   isMobile?: boolean;
-  onExpandChange?: (categoryIndex: number | null, positions: ProductPosition[]) => void;
   onLogoScale?: (scale: number) => void;
   collapseRef?: React.MutableRefObject<(() => void) | null>;
 }
@@ -158,19 +142,17 @@ export function ProductCategoryGraph({
   width = 500,
   height = 500,
   isMobile = false,
-  onExpandChange,
   onLogoScale,
   collapseRef,
 }: ProductCategoryGraphProps) {
+  const router             = useRouter();
   const canvasRef          = useRef<HTMLCanvasElement>(null);
   const stateRef           = useRef<{ nodes: SolarNode[]; t: number } | null>(null);
   const cursorRef          = useRef({ x: -9999, y: -9999 });
   const rafRef             = useRef<number>(0);
   const expandedRef        = useRef<number | null>(null);
-  const reducedMotionRef   = useRef(false);
   const [, forceUpdate]    = useState(0);
 
-  // ── Build nodes on mount / resize ─────────────────────────────────────────
   useEffect(() => {
     const cx = width / 2;
     const cy = height / 2;
@@ -179,7 +161,6 @@ export function ProductCategoryGraph({
     stateRef.current = { nodes, t: 0 };
   }, [width, height, isMobile]);
 
-  // ── Expand / collapse helper ───────────────────────────────────────────────
   const triggerExpand = useCallback((pIdx: number | null) => {
     const s = stateRef.current;
     if (!s) return;
@@ -191,9 +172,7 @@ export function ProductCategoryGraph({
     if (pIdx === null) {
       for (const n of s.nodes) { n.expandedOpacity = 1; }
       onLogoScale?.(1);
-      onExpandChange?.(null, []);
     } else {
-      // Compute radial positions for this category's products
       const catProducts = PRODUCTS.filter(prod => prod.category.id === PRODUCT_CATEGORIES[pIdx].id);
       const radialPos = calcRadialPositions(cx, cy, catProducts.length);
 
@@ -201,35 +180,20 @@ export function ProductCategoryGraph({
       for (const n of s.nodes) {
         if (n.type === 'moon' && n.pIdx === pIdx) {
           const rp = radialPos[moonIdx % radialPos.length];
-          n.expandedTargetX = rp.x;
-          n.expandedTargetY = rp.y;
           n.expandedFinalAngle = rp.angle;
-          n.spiralProgress = 0; // reset — will animate to 1
+          n.spiralProgress = 0;
           n.expandedOpacity = 1;
           moonIdx++;
         } else if (n.type === 'moon') {
-          n.expandedOpacity = 0; // other category moons fade out
+          n.expandedOpacity = 0;
         }
       }
-
       onLogoScale?.(0.6);
-
-      // Emit final positions for HTML overlay (after animation delay)
-      const positions: ProductPosition[] = catProducts.map((prod, i) => ({
-        x: radialPos[i].x,
-        y: radialPos[i].y,
-        angle: radialPos[i].angle,
-        label: prod.name,
-        slug: prod.slug,
-        pIdx,
-      }));
-      onExpandChange?.(pIdx, positions);
     }
 
     forceUpdate(v => v + 1);
-  }, [width, height, onExpandChange, onLogoScale]);
+  }, [width, height, onLogoScale]);
 
-  // Expose collapse to parent via collapseRef
   useEffect(() => {
     if (collapseRef) {
       collapseRef.current = () => {
@@ -245,8 +209,7 @@ export function ProductCategoryGraph({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    reducedMotionRef.current = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reducedMotionRef.current) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     const byId = (id: string) => stateRef.current?.nodes.find(n => n.id === id);
 
@@ -269,18 +232,14 @@ export function ProductCategoryGraph({
         } else if (n.type === 'planet') {
           const sun = byId('sun');
           if (!sun) continue;
-
           if (expanded !== null && n.pIdx === expanded) {
-            // Selected planet moves to canvas center
             n.homeX = cx;
             n.homeY = cy;
           } else if (expanded !== null) {
-            // Other planets drift to outer edge — clamped to stay within canvas
             const a = n.orbitAngle + t * 0.06;
             n.homeX = sun.x + Math.cos(a) * OUTER_ORBIT_R;
             n.homeY = sun.y + Math.sin(a) * OUTER_ORBIT_R;
           } else {
-            // Normal orbit
             const a = n.orbitAngle + t * 0.06;
             n.homeX = sun.x + Math.cos(a) * n.orbitR;
             n.homeY = sun.y + Math.sin(a) * n.orbitR;
@@ -289,17 +248,15 @@ export function ProductCategoryGraph({
         } else {
           // Moon
           if (expanded !== null && n.pIdx === expanded) {
-            // Spiral outward to radial position
             const SPIRAL_SPEED = 0.025;
             n.spiralProgress = Math.min(1, n.spiralProgress + SPIRAL_SPEED);
-            const ease = 1 - Math.pow(1 - n.spiralProgress, 3); // cubic ease-out
-            const spiralOffset = (1 - ease) * Math.PI * 2.5; // 1.25 full rotations decay
+            const ease = 1 - Math.pow(1 - n.spiralProgress, 3);
+            const spiralOffset = (1 - ease) * Math.PI * 2.5;
             const r = EXPAND_RING_R * ease;
             n.homeX = cx + Math.cos(n.expandedFinalAngle + spiralOffset) * r;
             n.homeY = cy + Math.sin(n.expandedFinalAngle + spiralOffset) * r;
 
           } else if (expanded !== null) {
-            // Other category moons — collapse toward their parent planet
             const parent = byId(n.parentId!);
             if (!parent) continue;
             n.spiralProgress = Math.max(0, n.spiralProgress - 0.04);
@@ -307,7 +264,6 @@ export function ProductCategoryGraph({
             n.homeY = parent.y;
 
           } else {
-            // Normal sway
             n.spiralProgress = Math.max(0, n.spiralProgress - 0.04);
             const parent = byId(n.parentId!);
             if (!parent) continue;
@@ -344,18 +300,30 @@ export function ProductCategoryGraph({
 
       // ── Hover detection ──────────────────────────────────────────────
       let hovPIdx = -1;
+      let hovMoonSlug: string | null = null;
       for (const n of nodes) {
-        if (n.type !== 'planet') continue;
-        const dx = n.x - cur.x, dy = n.y - cur.y;
-        if (Math.sqrt(dx * dx + dy * dy) < HOVER_R) { hovPIdx = n.pIdx; break; }
+        if (n.type === 'planet') {
+          const dx = n.x - cur.x, dy = n.y - cur.y;
+          if (Math.sqrt(dx * dx + dy * dy) < HOVER_R) { hovPIdx = n.pIdx; break; }
+        }
+        // Hover on expanded moon pills
+        if (n.type === 'moon' && expanded !== null && n.pIdx === expanded && n.spiralProgress > 0.3) {
+          ctx.font = "bold 8px 'Inter', sans-serif";
+          const tw = ctx.measureText(n.label ?? '').width;
+          const hw = tw / 2 + 8;
+          if (Math.abs(n.x - cur.x) < hw && Math.abs(n.y - cur.y) < 10) {
+            hovMoonSlug = n.slug;
+          }
+        }
       }
-      canvas.style.cursor = hovPIdx >= 0 ? 'pointer' : 'default';
+      canvas.style.cursor = (hovPIdx >= 0 || hovMoonSlug !== null) ? 'pointer' : 'default';
 
       // ── Draw ─────────────────────────────────────────────────────────
       ctx.clearRect(0, 0, width, height);
 
-      // Orbit rings
       const sun = byId('sun');
+
+      // Orbit rings
       if (sun) {
         ctx.save();
         ctx.globalAlpha = expanded !== null ? 0.02 : 0.05;
@@ -373,7 +341,7 @@ export function ProductCategoryGraph({
       }
 
       // Expanded ring guide
-      if (expanded !== null && sun) {
+      if (expanded !== null) {
         ctx.save();
         ctx.globalAlpha = 0.06;
         ctx.strokeStyle = PLANET_COLORS[expanded].glow;
@@ -388,13 +356,10 @@ export function ProductCategoryGraph({
       if (sun) {
         ctx.save();
         ctx.lineCap = 'round';
-
         for (let p = 0; p < 3; p++) {
           const planet = byId(`p${p}`);
           if (!planet) continue;
-
           const planetAlpha = expanded !== null && p !== expanded ? 0.15 : 1;
-
           const pg = ctx.createLinearGradient(planet.x, planet.y, sun.x, sun.y);
           pg.addColorStop(0, planet.color + '59');
           pg.addColorStop(1, planet.color + '0D');
@@ -406,7 +371,7 @@ export function ProductCategoryGraph({
           const catProducts = PRODUCTS.filter(prod => prod.category.id === PRODUCT_CATEGORIES[p].id);
           catProducts.forEach((_, m) => {
             const moon = byId(`p${p}m${m}`);
-            if (!moon) return;
+            if (!moon || moon.spiralProgress > 0.1) return; // hide thread when pill is showing
             const moonAlpha = moon.expandedOpacity * (expanded !== null && p !== expanded ? 0 : 0.5);
             if (moonAlpha < 0.01) return;
             const mg = ctx.createLinearGradient(moon.x, moon.y, planet.x, planet.y);
@@ -421,27 +386,21 @@ export function ProductCategoryGraph({
         ctx.restore();
       }
 
-      // Draw nodes
-      const order = [
-        ...nodes.filter(n => n.type === 'moon'),
-        ...nodes.filter(n => n.type === 'planet'),
-        ...nodes.filter(n => n.type === 'sun'),
-      ];
-      for (const n of order) {
-        const isHovered = n.type === 'planet' && n.pIdx === hovPIdx;
-        const isExpanded = n.type === 'planet' && n.pIdx === expanded;
-        const planetFade = expanded !== null && n.type === 'planet' && n.pIdx !== expanded ? 0.4 : 1;
-        const moonFade   = n.type === 'moon' ? n.expandedOpacity : 1;
-        drawNode(ctx, n, isHovered || isExpanded, t, planetFade * moonFade);
+      // Draw planet nodes
+      for (const n of nodes) {
+        if (n.type !== 'planet') continue;
+        const isHovered = n.pIdx === hovPIdx;
+        const isExpanded = n.pIdx === expanded;
+        const fade = expanded !== null && !isExpanded ? 0.4 : 1;
+        drawPlanet(ctx, n, isHovered || isExpanded, t, fade);
       }
 
-      // Planet labels — always visible inside nodes
+      // Planet labels inside nodes
       ctx.save();
       for (const n of nodes) {
         if (n.type !== 'planet') continue;
         const isExpanded = n.pIdx === expanded;
-        const alpha = expanded !== null && !isExpanded ? 0.4 : 1;
-        ctx.globalAlpha = alpha;
+        ctx.globalAlpha = expanded !== null && !isExpanded ? 0.4 : 1;
         ctx.font        = `bold 7px 'Inter', sans-serif`;
         ctx.textAlign   = 'center';
         ctx.textBaseline = 'middle';
@@ -449,6 +408,24 @@ export function ProductCategoryGraph({
         ctx.fillText((n.label ?? '').toUpperCase(), n.x, n.y);
       }
       ctx.restore();
+
+      // Draw moon nodes — pill when expanding, dot when collapsed
+      for (const n of nodes) {
+        if (n.type !== 'moon') continue;
+        if (n.spiralProgress > 0) {
+          // Draw name pill — this IS the node, no separate dot
+          drawMoonPill(ctx, n, n.slug === hovMoonSlug);
+        } else {
+          // Normal tiny dot
+          const moonFade = n.expandedOpacity;
+          if (moonFade < 0.01) continue;
+          ctx.save();
+          ctx.globalAlpha = 0.65 * moonFade;
+          ctx.fillStyle = n.color;
+          ctx.beginPath(); ctx.arc(n.x, n.y, n.radius, 0, Math.PI * 2); ctx.fill();
+          ctx.restore();
+        }
+      }
 
       rafRef.current = requestAnimationFrame(frame);
     };
@@ -471,9 +448,10 @@ export function ProductCategoryGraph({
     const r  = canvasRef.current!.getBoundingClientRect();
     const mx = e.clientX - r.left;
     const my = e.clientY - r.top;
+    const nodes = stateRef.current?.nodes ?? [];
 
-    // Check if a planet was clicked
-    for (const n of stateRef.current?.nodes ?? []) {
+    // Check planet clicks first
+    for (const n of nodes) {
       if (n.type !== 'planet') continue;
       const dx = n.x - mx, dy = n.y - my;
       if (Math.sqrt(dx * dx + dy * dy) < HOVER_R) {
@@ -482,17 +460,30 @@ export function ProductCategoryGraph({
         } else {
           triggerExpand(n.pIdx);
         }
-        e.stopPropagation(); // prevent right-panel onClick from also firing
+        e.stopPropagation();
         return;
       }
     }
 
-    // Background click on canvas — collapse if expanded
-    if (expandedRef.current !== null) {
+    // Check expanded moon pill clicks — navigate to product page
+    const expanded = expandedRef.current;
+    if (expanded !== null) {
+      for (const n of nodes) {
+        if (n.type !== 'moon' || n.pIdx !== expanded || n.spiralProgress < 0.3 || !n.slug) continue;
+        // Use generous pill hit area
+        const dx = Math.abs(n.x - mx);
+        const dy = Math.abs(n.y - my);
+        if (dx < 65 && dy < 12) {
+          router.push(`/products/${n.slug}`);
+          e.stopPropagation();
+          return;
+        }
+      }
+      // Background click — collapse
       triggerExpand(null);
     }
     e.stopPropagation();
-  }, [triggerExpand]);
+  }, [triggerExpand, router]);
 
   return (
     <canvas
@@ -508,8 +499,8 @@ export function ProductCategoryGraph({
   );
 }
 
-// ─── Draw node ────────────────────────────────────────────────────────────────
-function drawNode(
+// ─── Draw planet ──────────────────────────────────────────────────────────────
+function drawPlanet(
   ctx: CanvasRenderingContext2D,
   n: SolarNode,
   hovered: boolean,
@@ -517,47 +508,87 @@ function drawNode(
   alpha: number,
 ) {
   if (n.radius === 0 || alpha < 0.01) return;
-
-  const { x, y, radius, color, glow, type } = n;
-  const pulse = hovered ? 1.25 : 1;
-  const r = radius * pulse;
+  const { x, y, radius, color, glow } = n;
+  const r = radius * (hovered ? 1.25 : 1);
 
   ctx.save();
   ctx.globalAlpha = alpha;
 
-  const glowR    = type === 'planet' ? r * (hovered ? 4 : 2.8) : r * 3.5;
-  const alphaHex = type === 'moon'   ? '28' : hovered ? '55' : '33';
-
+  const glowR = r * (hovered ? 4 : 2.8);
   const g1 = ctx.createRadialGradient(x, y, 0, x, y, glowR);
-  g1.addColorStop(0,   glow + alphaHex);
+  g1.addColorStop(0,   glow + (hovered ? '55' : '33'));
   g1.addColorStop(0.5, glow + '18');
   g1.addColorStop(1,   glow + '00');
   ctx.fillStyle = g1;
   ctx.beginPath(); ctx.arc(x, y, glowR, 0, Math.PI * 2); ctx.fill();
 
-  if (type === 'planet') {
-    const g3 = ctx.createRadialGradient(x - r * 0.3, y - r * 0.3, r * 0.05, x, y, r);
-    g3.addColorStop(0,   hovered ? '#ffffff' : color + 'FF');
-    g3.addColorStop(0.6, color);
-    g3.addColorStop(1,   glow + 'CC');
-    ctx.fillStyle = g3;
-    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = hovered ? '#ffffff55' : color + '66';
-    ctx.lineWidth   = 0.8;
-    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.stroke();
-
-    // Pulsing ring to indicate clickability
-    const pulseR = r + 4 + Math.sin(t * 2.5) * 2;
-    ctx.strokeStyle = glow + '44';
-    ctx.lineWidth   = 1;
-    ctx.beginPath(); ctx.arc(x, y, pulseR, 0, Math.PI * 2); ctx.stroke();
-
-    ctx.restore();
-    return;
-  }
-
-  // Moon
-  ctx.fillStyle = color;
+  const g3 = ctx.createRadialGradient(x - r * 0.3, y - r * 0.3, r * 0.05, x, y, r);
+  g3.addColorStop(0,   hovered ? '#ffffff' : color + 'FF');
+  g3.addColorStop(0.6, color);
+  g3.addColorStop(1,   glow + 'CC');
+  ctx.fillStyle = g3;
   ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = hovered ? '#ffffff55' : color + '66';
+  ctx.lineWidth   = 0.8;
+  ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.stroke();
+
+  // Pulsing ring
+  const pulseR = r + 4 + Math.sin(t * 2.5) * 2;
+  ctx.strokeStyle = glow + '44';
+  ctx.lineWidth   = 1;
+  ctx.beginPath(); ctx.arc(x, y, pulseR, 0, Math.PI * 2); ctx.stroke();
+
+  ctx.restore();
+}
+
+// ─── Draw moon pill — name IS the node ───────────────────────────────────────
+function drawMoonPill(
+  ctx: CanvasRenderingContext2D,
+  n: SolarNode,
+  hovered: boolean,
+) {
+  if (!n.label || n.spiralProgress <= 0) return;
+
+  // Fade in quickly at start of spiral
+  const opacity = Math.min(1, n.spiralProgress * 2.5);
+  if (opacity < 0.01) return;
+
+  const { x, y, color, glow } = n;
+  const text = n.label;
+
+  ctx.save();
+  ctx.font = "600 8px 'Inter', sans-serif";
+  const textW = ctx.measureText(text).width;
+  const padX  = 7;
+  const padY  = 4;
+  const w     = textW + padX * 2;
+  const h     = 16;
+  const rx    = 4;
+
+  ctx.globalAlpha = opacity;
+
+  // Subtle glow behind pill
+  const glowR = h * 2;
+  const g1 = ctx.createRadialGradient(x, y, 0, x, y, glowR);
+  g1.addColorStop(0,   glow + '22');
+  g1.addColorStop(1,   glow + '00');
+  ctx.fillStyle = g1;
+  ctx.beginPath(); ctx.arc(x, y, glowR, 0, Math.PI * 2); ctx.fill();
+
+  // Pill background
+  ctx.fillStyle = hovered ? 'rgba(30,64,175,0.75)' : 'rgba(10,18,35,0.88)';
+  ctx.strokeStyle = hovered ? color : color + '88';
+  ctx.lineWidth   = hovered ? 1.2 : 0.8;
+  ctx.beginPath();
+  ctx.roundRect(x - w / 2, y - h / 2, w, h, rx);
+  ctx.fill();
+  ctx.stroke();
+
+  // Text
+  ctx.fillStyle   = hovered ? '#ffffff' : '#CBD5E1';
+  ctx.textAlign   = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text, x, y);
+
   ctx.restore();
 }
