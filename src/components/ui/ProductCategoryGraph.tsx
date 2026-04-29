@@ -20,8 +20,10 @@ const HOVER_R       = 28;
 const SWAY_SPD_X    = 0.8;
 const SWAY_SPD_Y    = 0.6;
 const PLANET_RADIUS = 22;
-const EXPAND_RING_R = 185;
-const OUTER_ORBIT_R = 195;
+const EXPAND_RING_INNER = 155;  // inner ring radius for alternating pill layout
+const EXPAND_RING_OUTER = 215;  // outer ring radius — safe within 520px canvas (260-215=45px)
+const EXPAND_RING_R     = 185;  // kept for ring guide visual only
+const OUTER_ORBIT_R = 190;  // non-selected planets pushed outward — stays within canvas
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface SolarNode {
@@ -44,15 +46,37 @@ interface SolarNode {
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
+// Two alternating rings so adjacent pills don't overlap.
+// Even indices → outer ring, odd indices → inner ring.
+// Items are distributed by their ring-local index so spacing is even within each ring.
 function calcRadialPositions(cx: number, cy: number, count: number): Array<{ x: number; y: number; angle: number }> {
-  return Array.from({ length: count }, (_, i) => {
-    const angle = (i / count) * Math.PI * 2 - Math.PI / 2;
-    return {
-      x: cx + Math.cos(angle) * EXPAND_RING_R,
-      y: cy + Math.sin(angle) * EXPAND_RING_R,
+  // Split into two groups: even indices (outer) and odd indices (inner)
+  const outerIndices = Array.from({ length: count }, (_, i) => i).filter(i => i % 2 === 0);
+  const innerIndices = Array.from({ length: count }, (_, i) => i).filter(i => i % 2 === 1);
+
+  const result: Array<{ x: number; y: number; angle: number }> = new Array(count);
+
+  outerIndices.forEach((origIdx, rankInOuter) => {
+    const angle = (rankInOuter / outerIndices.length) * Math.PI * 2 - Math.PI / 2;
+    result[origIdx] = {
+      x: cx + Math.cos(angle) * EXPAND_RING_OUTER,
+      y: cy + Math.sin(angle) * EXPAND_RING_OUTER,
       angle,
     };
   });
+
+  innerIndices.forEach((origIdx, rankInInner) => {
+    // Offset inner ring by half a step so inner pills sit between outer ones
+    const angleOffset = (0.5 / innerIndices.length) * Math.PI * 2;
+    const angle = (rankInInner / innerIndices.length) * Math.PI * 2 - Math.PI / 2 + angleOffset;
+    result[origIdx] = {
+      x: cx + Math.cos(angle) * EXPAND_RING_INNER,
+      y: cy + Math.sin(angle) * EXPAND_RING_INNER,
+      angle,
+    };
+  });
+
+  return result;
 }
 
 function buildNodes(cx: number, cy: number): SolarNode[] {
