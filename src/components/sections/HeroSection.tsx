@@ -64,7 +64,7 @@ export default function HeroSection() {
       {/* 2-column layout: text left (anchored to left), graph+placeholder right (larger) */}
       <div
         className="relative z-10 w-full flex flex-col md:flex-row items-center"
-        style={{ minHeight: 'calc(100vh - 4rem)', padding: '3rem 2rem 3rem 4rem' }}
+        style={{ minHeight: 'calc(100vh - 4rem)', padding: '3rem 2rem 3rem 7rem' }}
       >
 
         {/* LEFT — Text content */}
