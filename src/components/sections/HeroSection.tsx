@@ -296,6 +296,7 @@ export default function HeroSection() {
                     alt="Navodaya logo"
                     width={72}
                     height={72}
+                    priority
                     style={{
                       width: '72px',
                       height: '72px',

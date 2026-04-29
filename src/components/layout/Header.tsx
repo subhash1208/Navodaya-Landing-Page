@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -57,12 +58,13 @@ export default function Header() {
           style={{ ['--tw-ring-color' as string]: '#1E40AF' }}
           aria-label="Navodaya home"
         >
-          <img
+          <Image
             src="/navodaya-logo.png"
             alt="Navodaya logo"
             width={36}
             height={36}
-            style={{ width: '36px', height: '36px', objectFit: 'contain', display: 'block' }}
+            priority
+            style={{ width: '36px', height: '36px', objectFit: 'contain' }}
           />
           <div className="flex flex-col leading-tight">
             <span className="font-bold text-base text-white">{BRAND.NAME}</span>
