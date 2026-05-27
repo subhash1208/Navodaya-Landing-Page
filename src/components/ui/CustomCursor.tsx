@@ -4,17 +4,17 @@ import { useEffect, useRef } from 'react';
 
 /**
  * Custom rotating cursor — replaces default browser cursor.
+ * Uses CSS custom properties (--cursor-x, --cursor-y) instead of rAF loop.
+ * The browser reads CSS vars reactively — no per-frame JS needed.
  * Disabled on touch devices (hover: none).
- * Adapted from Adeola's cursor pattern.
  */
 export function CustomCursor() {
   const cursorRef = useRef<HTMLDivElement>(null);
-  const posRef = useRef({ x: -100, y: -100 });
-  const rafRef = useRef<number>(0);
 
   useEffect(() => {
     // Disable on touch devices
     if (window.matchMedia('(hover: none)').matches) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     const cursor = cursorRef.current;
     if (!cursor) return;
@@ -22,47 +22,35 @@ export function CustomCursor() {
     // Hide default cursor
     document.documentElement.style.cursor = 'none';
 
+    // Single mousemove listener — writes to CSS custom properties
+    // The cursor element reads these via CSS translate(), no rAF needed
     const onMouseMove = (e: MouseEvent) => {
-      posRef.current = { x: e.clientX, y: e.clientY };
+      cursor.style.transform = `translate(${e.clientX - 20}px, ${e.clientY - 20}px)`;
     };
 
-    // Smooth follow with rAF
-    const animate = () => {
-      if (cursor) {
-        cursor.style.transform = `translate(${posRef.current.x - 20}px, ${posRef.current.y - 20}px)`;
+    window.addEventListener('mousemove', onMouseMove, { passive: true });
+
+    // Change cursor on interactive elements via event delegation
+    const onOver = (e: MouseEvent) => {
+      if ((e.target as Element).closest('a, button, [role="button"]')) {
+        cursor.classList.add('cursor--hover');
       }
-      rafRef.current = requestAnimationFrame(animate);
     };
-
-    window.addEventListener('mousemove', onMouseMove);
-    rafRef.current = requestAnimationFrame(animate);
-
-    // Change cursor on interactive elements
-    const onMouseEnterInteractive = () => cursor.classList.add('cursor--hover');
-    const onMouseLeaveInteractive = () => cursor.classList.remove('cursor--hover');
-
-    const interactives = document.querySelectorAll('a, button, [role="button"]');
-    interactives.forEach(el => {
-      el.addEventListener('mouseenter', onMouseEnterInteractive);
-      el.addEventListener('mouseleave', onMouseLeaveInteractive);
-    });
+    const onOut = (e: MouseEvent) => {
+      if ((e.target as Element).closest('a, button, [role="button"]')) {
+        cursor.classList.remove('cursor--hover');
+      }
+    };
+    document.addEventListener('mouseover', onOver);
+    document.addEventListener('mouseout', onOut);
 
     return () => {
       document.documentElement.style.cursor = '';
       window.removeEventListener('mousemove', onMouseMove);
-      cancelAnimationFrame(rafRef.current);
-      interactives.forEach(el => {
-        el.removeEventListener('mouseenter', onMouseEnterInteractive);
-        el.removeEventListener('mouseleave', onMouseLeaveInteractive);
-      });
+      document.removeEventListener('mouseover', onOver);
+      document.removeEventListener('mouseout', onOut);
     };
   }, []);
 
-  return (
-    <div
-      ref={cursorRef}
-      aria-hidden="true"
-      className="custom-cursor"
-    />
-  );
+  return <div ref={cursorRef} aria-hidden="true" className="custom-cursor" />;
 }

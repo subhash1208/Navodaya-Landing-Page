@@ -8,7 +8,7 @@ import { Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { BRAND, NAV_LINKS, ROUTES } from '@/constants';
 
-export default function Header() {
+export function Header() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -50,7 +50,6 @@ export default function Header() {
           pointerEvents: 'all',
         }}
       >
-
         {/* Logo */}
         <Link
           href={ROUTES.HOME}
@@ -68,7 +67,12 @@ export default function Header() {
           />
           <div className="flex flex-col leading-tight">
             <span className="font-bold text-base text-white">{BRAND.NAME}</span>
-            <span className="text-[10px] tracking-wide hidden sm:block" style={{ color: '#CBD5E1' }}>Industries &amp; Care Kits</span>
+            <span
+              className="text-[10px] tracking-wide hidden sm:block"
+              style={{ color: '#CBD5E1' }}
+            >
+              Industries &amp; Care Kits
+            </span>
           </div>
         </Link>
 
@@ -136,6 +140,7 @@ export default function Header() {
               background: '#FFFFFF',
               borderBottom: '1px solid #E2E8F0',
               boxShadow: '0 4px 16px rgba(15,23,42,0.08)',
+              pointerEvents: 'all',
             }}
           >
             <ul className="flex flex-col py-2 px-4 gap-1" style={{ perspective: '1000px' }}>

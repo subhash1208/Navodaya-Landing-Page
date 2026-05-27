@@ -1,0 +1,17 @@
+#!/bin/sh
+
+echo "🔍 Running pre-commit checks..."
+
+# 1. Format check (Prettier)
+echo "📐 Checking formatting..."
+npx prettier --check . || { echo "❌ Formatting failed. Run 'npm run format' to fix."; exit 1; }
+
+# 2. Lint (ESLint)
+echo "🧹 Running linter..."
+npx eslint . || { echo "❌ Lint failed. Fix ESLint errors before committing."; exit 1; }
+
+# 3. Tests + Coverage (Vitest with 90% threshold)
+echo "🧪 Running tests with coverage..."
+npx vitest run --coverage || { echo "❌ Tests failed or coverage below 90%. Fix before committing."; exit 1; }
+
+echo "✅ All checks passed!"

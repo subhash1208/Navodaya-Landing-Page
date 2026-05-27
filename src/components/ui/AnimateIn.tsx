@@ -23,11 +23,11 @@ export function AnimateIn({
   style,
 }: AnimateInProps) {
   const offsets = {
-    up:    { y: 40, x: 0 },
-    down:  { y: -40, x: 0 },
-    left:  { y: 0, x: 40 },
+    up: { y: 40, x: 0 },
+    down: { y: -40, x: 0 },
+    left: { y: 0, x: 40 },
     right: { y: 0, x: -40 },
-    none:  { y: 0, x: 0 },
+    none: { y: 0, x: 0 },
   };
 
   const { x, y } = offsets[direction];

@@ -1,14 +1,50 @@
 // Placeholder testimonials — replace with real client quotes when available
 const TESTIMONIALS = [
-  { quote: "Navodaya's hygiene products have been a game-changer for our hotel chain. Consistent quality, on-time delivery.", name: "Rajesh Kumar", role: "GM, Grand Palace Hotels", location: "Hyderabad" },
-  { quote: "We've been sourcing spa disposables from Navodaya for 2 years. Never had a quality issue. Highly recommended.", name: "Priya Sharma", role: "Operations Head, Serenity Spas", location: "Bangalore" },
-  { quote: "The biodegradable options are exactly what our eco-conscious hospital needed. Great B2B partner.", name: "Dr. Anand Rao", role: "Admin Director, Apollo Clinics", location: "Chennai" },
-  { quote: "Bulk orders handled seamlessly. The team is responsive and the products meet all our hygiene standards.", name: "Meena Patel", role: "Procurement Manager, Taj Hotels", location: "Mumbai" },
-  { quote: "From surgical gowns to guest amenities — one supplier for everything. Saves us so much time.", name: "Suresh Nair", role: "Supply Chain Head, Leela Resorts", location: "Goa" },
-  { quote: "Excellent quality at competitive B2B pricing. Our salon chain has been a loyal customer for 3 years.", name: "Kavitha Reddy", role: "Owner, Glam Studio Chain", location: "Hyderabad" },
+  {
+    quote:
+      "Navodaya's hygiene products have been a game-changer for our hotel chain. Consistent quality, on-time delivery.",
+    name: 'Rajesh Kumar',
+    role: 'GM, Grand Palace Hotels',
+    location: 'Hyderabad',
+  },
+  {
+    quote:
+      "We've been sourcing spa disposables from Navodaya for 2 years. Never had a quality issue. Highly recommended.",
+    name: 'Priya Sharma',
+    role: 'Operations Head, Serenity Spas',
+    location: 'Bangalore',
+  },
+  {
+    quote:
+      'The biodegradable options are exactly what our eco-conscious hospital needed. Great B2B partner.',
+    name: 'Dr. Anand Rao',
+    role: 'Admin Director, Apollo Clinics',
+    location: 'Chennai',
+  },
+  {
+    quote:
+      'Bulk orders handled seamlessly. The team is responsive and the products meet all our hygiene standards.',
+    name: 'Meena Patel',
+    role: 'Procurement Manager, Taj Hotels',
+    location: 'Mumbai',
+  },
+  {
+    quote:
+      'From surgical gowns to guest amenities — one supplier for everything. Saves us so much time.',
+    name: 'Suresh Nair',
+    role: 'Supply Chain Head, Leela Resorts',
+    location: 'Goa',
+  },
+  {
+    quote:
+      'Excellent quality at competitive B2B pricing. Our salon chain has been a loyal customer for 3 years.',
+    name: 'Kavitha Reddy',
+    role: 'Owner, Glam Studio Chain',
+    location: 'Hyderabad',
+  },
 ];
 
-function TestimonialCard({ quote, name, role, location }: typeof TESTIMONIALS[0]) {
+function TestimonialCard({ quote, name, role, location }: (typeof TESTIMONIALS)[0]) {
   return (
     <div
       className="shrink-0 w-80 mx-3 rounded-2xl p-6 border"
@@ -21,8 +57,12 @@ function TestimonialCard({ quote, name, role, location }: typeof TESTIMONIALS[0]
         &ldquo;{quote}&rdquo;
       </p>
       <div>
-        <p className="text-sm font-semibold" style={{ color: '#FFFFFF' }}>{name}</p>
-        <p className="text-xs mt-0.5" style={{ color: '#585E6E' }}>{role} · {location}</p>
+        <p className="text-sm font-semibold" style={{ color: '#FFFFFF' }}>
+          {name}
+        </p>
+        <p className="text-xs mt-0.5" style={{ color: '#585E6E' }}>
+          {role} · {location}
+        </p>
       </div>
     </div>
   );

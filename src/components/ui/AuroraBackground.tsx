@@ -38,7 +38,7 @@ export function AuroraBackground({ children, className }: AuroraBackgroundProps)
             // Positioning
             'absolute -inset-[10px] opacity-40 will-change-transform',
             // Mask — visible only in top-right area
-            '[mask-image:radial-gradient(ellipse_at_80%_20%,black_10%,transparent_70%)]'
+            '[mask-image:radial-gradient(ellipse_at_80%_20%,black_10%,transparent_70%)]',
           )}
         />
       </div>

@@ -16,7 +16,7 @@ const HEADLINE_LINE2 = 'Solutions for Every Industry';
 export default function HeroSection() {
   const [line2Visible, setLine2Visible] = useState(false);
   const [contentVisible, setContentVisible] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState<boolean | null>(null);
   const [logoScale, setLogoScale] = useState(1);
   const collapseRef = useRef<(() => void) | null>(null);
   const rightPanelRef = useRef<HTMLDivElement>(null);
@@ -54,7 +54,8 @@ export default function HeroSection() {
         aria-hidden="true"
         className="absolute inset-0 pointer-events-none"
         style={{
-          background: 'radial-gradient(ellipse 80% 60% at 70% 50%, rgba(30,64,175,0.12) 0%, transparent 70%)',
+          background:
+            'radial-gradient(ellipse 80% 60% at 70% 50%, rgba(30,64,175,0.12) 0%, transparent 70%)',
         }}
       />
 
@@ -63,13 +64,14 @@ export default function HeroSection() {
 
       {/* 2-column layout: text left (anchored to left), graph+placeholder right (larger) */}
       <div
-        className="relative z-10 w-full flex flex-col md:flex-row items-center"
-        style={{ minHeight: 'calc(100vh - 4rem)', padding: '3rem 2rem 3rem 7rem' }}
+        className="relative z-10 w-full flex flex-col md:flex-row items-center px-6 py-12 md:pl-28 md:pr-8 md:py-12"
+        style={{ minHeight: 'calc(100vh - 4rem)' }}
       >
-
         {/* LEFT — Text content */}
-        <div className="flex flex-col justify-center text-center md:text-left md:pr-6" style={{ width: '42%', minWidth: '320px', flexShrink: 0 }}>
-
+        <div
+          className="flex flex-col justify-center text-center md:text-left md:pr-6"
+          style={{ width: '42%', minWidth: '320px', flexShrink: 0 }}
+        >
           {/* Badge */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -105,118 +107,128 @@ export default function HeroSection() {
             <AnimatePresence>
               {line2Visible && (
                 <motion.span
-                  className="block animate-gradient-shift"
-                  initial={{ opacity: 0, clipPath: 'inset(0 100% 0 0)' }}
-                  animate={{ opacity: 1, clipPath: 'inset(0 0% 0 0)' }}
+                  className="block"
+                  initial={{ opacity: 0, width: '0%' }}
+                  animate={{ opacity: 1, width: '100%' }}
                   transition={{ duration: 0.8, ease: [0.4, 0, 0.2, 1] }}
-                  style={{
-                    background: 'linear-gradient(-45deg, #60A5FA, #818CF8, #38BDF8, #60A5FA)',
-                    backgroundSize: '400% 400%',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text',
-                  }}
+                  style={{ overflow: 'hidden', display: 'block' }}
                 >
-                  {HEADLINE_LINE2}
+                  <span
+                    className="animate-gradient-shift"
+                    style={{
+                      display: 'inline-block',
+                      background: 'linear-gradient(-45deg, #60A5FA, #818CF8, #38BDF8, #60A5FA)',
+                      backgroundSize: '400% 400%',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      backgroundClip: 'text',
+                    }}
+                  >
+                    {HEADLINE_LINE2}
+                  </span>
                 </motion.span>
               )}
             </AnimatePresence>
           </h1>
 
           {/* Subheadline */}
-          <AnimatePresence>
-            {contentVisible && (
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                className="text-base leading-relaxed mb-8 mt-5 max-w-lg"
-                style={{ color: '#94A3B8' }}
-              >
-                {BRAND.MISSION}
-              </motion.p>
-            )}
-          </AnimatePresence>
+          {contentVisible && (
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="text-base leading-relaxed mb-8 mt-5 max-w-lg"
+              style={{ color: '#94A3B8' }}
+            >
+              {BRAND.MISSION}
+            </motion.p>
+          )}
 
           {/* CTAs */}
-          <AnimatePresence>
-            {contentVisible && (
+          {contentVisible && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex flex-col sm:flex-row items-center md:items-start justify-center md:justify-start gap-4 mb-10"
+            >
               <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="flex flex-col sm:flex-row items-center md:items-start justify-center md:justify-start gap-4 mb-10"
+                initial={{ opacity: 0, y: 40 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
               >
-                <motion.div
-                  initial={{ opacity: 0, y: 40 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                <Link
+                  href={ROUTES.PRODUCTS}
+                  className="group inline-flex items-center gap-2.5 rounded-full font-semibold text-base text-white transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 px-7 py-3.5 min-h-[48px]"
+                  style={{
+                    background: 'linear-gradient(135deg, #1E40AF, #1D4ED8)',
+                    boxShadow: '0 4px 24px rgba(30,64,175,0.5)',
+                  }}
                 >
-                  <Link
-                    href={ROUTES.PRODUCTS}
-                    className="group inline-flex items-center gap-2.5 rounded-full font-semibold text-base text-white transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 px-7 py-3.5 min-h-[48px]"
-                    style={{
-                      background: 'linear-gradient(135deg, #1E40AF, #1D4ED8)',
-                      boxShadow: '0 4px 24px rgba(30,64,175,0.5)',
-                    }}
-                  >
-                    Explore Products
-                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" aria-hidden="true" />
-                  </Link>
-                </motion.div>
-
-                <motion.div
-                  initial={{ opacity: 0, y: 40 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ type: 'spring', stiffness: 300, damping: 20, delay: 0.08 }}
-                >
-                  <Link
-                    href={ROUTES.CONTACT}
-                    className="inline-flex items-center gap-2 rounded-full font-semibold text-base transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 px-7 py-3.5 min-h-[48px]"
-                    style={{
-                      border: '2px solid rgba(255,255,255,0.2)',
-                      color: '#E2E8F0',
-                      background: 'rgba(255,255,255,0.05)',
-                      backdropFilter: 'blur(8px)',
-                    }}
-                  >
-                    Get a Quote
-                  </Link>
-                </motion.div>
+                  Explore Products
+                  <ArrowRight
+                    className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200"
+                    aria-hidden="true"
+                  />
+                </Link>
               </motion.div>
-            )}
-          </AnimatePresence>
+
+              <motion.div
+                initial={{ opacity: 0, y: 40 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 20, delay: 0.08 }}
+              >
+                <Link
+                  href={ROUTES.CONTACT}
+                  className="inline-flex items-center gap-2 rounded-full font-semibold text-base transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 px-7 py-3.5 min-h-[48px]"
+                  style={{
+                    border: '2px solid rgba(255,255,255,0.2)',
+                    color: '#E2E8F0',
+                    background: 'rgba(255,255,255,0.05)',
+                    backdropFilter: 'blur(8px)',
+                  }}
+                >
+                  Get a Quote
+                </Link>
+              </motion.div>
+            </motion.div>
+          )}
 
           {/* Trust stats */}
-          <AnimatePresence>
-            {contentVisible && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-                className="inline-flex items-center rounded-2xl self-center md:self-start"
-                style={{
-                  background: 'rgba(255,255,255,0.05)',
-                  backdropFilter: 'blur(12px)',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                  padding: '16px 32px',
-                }}
-              >
-                {[
-                  { value: '51+', label: 'Products' },
-                  { value: '3', label: 'Categories' },
-                  { value: 'B2B', label: 'Focused' },
-                ].map(({ value, label }, i) => (
-                  <div key={label} className="flex items-center">
-                    <div className="text-center px-6">
-                      <div className="text-xl font-black text-white">{value}</div>
-                      <div className="text-[11px] font-medium mt-0.5" style={{ color: '#64748B' }}>{label}</div>
+          {contentVisible && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="inline-flex items-center rounded-2xl self-center md:self-start"
+              style={{
+                background: 'rgba(255,255,255,0.05)',
+                backdropFilter: 'blur(12px)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                padding: '16px 32px',
+              }}
+            >
+              {[
+                { value: '51+', label: 'Products' },
+                { value: '3', label: 'Categories' },
+                { value: 'B2B', label: 'Focused' },
+              ].map(({ value, label }, i) => (
+                <div key={label} className="flex items-center">
+                  <div className="text-center px-6">
+                    <div className="text-xl font-black text-white">{value}</div>
+                    <div className="text-[11px] font-medium mt-0.5" style={{ color: '#64748B' }}>
+                      {label}
                     </div>
-                    {i < 2 && <div className="w-px h-7 shrink-0" style={{ background: 'rgba(255,255,255,0.1)' }} />}
                   </div>
-                ))}
-              </motion.div>
-            )}
-          </AnimatePresence>
+                  {i < 2 && (
+                    <div
+                      className="w-px h-7 shrink-0"
+                      style={{ background: 'rgba(255,255,255,0.1)' }}
+                    />
+                  )}
+                </div>
+              ))}
+            </motion.div>
+          )}
         </div>
 
         {/* RIGHT — Graph + 3D Placeholder */}
@@ -225,16 +237,24 @@ export default function HeroSection() {
           className="relative hidden md:flex items-center justify-center"
           style={{ flex: 1, minHeight: '520px' }}
           onClick={() => collapseRef.current?.()}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') collapseRef.current?.();
+          }}
+          role="button"
+          tabIndex={0}
+          aria-label="Click to collapse expanded category"
         >
           {/* Canvas graph — pills spiral with nodes, no HTML overlay needed */}
           <div className="absolute inset-0 flex items-center justify-center">
-            <ProductCategoryGraph
-              width={520}
-              height={520}
-              isMobile={isMobile}
-              onLogoScale={handleLogoScale}
-              collapseRef={collapseRef}
-            />
+            {isMobile !== null && (
+              <ProductCategoryGraph
+                width={520}
+                height={520}
+                isMobile={isMobile}
+                onLogoScale={handleLogoScale}
+                collapseRef={collapseRef}
+              />
+            )}
           </div>
 
           {/* 3D Logo Placeholder — pointer-events-none so clicks pass through to canvas */}
@@ -246,16 +266,14 @@ export default function HeroSection() {
               style={{ width: '130px', height: '130px' }}
             >
               <svg
-                width="130" height="130"
+                width="130"
+                height="130"
                 viewBox="0 0 130 130"
                 className="absolute inset-0"
                 aria-hidden="true"
               >
                 <defs>
-                  <path
-                    id="orbitPath"
-                    d="M 13,65 a 52,52 0 1,1 104,0 a 52,52 0 1,1 -104,0"
-                  />
+                  <path id="orbitPath" d="M 13,65 a 52,52 0 1,1 104,0 a 52,52 0 1,1 -104,0" />
                 </defs>
                 <text
                   fontSize="7"
@@ -265,7 +283,7 @@ export default function HeroSection() {
                   fill="rgba(56,189,248,0.7)"
                 >
                   <textPath href="#orbitPath" startOffset="0%">
-                    YOUR TRUSTED PARTNER IN PROGRESS AND CARE · 
+                    YOUR TRUSTED PARTNER IN PROGRESS AND CARE ·
                   </textPath>
                 </text>
               </svg>

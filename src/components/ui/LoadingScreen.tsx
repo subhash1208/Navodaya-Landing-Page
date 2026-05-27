@@ -42,11 +42,11 @@ export function LoadingScreen({ children }: LoadingScreenProps) {
 
     // Animation stages
     const timers = [
-      setTimeout(() => setStage(1), 100),     // Logo
-      setTimeout(() => setStage(2), 600),      // Letters
-      setTimeout(() => setStage(3), 1700),     // Tagline
-      setTimeout(() => setStage(4), 2200),     // Motto
-      setTimeout(() => setStage(5), 2700),     // Progress bar
+      setTimeout(() => setStage(1), 100), // Logo
+      setTimeout(() => setStage(2), 600), // Letters
+      setTimeout(() => setStage(3), 1700), // Tagline
+      setTimeout(() => setStage(4), 2200), // Motto
+      setTimeout(() => setStage(5), 2700), // Progress bar
       setTimeout(() => {
         setStage(6); // Exit
         sessionStorage.setItem(SESSION_KEY, '1');
@@ -57,8 +57,21 @@ export function LoadingScreen({ children }: LoadingScreenProps) {
     return () => timers.forEach(clearTimeout);
   }, []);
 
-  // Not yet determined — render nothing to avoid flash
-  if (show === null) return <>{children}</>;
+  // Not yet determined (SSR / pre-hydration) — show the loading overlay immediately
+  // so the main page never flashes before we know whether to show the intro
+  if (show === null) {
+    return (
+      <div
+        style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 9999,
+          background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)',
+        }}
+        aria-hidden="true"
+      />
+    );
+  }
 
   // Already seen — skip entirely
   if (!show) return <>{children}</>;
@@ -87,7 +100,10 @@ export function LoadingScreen({ children }: LoadingScreenProps) {
             }}
           >
             {/* Floating particles */}
-            <div aria-hidden="true" style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+            <div
+              aria-hidden="true"
+              style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}
+            >
               {[
                 { top: '20%', left: '15%', size: 6, delay: 0, dur: 7 },
                 { top: '60%', left: '75%', size: 4, delay: 1, dur: 9 },
@@ -129,8 +145,16 @@ export function LoadingScreen({ children }: LoadingScreenProps) {
             />
 
             {/* Content */}
-            <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px' }}>
-
+            <div
+              style={{
+                position: 'relative',
+                zIndex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '24px',
+              }}
+            >
               {/* Stage 1: Logo */}
               <motion.div
                 initial={{ opacity: 0, scale: 0.5 }}
@@ -190,7 +214,8 @@ export function LoadingScreen({ children }: LoadingScreenProps) {
                     left: '-100%',
                     width: '100%',
                     height: '60px',
-                    background: 'linear-gradient(90deg, transparent, rgba(56,189,248,0.3), transparent)',
+                    background:
+                      'linear-gradient(90deg, transparent, rgba(56,189,248,0.3), transparent)',
                     animation: 'gradientSweep 0.8s ease 1.3s forwards',
                     pointerEvents: 'none',
                   }}
@@ -232,7 +257,15 @@ export function LoadingScreen({ children }: LoadingScreenProps) {
                     alignItems: 'center',
                   }}
                 >
-                  {['HOTELS', 'HOSPITALS', 'SPAS', 'SALONS', 'INDUSTRIES', 'CORPORATE', 'WELLNESS'].map(word => (
+                  {[
+                    'HOTELS',
+                    'HOSPITALS',
+                    'SPAS',
+                    'SALONS',
+                    'INDUSTRIES',
+                    'CORPORATE',
+                    'WELLNESS',
+                  ].map((word) => (
                     <span
                       key={word}
                       style={{
@@ -267,7 +300,16 @@ export function LoadingScreen({ children }: LoadingScreenProps) {
               </motion.p>
 
               {/* Stage 5: Progress bar */}
-              <div style={{ width: '200px', height: '2px', background: 'rgba(255,255,255,0.1)', borderRadius: '9999px', overflow: 'hidden', marginTop: '16px' }}>
+              <div
+                style={{
+                  width: '200px',
+                  height: '2px',
+                  background: 'rgba(255,255,255,0.1)',
+                  borderRadius: '9999px',
+                  overflow: 'hidden',
+                  marginTop: '16px',
+                }}
+              >
                 <motion.div
                   initial={{ width: '0%' }}
                   animate={stage >= 5 ? { width: '100%' } : {}}

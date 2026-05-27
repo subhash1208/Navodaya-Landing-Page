@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { Inter, Outfit, Plus_Jakarta_Sans } from 'next/font/google';
 import './globals.css';
 import { BRAND } from '@/constants';
-import Header from '@/components/layout/Header';
+import { Header } from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { SkipNav } from '@/components/ui/SkipNav';
 import { PageTransition } from '@/components/ui/PageTransition';
@@ -34,7 +34,13 @@ export const metadata: Metadata = {
     template: `%s | ${BRAND.NAME}`,
   },
   description: `${BRAND.FULL_NAME}. ${BRAND.MISSION} Based in ${BRAND.LOCATION}.`,
-  keywords: ['disposable hygiene products', 'hotel amenities', 'spa salon disposables', 'Hyderabad supplier', 'care kits'],
+  keywords: [
+    'disposable hygiene products',
+    'hotel amenities',
+    'spa salon disposables',
+    'Hyderabad supplier',
+    'care kits',
+  ],
   authors: [{ name: BRAND.FULL_NAME }],
   metadataBase: new URL('https://www.navodaya.group'),
   openGraph: {
@@ -51,9 +57,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{ children: React.ReactNode }>) {
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${inter.variable} ${outfit.variable} ${plusJakarta.variable}`}>
       <head>
@@ -64,13 +68,13 @@ export default function RootLayout({
         <SkipNav />
         <CustomCursor />
         <LenisProvider>
-        <PageTransition>
-          <Header />
-          <main id="main-content" className="pt-20">
-            {children}
-          </main>
-          <Footer />
-        </PageTransition>
+          <PageTransition>
+            <Header />
+            <main id="main-content" className="pt-20">
+              {children}
+            </main>
+            <Footer />
+          </PageTransition>
         </LenisProvider>
         <Analytics />
       </body>

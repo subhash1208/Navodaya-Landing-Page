@@ -16,13 +16,12 @@ function validateForm(data: ContactFormData): string | null {
   if (!data.companyEmail?.trim()) return 'Company email is required.';
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.companyEmail)) return 'Invalid email address.';
   if (!data.contactPersonName?.trim()) return 'Contact person name is required.';
+  if (!/^\+?[\d\s\-()]{7,15}$/.test(data.contactPersonNumber)) return 'Invalid phone number.';
   if (!data.contactPersonNumber?.trim()) return 'Contact number is required.';
   return null;
 }
 
-export async function submitContactForm(
-  data: ContactFormData
-): Promise<ContactActionResult> {
+export async function submitContactForm(data: ContactFormData): Promise<ContactActionResult> {
   // Server-side validation
   const validationError = validateForm(data);
   if (validationError) {
