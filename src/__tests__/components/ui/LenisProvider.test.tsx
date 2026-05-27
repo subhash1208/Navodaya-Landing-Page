@@ -19,6 +19,7 @@ vi.mock('lenis', () => {
 
 const mockTickerAdd = vi.fn();
 const mockTickerLagSmoothing = vi.fn();
+const mockTickerRemove = vi.fn();
 
 vi.mock('gsap', () => ({
   gsap: {
@@ -26,6 +27,7 @@ vi.mock('gsap', () => ({
     ticker: {
       add: (...args: any[]) => mockTickerAdd(...args),
       lagSmoothing: (...args: any[]) => mockTickerLagSmoothing(...args),
+      remove: (...args: any[]) => mockTickerRemove(...args),
     },
   },
 }));
@@ -43,6 +45,7 @@ describe('LenisProvider', () => {
     mockRaf.mockClear();
     mockTickerAdd.mockClear();
     mockTickerLagSmoothing.mockClear();
+    mockTickerRemove.mockClear();
     // Reset matchMedia to default (no reduced motion)
     vi.mocked(window.matchMedia).mockImplementation((query: string) => ({
       matches: false,

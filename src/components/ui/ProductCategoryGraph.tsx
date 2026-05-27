@@ -690,7 +690,6 @@ function drawMoonPill(ctx: CanvasRenderingContext2D, n: SolarNode, hovered: bool
   ctx.font = "600 8px 'Inter', sans-serif";
   const textW = ctx.measureText(text).width;
   const padX = 7;
-  const padY = 4;
   const w = textW + padX * 2;
   const h = 16;
   const rx = 4;

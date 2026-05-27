@@ -33,7 +33,7 @@ export function AuroraBackground({ children, className }: AuroraBackgroundProps)
             'after:[background-image:var(--dark-gradient),var(--aurora)]',
             'after:[background-size:200%,_100%]',
             'after:animate-aurora',
-            'after:[background-attachment:fixed]',
+            'after:[background-attachment:scroll]',
             'after:mix-blend-difference',
             // Positioning
             'absolute -inset-[10px] opacity-40 will-change-transform',

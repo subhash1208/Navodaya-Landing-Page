@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Inter, Outfit, Plus_Jakarta_Sans } from 'next/font/google';
+import { Outfit, Plus_Jakarta_Sans } from 'next/font/google';
 import './globals.css';
 import { BRAND } from '@/constants';
 import { Header } from '@/components/layout/Header';
@@ -9,12 +9,6 @@ import { PageTransition } from '@/components/ui/PageTransition';
 import { CustomCursor } from '@/components/ui/CustomCursor';
 import { Analytics } from '@vercel/analytics/react';
 import { LenisProvider } from '@/components/ui/LenisProvider';
-
-const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-sans',
-  display: 'swap',
-});
 
 const outfit = Outfit({
   subsets: ['latin'],
@@ -59,11 +53,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${outfit.variable} ${plusJakarta.variable}`}>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-      </head>
+    <html lang="en" className={`${outfit.variable} ${plusJakarta.variable}`}>
+      <head />
       <body className="min-h-screen antialiased" suppressHydrationWarning>
         <SkipNav />
         <CustomCursor />

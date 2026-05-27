@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import { ArrowRight, BookOpen } from 'lucide-react';
 import { PRODUCT_CATEGORIES, ROUTES } from '@/constants';
@@ -17,7 +17,7 @@ export default function ProductCategoriesSection() {
   const card0 = useRef<HTMLDivElement>(null);
   const card1 = useRef<HTMLDivElement>(null);
   const card2 = useRef<HTMLDivElement>(null);
-  const cardRefs = [card0, card1, card2];
+  const cardRefs = useMemo(() => [card0, card1, card2], [card0, card1, card2]);
 
   useEffect(() => {
     const cardsContainer = cardsRef.current;
@@ -25,9 +25,7 @@ export default function ProductCategoriesSection() {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     let destroyed = false;
-    // Typed as any[] to avoid importing ScrollTrigger type at module level
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const triggers: any[] = [];
+    const triggers: { kill: () => void }[] = [];
 
     async function init() {
       const { gsap } = await import('gsap');

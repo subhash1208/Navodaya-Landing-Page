@@ -17,7 +17,10 @@ export function Header() {
     let rafId: number;
     const onScroll = () => {
       cancelAnimationFrame(rafId);
-      rafId = requestAnimationFrame(() => setScrolled(window.scrollY > 20));
+      rafId = requestAnimationFrame(() => {
+        const isScrolled = window.scrollY > 20;
+        setScrolled((prev) => (prev === isScrolled ? prev : isScrolled));
+      });
     };
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => {

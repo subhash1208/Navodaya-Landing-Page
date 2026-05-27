@@ -201,15 +201,15 @@
 
 @keyframes testimonialRight {
   from {
-    transform: translateX(-50%);
+    transform: translateX(0);
   }
   to {
-    transform: translateX(0);
+    transform: translateX(50%);
   }
 }
 
 .testimonial-row-1 {
-  animation: testimonialLeft 30s ease-in-out infinite alternate;
+  animation: testimonialLeft 30s linear infinite;
   width: max-content;
 }
 .testimonial-row-1:hover {
@@ -217,7 +217,7 @@
 }
 
 .testimonial-row-2 {
-  animation: testimonialRight 30s ease-in-out infinite alternate;
+  animation: testimonialRight 30s linear infinite;
   width: max-content;
 }
 .testimonial-row-2:hover {

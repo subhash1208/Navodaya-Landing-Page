@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { ArrowRight, ChevronDown } from 'lucide-react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'motion/react';
-import { BRAND, ROUTES } from '@/constants';
+import { BRAND, ROUTES, PRODUCT_CATEGORIES, PRODUCTS } from '@/constants';
 import { useTypewriter } from '@/hooks/useTypewriter';
 import { ProductCategoryGraph } from '@/components/ui/ProductCategoryGraph';
 import { AuroraBackground } from '@/components/ui/AuroraBackground';
@@ -18,6 +18,7 @@ export default function HeroSection() {
   const [contentVisible, setContentVisible] = useState(false);
   const [isMobile, setIsMobile] = useState<boolean | null>(null);
   const [logoScale, setLogoScale] = useState(1);
+  const [expandedCategory, setExpandedCategory] = useState<number | null>(null);
   const collapseRef = useRef<(() => void) | null>(null);
   const rightPanelRef = useRef<HTMLDivElement>(null);
 
@@ -27,6 +28,7 @@ export default function HeroSection() {
 
   const handleLogoScale = useCallback((scale: number) => {
     setLogoScale(scale);
+    setExpandedCategory(scale < 1 ? 0 : null);
   }, []);
 
   const { displayed, showCursor } = useTypewriter({
@@ -242,7 +244,12 @@ export default function HeroSection() {
           }}
           role="button"
           tabIndex={0}
-          aria-label="Click to collapse expanded category"
+          aria-label={
+            expandedCategory !== null
+              ? 'Collapse expanded category'
+              : 'Product category graph — click a category to explore products'
+          }
+          aria-expanded={expandedCategory !== null}
         >
           {/* Canvas graph — pills spiral with nodes, no HTML overlay needed */}
           <div className="absolute inset-0 flex items-center justify-center">
@@ -326,6 +333,22 @@ export default function HeroSection() {
               </motion.div>
             </motion.div>
           </div>
+
+          {/* Keyboard-accessible alternative for canvas graph products */}
+          <nav aria-label="Product categories" className="sr-only">
+            {PRODUCT_CATEGORIES.map((cat) => (
+              <div key={cat.id}>
+                <h3>{cat.name}</h3>
+                <ul>
+                  {PRODUCTS.filter((p) => p.category.id === cat.id).map((p) => (
+                    <li key={p.id}>
+                      <Link href={ROUTES.PRODUCT(p.slug)}>{p.name}</Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </nav>
         </div>
       </div>
 

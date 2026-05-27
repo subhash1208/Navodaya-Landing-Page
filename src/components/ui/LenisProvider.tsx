@@ -32,6 +32,10 @@ export function LenisProvider({ children }: { children: React.ReactNode }) {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     let destroyed = false;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let tickerFn: ((time: number) => void) | null = null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let gsapRef: any = null;
 
     async function init() {
       const [{ default: Lenis }, { gsap }, { ScrollTrigger }] = await Promise.all([
@@ -43,6 +47,7 @@ export function LenisProvider({ children }: { children: React.ReactNode }) {
       if (destroyed) return;
 
       gsap.registerPlugin(ScrollTrigger);
+      gsapRef = gsap;
 
       const lenis = new Lenis({
         lerp: 0.1,
@@ -57,9 +62,10 @@ export function LenisProvider({ children }: { children: React.ReactNode }) {
       lenis.on('scroll', ScrollTrigger.update);
 
       // Add lenis to GSAP ticker for smooth animation loop
-      gsap.ticker.add((time: number) => {
+      tickerFn = (time: number) => {
         lenis.raf(time * 1000);
-      });
+      };
+      gsap.ticker.add(tickerFn);
       gsap.ticker.lagSmoothing(0);
     }
 
@@ -67,6 +73,9 @@ export function LenisProvider({ children }: { children: React.ReactNode }) {
 
     return () => {
       destroyed = true;
+      if (tickerFn && gsapRef) {
+        gsapRef.ticker.remove(tickerFn);
+      }
       lenisRef.current?.destroy();
       lenisRef.current = null;
     };

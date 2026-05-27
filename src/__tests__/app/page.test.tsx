@@ -1,6 +1,20 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import HomePage from '@/app/page';
+
+// Mock next/dynamic to resolve imports synchronously for testing
+vi.mock('next/dynamic', () => ({
+  __esModule: true,
+  default: (importFn: () => Promise<any>) => {
+    let Comp: any = () => null;
+    importFn().then((mod: any) => {
+      Comp = mod.default || mod;
+    });
+    // Return a wrapper that renders the resolved component
+    const Dynamic = (props: any) => <Comp {...props} />;
+    Dynamic.displayName = 'DynamicMock';
+    return Dynamic;
+  },
+}));
 
 vi.mock('@/components/sections/HeroSection', () => ({
   default: () => <div data-testid="hero-section">Hero</div>,
@@ -33,6 +47,9 @@ vi.mock('@/components/ui/MarqueeStrip', () => ({
 vi.mock('@/components/sections/TestimonialMarquee', () => ({
   TestimonialMarquee: () => <div data-testid="testimonial-marquee">Testimonials</div>,
 }));
+
+// Import after mocks are set up (vitest hoists vi.mock calls)
+import HomePage from '@/app/page';
 
 describe('HomePage', () => {
   it('renders all sections', () => {

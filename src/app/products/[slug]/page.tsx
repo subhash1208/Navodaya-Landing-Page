@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ChevronRight, MessageSquare, Package, Tag, ArrowLeft } from 'lucide-react';
-import { PRODUCTS, PRODUCT_CATEGORIES, ROUTES, BRAND } from '@/constants';
+import { PRODUCTS, ROUTES, BRAND } from '@/constants';
 import { ProductViewer } from '@/components/ui/ProductViewer';
 import { ProductCard } from '@/components/ui/ProductCard';
 
@@ -48,7 +48,7 @@ export default async function ProductPage({ params }: PageProps) {
     { label: 'Availability', value: 'In Stock — Bulk Orders Welcome', icon: Package },
   ];
 
-  const quoteUrl = `${ROUTES.CONTACT}?product=${encodeURIComponent(product.name)}`;
+  const quoteUrl = `/?product=${encodeURIComponent(product.name)}#contact`;
 
   return (
     <div className="min-h-screen bg-surface-muted">

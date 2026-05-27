@@ -1,11 +1,19 @@
+import dynamic from 'next/dynamic';
 import HeroSection from '@/components/sections/HeroSection';
-import AboutSection from '@/components/sections/AboutSection';
-import ProductCategoriesSection from '@/components/sections/ProductCategoriesSection';
-import WhyUsSection from '@/components/sections/WhyUsSection';
-import ContactSection from '@/components/sections/ContactSection';
 import { LoadingScreen } from '@/components/ui/LoadingScreen';
 import { MarqueeStrip } from '@/components/ui/MarqueeStrip';
-import { TestimonialMarquee } from '@/components/sections/TestimonialMarquee';
+
+const AboutSection = dynamic(() => import('@/components/sections/AboutSection'));
+const ProductCategoriesSection = dynamic(
+  () => import('@/components/sections/ProductCategoriesSection'),
+);
+const WhyUsSection = dynamic(() => import('@/components/sections/WhyUsSection'));
+const TestimonialMarquee = dynamic(() =>
+  import('@/components/sections/TestimonialMarquee').then((m) => ({
+    default: m.TestimonialMarquee,
+  })),
+);
+const ContactSection = dynamic(() => import('@/components/sections/ContactSection'));
 
 export default function HomePage() {
   return (

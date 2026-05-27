@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 interface UseTypewriterOptions {
   text: string;
@@ -18,6 +18,12 @@ export function useTypewriter({
   const [displayed, setDisplayed] = useState('');
   const [isDone, setIsDone] = useState(false);
   const [showCursor, setShowCursor] = useState(true);
+  const onCompleteRef = useRef(onComplete);
+
+  // Keep ref in sync with latest callback (avoids stale closure)
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
 
   useEffect(() => {
     // Respect prefers-reduced-motion — show full text immediately
@@ -25,7 +31,7 @@ export function useTypewriter({
       setDisplayed(text);
       setIsDone(true);
       setShowCursor(false);
-      onComplete?.();
+      onCompleteRef.current?.();
       return;
     }
 
@@ -41,7 +47,7 @@ export function useTypewriter({
           typeTimer = setTimeout(type, speed);
         } else {
           setIsDone(true);
-          onComplete?.();
+          onCompleteRef.current?.();
           // Blink cursor twice then hide
           setTimeout(() => setShowCursor(false), 800);
         }
@@ -53,8 +59,7 @@ export function useTypewriter({
       clearTimeout(startTimer);
       clearTimeout(typeTimer);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [text]);
+  }, [text, speed, startDelay]);
 
   return { displayed, isDone, showCursor };
 }

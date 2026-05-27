@@ -11,9 +11,6 @@ const ITEMS = [
   'Corporate Offices',
 ];
 
-// Render 4 copies — 2 visible + 2 for seamless loop
-const QUAD = [...ITEMS, ...ITEMS, ...ITEMS, ...ITEMS];
-
 export function MarqueeStrip() {
   return (
     <div
