@@ -103,7 +103,7 @@ describe('CustomCursor', () => {
 
     // Simulate mouseenter on the button
     fireEvent.mouseEnter(btn);
-    expect(cursor.classList.contains('cursor--hover')).toBe(true);
+    expect(cursor.classList.contains('custom-cursor--hover')).toBe(true);
   });
 
   it('removes cursor--hover class on interactive element mouseleave', () => {
@@ -118,11 +118,11 @@ describe('CustomCursor', () => {
 
     // Add hover class first
     fireEvent.mouseEnter(btn);
-    expect(cursor.classList.contains('cursor--hover')).toBe(true);
+    expect(cursor.classList.contains('custom-cursor--hover')).toBe(true);
 
     // Then remove it
     fireEvent.mouseLeave(btn);
-    expect(cursor.classList.contains('cursor--hover')).toBe(false);
+    expect(cursor.classList.contains('custom-cursor--hover')).toBe(false);
   });
 
   it('cleans up on unmount (restores default cursor)', () => {

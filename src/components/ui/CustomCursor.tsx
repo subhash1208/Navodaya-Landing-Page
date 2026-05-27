@@ -33,12 +33,12 @@ export function CustomCursor() {
     // Change cursor on interactive elements via event delegation
     const onOver = (e: MouseEvent) => {
       if ((e.target as Element).closest('a, button, [role="button"]')) {
-        cursor.classList.add('cursor--hover');
+        cursor.classList.add('custom-cursor--hover');
       }
     };
     const onOut = (e: MouseEvent) => {
       if ((e.target as Element).closest('a, button, [role="button"]')) {
-        cursor.classList.remove('cursor--hover');
+        cursor.classList.remove('custom-cursor--hover');
       }
     };
     document.addEventListener('mouseover', onOver);

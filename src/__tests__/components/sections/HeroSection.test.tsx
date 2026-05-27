@@ -154,7 +154,7 @@ describe('HeroSection', () => {
 
   it('handles keyboard Enter key on right panel', () => {
     render(<HeroSection />);
-    const rightPanel = screen.getByLabelText('Click to collapse expanded category');
+    const rightPanel = screen.getByRole('button', { name: /product category graph/i });
 
     // Simulate Enter key press
     fireEvent.keyDown(rightPanel, { key: 'Enter' });
@@ -165,7 +165,7 @@ describe('HeroSection', () => {
 
   it('handles keyboard Space key on right panel', () => {
     render(<HeroSection />);
-    const rightPanel = screen.getByLabelText('Click to collapse expanded category');
+    const rightPanel = screen.getByRole('button', { name: /product category graph/i });
 
     // Simulate Space key press
     fireEvent.keyDown(rightPanel, { key: ' ' });
@@ -176,7 +176,7 @@ describe('HeroSection', () => {
 
   it('handles keyboard other keys on right panel (no action)', () => {
     render(<HeroSection />);
-    const rightPanel = screen.getByLabelText('Click to collapse expanded category');
+    const rightPanel = screen.getByRole('button', { name: /product category graph/i });
 
     // Simulate other key press (should not trigger collapse)
     fireEvent.keyDown(rightPanel, { key: 'Escape' });
@@ -187,7 +187,7 @@ describe('HeroSection', () => {
 
   it('handles click on right panel', () => {
     render(<HeroSection />);
-    const rightPanel = screen.getByLabelText('Click to collapse expanded category');
+    const rightPanel = screen.getByRole('button', { name: /product category graph/i });
 
     // Simulate click
     fireEvent.click(rightPanel);
@@ -198,7 +198,7 @@ describe('HeroSection', () => {
 
   it('right panel has correct role and tabIndex', () => {
     render(<HeroSection />);
-    const rightPanel = screen.getByLabelText('Click to collapse expanded category');
+    const rightPanel = screen.getByRole('button', { name: /product category graph/i });
 
     expect(rightPanel.getAttribute('role')).toBe('button');
     expect(rightPanel.getAttribute('tabindex')).toBe('0');

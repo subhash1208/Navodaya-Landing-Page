@@ -83,7 +83,7 @@ describe('submitContactForm', () => {
     it('rejects empty contact number', async () => {
       const result = await submitContactForm({ ...validFormData, contactPersonNumber: '' });
       expect(result.success).toBe(false);
-      expect(result.error).toBe('Invalid phone number.');
+      expect(result.error).toBe('Contact number is required.');
     });
 
     it('rejects phone number too short', async () => {

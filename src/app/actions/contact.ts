@@ -16,8 +16,8 @@ function validateForm(data: ContactFormData): string | null {
   if (!data.companyEmail?.trim()) return 'Company email is required.';
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.companyEmail)) return 'Invalid email address.';
   if (!data.contactPersonName?.trim()) return 'Contact person name is required.';
-  if (!/^\+?[\d\s\-()]{7,15}$/.test(data.contactPersonNumber)) return 'Invalid phone number.';
   if (!data.contactPersonNumber?.trim()) return 'Contact number is required.';
+  if (!/^\+?[\d\s\-()]{7,15}$/.test(data.contactPersonNumber)) return 'Invalid phone number.';
   return null;
 }
 

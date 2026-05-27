@@ -60,8 +60,12 @@ export default function ContactSection() {
   const [state, formAction, isPending] = useActionState<FormState, FormData>(contactAction, null);
   const [formKey, setFormKey] = useState(0);
   const sectionRef = useRef<HTMLElement>(null);
+  const lastMoveRef = useRef(0);
 
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLElement>) => {
+    const now = performance.now();
+    if (now - lastMoveRef.current < 32) return;
+    lastMoveRef.current = now;
     const el = sectionRef.current;
     if (!el) return;
     const rect = el.getBoundingClientRect();
@@ -122,7 +126,7 @@ export default function ContactSection() {
                     <Icon className="w-[18px] h-[18px]" aria-hidden="true" />
                   </div>
                   <div>
-                    <div className="text-[11px] text-slate-600 font-medium">{label}</div>
+                    <div className="text-[11px] text-slate-400 font-medium">{label}</div>
                     <div className="text-sm font-semibold text-slate-200">{value}</div>
                   </div>
                 </a>

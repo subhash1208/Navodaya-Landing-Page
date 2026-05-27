@@ -103,8 +103,10 @@ export function ProductGrid() {
         {tabs.map((tab) => (
           <button
             key={tab.id}
+            id={`tab-${tab.id}`}
             role="tab"
             aria-selected={activeCategory === tab.id}
+            aria-controls="product-grid-panel"
             onClick={() => handleCategoryChange(tab.id)}
             className={cn(
               'inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200',
@@ -131,7 +133,12 @@ export function ProductGrid() {
 
       {/* Grid */}
       {filtered.length > 0 ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        <div
+          id="product-grid-panel"
+          role="tabpanel"
+          aria-labelledby={`tab-${activeCategory}`}
+          className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4"
+        >
           {filtered.map((product) => (
             <PinContainer key={product.id}>
               <MagneticWrapper>
@@ -141,7 +148,12 @@ export function ProductGrid() {
           ))}
         </div>
       ) : (
-        <div className="text-center py-20">
+        <div
+          id="product-grid-panel"
+          role="tabpanel"
+          aria-labelledby={`tab-${activeCategory}`}
+          className="text-center py-20"
+        >
           <div className="text-4xl mb-4" aria-hidden="true">
             🔍
           </div>

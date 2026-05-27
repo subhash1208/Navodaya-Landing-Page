@@ -88,7 +88,7 @@ export function TestimonialMarquee() {
       <div className="relative overflow-hidden mb-4">
         <div className="flex testimonial-row-1">
           {[...TESTIMONIALS, ...TESTIMONIALS].map((t, i) => (
-            <TestimonialCard key={i} {...t} />
+            <TestimonialCard key={`${t.name}-${i}`} {...t} />
           ))}
         </div>
       </div>
@@ -97,7 +97,7 @@ export function TestimonialMarquee() {
       <div className="relative overflow-hidden">
         <div className="flex testimonial-row-2">
           {[...TESTIMONIALS, ...TESTIMONIALS].map((t, i) => (
-            <TestimonialCard key={i} {...t} />
+            <TestimonialCard key={`${t.name}-row2-${i}`} {...t} />
           ))}
         </div>
       </div>
