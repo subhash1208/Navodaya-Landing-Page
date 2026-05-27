@@ -7,7 +7,6 @@ export default function Footer() {
     <footer className="bg-brand-dark text-white">
       <div className="container mx-auto py-16">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-12">
-
           {/* Brand */}
           <div>
             <div className="flex items-center gap-3 mb-4">
@@ -16,17 +15,15 @@ export default function Footer() {
               </div>
               <span className="font-bold text-lg text-white">{BRAND.NAME}</span>
             </div>
-            <p className="text-slate-500 text-[13px] leading-[1.7] mb-3">
-              {BRAND.FULL_NAME}
-            </p>
-            <p className="text-slate-600 text-xs italic">
-              &ldquo;{BRAND.TAGLINE}&rdquo;
-            </p>
+            <p className="text-slate-500 text-[13px] leading-[1.7] mb-3">{BRAND.FULL_NAME}</p>
+            <p className="text-slate-600 text-xs italic">&ldquo;{BRAND.TAGLINE}&rdquo;</p>
           </div>
 
           {/* Quick links */}
           <div>
-            <h3 className="text-[11px] font-semibold text-white uppercase tracking-[0.08em] mb-4">Quick Links</h3>
+            <h3 className="text-[11px] font-semibold text-white uppercase tracking-[0.08em] mb-4">
+              Quick Links
+            </h3>
             <ul className="flex flex-col gap-2.5">
               {NAV_LINKS.map(({ label, href }) => (
                 <li key={href}>
@@ -43,7 +40,9 @@ export default function Footer() {
 
           {/* Products */}
           <div>
-            <h3 className="text-[11px] font-semibold text-white uppercase tracking-[0.08em] mb-4">Products</h3>
+            <h3 className="text-[11px] font-semibold text-white uppercase tracking-[0.08em] mb-4">
+              Products
+            </h3>
             <ul className="flex flex-col gap-2.5">
               {PRODUCT_CATEGORIES.map((cat) => (
                 <li key={cat.id}>
@@ -68,7 +67,9 @@ export default function Footer() {
 
           {/* Contact */}
           <div>
-            <h3 className="text-[11px] font-semibold text-white uppercase tracking-[0.08em] mb-4">Contact Us</h3>
+            <h3 className="text-[11px] font-semibold text-white uppercase tracking-[0.08em] mb-4">
+              Contact Us
+            </h3>
             <ul className="flex flex-col gap-3">
               <li>
                 <a
@@ -98,7 +99,9 @@ export default function Footer() {
 
         {/* Bottom bar */}
         <div className="border-t border-slate-800 mt-12 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-xs text-slate-600">&copy; {new Date().getFullYear()} {BRAND.FULL_NAME}. All rights reserved.</p>
+          <p className="text-xs text-slate-600">
+            &copy; {new Date().getFullYear()} {BRAND.FULL_NAME}. All rights reserved.
+          </p>
           <a
             href={`https://${BRAND.WEBSITE}`}
             target="_blank"

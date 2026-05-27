@@ -3,17 +3,13 @@
 import { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { ArrowRight, BookOpen } from 'lucide-react';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { PRODUCT_CATEGORIES, ROUTES } from '@/constants';
 import { AnimateIn } from '@/components/ui/AnimateIn';
 
-gsap.registerPlugin(ScrollTrigger);
-
 const CARD_ORIGINS = [
   { x: -100, y: 0 },
-  { x: 0,    y: 60 },
-  { x: 100,  y: 0 },
+  { x: 0, y: 60 },
+  { x: 100, y: 0 },
 ] as const;
 
 export default function ProductCategoriesSection() {
@@ -28,54 +24,67 @@ export default function ProductCategoriesSection() {
     if (!cardsContainer) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-    const cards = cardRefs.map(r => r.current).filter(Boolean) as HTMLElement[];
-    const triggers: ScrollTrigger[] = [];
+    let destroyed = false;
+    // Typed as any[] to avoid importing ScrollTrigger type at module level
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const triggers: any[] = [];
 
-    // Set initial hidden state
-    cards.forEach((card, i) => {
-      gsap.set(card, { opacity: 0, x: CARD_ORIGINS[i].x, y: CARD_ORIGINS[i].y });
-    });
+    async function init() {
+      const { gsap } = await import('gsap');
+      const { ScrollTrigger } = await import('gsap/ScrollTrigger');
+      gsap.registerPlugin(ScrollTrigger);
 
-    // Staggered scroll-triggered reveal — NO pin (avoids React DOM conflict)
-    cards.forEach((card, i) => {
-      const st = ScrollTrigger.create({
-        trigger: cardsContainer,
-        start: 'top 75%',
-        once: true,
-        onEnter: () => {
-          gsap.to(card, {
-            opacity: 1,
-            x: 0,
-            y: 0,
-            duration: 0.7,
-            delay: i * 0.15,
-            ease: 'power3.out',
-          });
-        },
+      if (destroyed) return;
+
+      const cards = cardRefs.map((r) => r.current).filter(Boolean) as HTMLElement[];
+
+      // Set initial hidden state
+      cards.forEach((card, i) => {
+        gsap.set(card, { opacity: 0, x: CARD_ORIGINS[i].x, y: CARD_ORIGINS[i].y });
       });
-      triggers.push(st);
-    });
+
+      // Staggered scroll-triggered reveal — NO pin (avoids React DOM conflict)
+      cards.forEach((card, i) => {
+        const st = ScrollTrigger.create({
+          trigger: cardsContainer,
+          start: 'top 75%',
+          once: true,
+          onEnter: () => {
+            gsap.to(card, {
+              opacity: 1,
+              x: 0,
+              y: 0,
+              duration: 0.7,
+              delay: i * 0.15,
+              ease: 'power3.out',
+            });
+          },
+        });
+        triggers.push(st);
+      });
+    }
+
+    init();
 
     return () => {
-      triggers.forEach(t => t.kill());
+      destroyed = true;
+      triggers.forEach((t) => t.kill());
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
-    <section
-      id="products"
-      aria-labelledby="products-heading"
-      className="py-24 bg-surface-muted"
-    >
+    <section id="products" aria-labelledby="products-heading" className="py-24 bg-surface-muted">
       <div className="container mx-auto">
-
         <AnimateIn direction="up">
           <div className="text-center mb-16">
             <span className="inline-block text-[11px] font-semibold tracking-[0.1em] uppercase text-brand-secondary mb-3">
               What We Supply
             </span>
-            <h2 id="products-heading" className="font-display text-[clamp(1.75rem,3vw,2.5rem)] font-bold text-brand-dark mb-4">
+            <h2
+              id="products-heading"
+              className="font-display text-[clamp(1.75rem,3vw,2.5rem)] font-bold text-brand-dark mb-4"
+            >
               Our Product Categories
             </h2>
             <p className="text-[17px] text-slate-500 max-w-lg mx-auto">
@@ -88,7 +97,10 @@ export default function ProductCategoriesSection() {
           {PRODUCT_CATEGORIES.map((category, i) => (
             <div key={category.id} ref={cardRefs[i]}>
               <div className="card-hover-category relative flex flex-col bg-white rounded-[20px] p-8 border border-slate-200 shadow-[0_4px_24px_rgba(15,23,42,0.07)] overflow-hidden h-full">
-                <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-brand-primary to-brand-secondary" aria-hidden="true" />
+                <div
+                  className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-brand-primary to-brand-secondary"
+                  aria-hidden="true"
+                />
                 <div className="text-5xl mb-6 leading-none" role="img" aria-label={category.name}>
                   {category.icon}
                 </div>

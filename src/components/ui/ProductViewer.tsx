@@ -1,8 +1,6 @@
 'use client';
 
-import { useState } from 'react';
 import { RotateCcw, ZoomIn, ZoomOut, Camera } from 'lucide-react';
-import { cn } from '@/utils/cn';
 
 interface ProductViewerProps {
   productName: string;
@@ -15,31 +13,24 @@ interface ProductViewerProps {
  *   driven by mouse/touch drag events
  * - For true 3D: install @google/model-viewer and replace with
  *   <model-viewer src="product.glb" camera-controls auto-rotate />
+ *
+ * Performance: hover effect is CSS-only (group-hover Tailwind classes) instead
+ * of useState, eliminating re-renders on every mouse enter/leave.
  */
 export function ProductViewer({ productName }: ProductViewerProps) {
-  const [isHovered, setIsHovered] = useState(false);
-
   return (
     <div className="relative w-full aspect-square rounded-[1.25rem] overflow-hidden bg-gradient-to-br from-brand-light via-slate-50 to-slate-100 border border-slate-100">
-
       {/* Placeholder content */}
-      <div
-        className="absolute inset-0 flex flex-col items-center justify-center gap-4 p-8"
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-      >
-        {/* Animated product icon */}
-        <div className={cn(
-          'w-32 h-32 rounded-2xl bg-white shadow-[0_8px_32px_rgba(15,23,42,0.12)] flex items-center justify-center transition-transform duration-500',
-          isHovered ? 'scale-110 rotate-6' : 'scale-100 rotate-0'
-        )}>
-          <span className="text-6xl" role="img" aria-label={productName}>📦</span>
+      <div className="group absolute inset-0 flex flex-col items-center justify-center gap-4 p-8">
+        {/* Animated product icon — CSS hover via group-hover */}
+        <div className="w-32 h-32 rounded-2xl bg-white shadow-[0_8px_32px_rgba(15,23,42,0.12)] flex items-center justify-center transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6">
+          <span className="text-6xl" role="img" aria-label={productName}>
+            📦
+          </span>
         </div>
 
         <div className="text-center">
-          <p className="text-sm font-semibold text-brand-dark mb-1">
-            360° View Coming Soon
-          </p>
+          <p className="text-sm font-semibold text-brand-dark mb-1">360° View Coming Soon</p>
           <p className="text-xs text-slate-400 max-w-[200px] leading-relaxed">
             Product photography in progress. Real images will be added shortly.
           </p>

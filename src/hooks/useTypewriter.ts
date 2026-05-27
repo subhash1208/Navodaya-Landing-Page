@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react';
 
 interface UseTypewriterOptions {
   text: string;
-  speed?: number;       // ms per character
-  startDelay?: number;  // ms before typing starts
+  speed?: number; // ms per character
+  startDelay?: number; // ms before typing starts
   onComplete?: () => void;
 }
 
@@ -53,7 +53,7 @@ export function useTypewriter({
       clearTimeout(startTimer);
       clearTimeout(typeTimer);
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [text]);
 
   return { displayed, isDone, showCursor };

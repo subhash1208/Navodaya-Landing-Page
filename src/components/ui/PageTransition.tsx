@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { gsap } from 'gsap';
 
 /**
  * Blue curtain wipe transition — triggers only on Home → Products navigation.
@@ -24,8 +23,7 @@ export function PageTransition({ children }: { children: React.ReactNode }) {
 
     // Only animate on Home → Products transition
     const shouldAnimate =
-      (prev === '/' && curr === '/products') ||
-      (prev === '/products' && curr === '/');
+      (prev === '/' && curr === '/products') || (prev === '/products' && curr === '/');
 
     if (shouldAnimate && prev !== curr) {
       // Respect prefers-reduced-motion
@@ -36,27 +34,31 @@ export function PageTransition({ children }: { children: React.ReactNode }) {
 
       setIsAnimating(true);
 
-      // Curtain slides in from left
-      gsap.fromTo(curtain,
-        { x: '-100%', opacity: 1 },
-        {
-          x: '0%',
-          duration: 0.35,
-          ease: 'power2.inOut',
-          onComplete: () => {
-            // Curtain slides out to right
-            gsap.to(curtain, {
-              x: '100%',
-              duration: 0.35,
-              ease: 'power2.inOut',
-              onComplete: () => {
-                gsap.set(curtain, { x: '-100%' });
-                setIsAnimating(false);
-              },
-            });
+      // Dynamic import — GSAP is not needed until a transition actually fires
+      import('gsap').then(({ gsap }) => {
+        // Curtain slides in from left
+        gsap.fromTo(
+          curtain,
+          { x: '-100%', opacity: 1 },
+          {
+            x: '0%',
+            duration: 0.35,
+            ease: 'power2.inOut',
+            onComplete: () => {
+              // Curtain slides out to right
+              gsap.to(curtain, {
+                x: '100%',
+                duration: 0.35,
+                ease: 'power2.inOut',
+                onComplete: () => {
+                  gsap.set(curtain, { x: '-100%' });
+                  setIsAnimating(false);
+                },
+              });
+            },
           },
-        }
-      );
+        );
+      });
     }
 
     prevPathRef.current = curr;

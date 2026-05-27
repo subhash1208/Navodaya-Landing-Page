@@ -21,10 +21,14 @@ export function MarqueeStrip() {
       aria-hidden="true"
     >
       {/* Fade edges */}
-      <div className="absolute left-0 top-0 bottom-0 w-20 z-10 pointer-events-none"
-        style={{ background: 'linear-gradient(to right, #0F172A, transparent)' }} />
-      <div className="absolute right-0 top-0 bottom-0 w-20 z-10 pointer-events-none"
-        style={{ background: 'linear-gradient(to left, #0F172A, transparent)' }} />
+      <div
+        className="absolute left-0 top-0 bottom-0 w-20 z-10 pointer-events-none"
+        style={{ background: 'linear-gradient(to right, #0F172A, transparent)' }}
+      />
+      <div
+        className="absolute right-0 top-0 bottom-0 w-20 z-10 pointer-events-none"
+        style={{ background: 'linear-gradient(to left, #0F172A, transparent)' }}
+      />
 
       {/* Two tracks side by side, both animating — creates seamless infinite loop */}
       <div className="flex whitespace-nowrap">

@@ -1,13 +1,9 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
-gsap.registerPlugin(ScrollTrigger);
 
 interface CounterStatProps {
-  value: string;  // e.g. "51+", "3", "100%", "HYD"
+  value: string; // e.g. "51+", "3", "100%", "HYD"
   label: string;
 }
 
@@ -18,54 +14,67 @@ export function CounterStat({ value, label }: CounterStatProps) {
     const el = numRef.current;
     if (!el) return;
 
-    // Parse numeric part and suffix
-    const match = value.match(/^(\d+)(.*)$/);
-    if (!match) {
-      // Non-numeric (e.g. "HYD") — just fade in with scale
-      gsap.fromTo(el,
-        { opacity: 0, scale: 0.8 },
-        {
-          opacity: 1,
-          scale: 1,
-          duration: 0.6,
-          ease: 'back.out(1.7)',
-          scrollTrigger: {
-            trigger: el,
-            start: 'top 85%',
-            once: true,
-          },
-        }
-      );
-      return;
-    }
+    let destroyed = false;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let trigger: any = null;
 
-    const endNum = parseInt(match[1], 10);
-    const suffix = match[2]; // "+", "%", or ""
-    const duration = endNum > 10 ? 1.5 : 0.8;
+    async function init() {
+      const { gsap } = await import('gsap');
+      const { ScrollTrigger } = await import('gsap/ScrollTrigger');
+      gsap.registerPlugin(ScrollTrigger);
 
-    const obj = { val: 0 };
+      if (destroyed || !el) return;
 
-    ScrollTrigger.create({
-      trigger: el,
-      start: 'top 85%',
-      once: true,
-      onEnter: () => {
-        gsap.to(obj, {
-          val: endNum,
-          duration,
-          ease: 'power2.out',
-          onUpdate: () => {
-            el.textContent = Math.round(obj.val) + suffix;
-          },
-          onComplete: () => {
-            el.textContent = value; // Ensure exact final value
+      // Parse numeric part and suffix
+      const match = value.match(/^(\d+)(.*)$/);
+      if (!match) {
+        // Non-numeric (e.g. "HYD") — just fade in with scale
+        trigger = ScrollTrigger.create({
+          trigger: el,
+          start: 'top 85%',
+          once: true,
+          onEnter: () => {
+            gsap.fromTo(
+              el,
+              { opacity: 0, scale: 0.8 },
+              { opacity: 1, scale: 1, duration: 0.6, ease: 'back.out(1.7)' },
+            );
           },
         });
-      },
-    });
+        return;
+      }
+
+      const endNum = parseInt(match[1], 10);
+      const suffix = match[2]; // "+", "%", or ""
+      const duration = endNum > 10 ? 1.5 : 0.8;
+
+      const obj = { val: 0 };
+
+      trigger = ScrollTrigger.create({
+        trigger: el,
+        start: 'top 85%',
+        once: true,
+        onEnter: () => {
+          gsap.to(obj, {
+            val: endNum,
+            duration,
+            ease: 'power2.out',
+            onUpdate: () => {
+              el.textContent = Math.round(obj.val) + suffix;
+            },
+            onComplete: () => {
+              el.textContent = value; // Ensure exact final value
+            },
+          });
+        },
+      });
+    }
+
+    init();
 
     return () => {
-      ScrollTrigger.getAll().forEach(t => t.kill());
+      destroyed = true;
+      trigger?.kill();
     };
   }, [value]);
 

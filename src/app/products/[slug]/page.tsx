@@ -12,12 +12,12 @@ interface PageProps {
 
 // Generate all 51 product pages at build time (SSG)
 export async function generateStaticParams() {
-  return PRODUCTS.map(p => ({ slug: p.slug }));
+  return PRODUCTS.map((p) => ({ slug: p.slug }));
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const product = PRODUCTS.find(p => p.slug === slug);
+  const product = PRODUCTS.find((p) => p.slug === slug);
   if (!product) return { title: 'Product Not Found' };
 
   return {
@@ -32,14 +32,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function ProductPage({ params }: PageProps) {
   const { slug } = await params;
-  const product = PRODUCTS.find(p => p.slug === slug);
+  const product = PRODUCTS.find((p) => p.slug === slug);
 
   if (!product) notFound();
 
   // Related: same category, exclude current, max 4
-  const related = PRODUCTS
-    .filter(p => p.category.id === product.category.id && p.slug !== slug)
-    .slice(0, 4);
+  const related = PRODUCTS.filter(
+    (p) => p.category.id === product.category.id && p.slug !== slug,
+  ).slice(0, 4);
 
   const specs = [
     { label: 'Category', value: product.category.name, icon: Tag },
@@ -52,16 +52,24 @@ export default async function ProductPage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen bg-surface-muted">
-
       {/* Page header */}
       <div className="bg-white border-b border-slate-100">
         <div className="container mx-auto py-6">
-          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-slate-400 flex-wrap">
-            <Link href="/" className="hover:text-brand-primary transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-primary rounded">
+          <nav
+            aria-label="Breadcrumb"
+            className="flex items-center gap-1.5 text-xs text-slate-400 flex-wrap"
+          >
+            <Link
+              href="/"
+              className="hover:text-brand-primary transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-primary rounded"
+            >
               Home
             </Link>
             <ChevronRight className="w-3 h-3 shrink-0" aria-hidden="true" />
-            <Link href={ROUTES.PRODUCTS} className="hover:text-brand-primary transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-primary rounded">
+            <Link
+              href={ROUTES.PRODUCTS}
+              className="hover:text-brand-primary transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-primary rounded"
+            >
               Products
             </Link>
             <ChevronRight className="w-3 h-3 shrink-0" aria-hidden="true" />
@@ -72,16 +80,16 @@ export default async function ProductPage({ params }: PageProps) {
               {product.category.name}
             </Link>
             <ChevronRight className="w-3 h-3 shrink-0" aria-hidden="true" />
-            <span className="text-brand-dark font-medium truncate max-w-[200px]">{product.name}</span>
+            <span className="text-brand-dark font-medium truncate max-w-[200px]">
+              {product.name}
+            </span>
           </nav>
         </div>
       </div>
 
       <div className="container mx-auto py-10">
-
         {/* Main product layout */}
         <div className="grid lg:grid-cols-2 gap-12 mb-16">
-
           {/* Left — 360° viewer */}
           <div>
             <ProductViewer productName={product.name} />
@@ -98,9 +106,7 @@ export default async function ProductPage({ params }: PageProps) {
               {product.name}
             </h1>
 
-            <p className="text-slate-500 leading-relaxed mb-8 text-base">
-              {product.description}
-            </p>
+            <p className="text-slate-500 leading-relaxed mb-8 text-base">{product.description}</p>
 
             {/* Specs table */}
             <div className="bg-surface-subtle rounded-xl p-5 mb-8 border border-slate-100">
@@ -121,8 +127,8 @@ export default async function ProductPage({ params }: PageProps) {
             <div className="bg-brand-light border border-brand-primary/15 rounded-xl p-4 mb-8">
               <p className="text-sm text-brand-primary font-medium mb-1">Pricing on Request</p>
               <p className="text-xs text-slate-500 leading-relaxed">
-                We offer flexible B2B pricing based on order quantity and requirements.
-                Contact us for a custom quote tailored to your business.
+                We offer flexible B2B pricing based on order quantity and requirements. Contact us
+                for a custom quote tailored to your business.
               </p>
             </div>
 
@@ -161,7 +167,7 @@ export default async function ProductPage({ params }: PageProps) {
               </Link>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-              {related.map(p => (
+              {related.map((p) => (
                 <ProductCard key={p.id} product={p} />
               ))}
             </div>

@@ -4,20 +4,22 @@
 
 /* ─── CSS Variables ─────────────────────────────────────────────────────────── */
 :root {
-  --font-sans:    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-display: 'Outfit', 'Plus Jakarta Sans', sans-serif;
-  --font-body:    'Plus Jakarta Sans', 'Inter', sans-serif;
+  --font-body: 'Plus Jakarta Sans', 'Inter', sans-serif;
 
   /* HSL tokens for opacity variants */
-  --primary:   217 91% 60%;
+  --primary: 217 91% 60%;
   --secondary: 199 89% 48%;
-  --accent:    38 92% 50%;
-  --dark:      222 47% 11%;
+  --accent: 38 92% 50%;
+  --dark: 222 47% 11%;
 }
 
 /* ─── Base layer ────────────────────────────────────────────────────────────── */
 @layer base {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     box-sizing: border-box;
   }
 
@@ -39,7 +41,12 @@
     backface-visibility: hidden;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: var(--font-display);
     @apply tracking-tight font-bold;
   }
@@ -63,25 +70,25 @@
   /* Card hover states */
   .card-hover {
     @apply transition-all duration-300 ease-out;
-    will-change: transform;
   }
   .card-hover:hover {
+    will-change: transform;
     @apply -translate-y-1.5 shadow-xl;
   }
 
   .card-hover-category {
     @apply transition-all duration-300 ease-out;
-    will-change: transform;
   }
   .card-hover-category:hover {
+    will-change: transform;
     @apply -translate-y-2 shadow-2xl;
   }
 
   .card-hover-feature {
     @apply transition-all duration-200 ease-out;
-    will-change: transform;
   }
   .card-hover-feature:hover {
+    will-change: transform;
     @apply -translate-y-1 bg-white shadow-lg;
   }
 }
@@ -127,7 +134,11 @@
   border: 2px solid rgba(30, 64, 175, 0.6);
   pointer-events: none;
   z-index: 99999;
-  transition: width 0.2s ease, height 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+  transition:
+    width 0.2s ease,
+    height 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease;
   will-change: transform;
 }
 
@@ -140,7 +151,7 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #1E40AF;
+  background: #1e40af;
   transition: all 0.2s ease;
 }
 
@@ -152,7 +163,9 @@
 }
 
 @media (hover: none) {
-  .custom-cursor { display: none; }
+  .custom-cursor {
+    display: none;
+  }
 }
 
 /* ─── Cursor spotlight (Contact section) ───────────────────────────────────── */
@@ -178,41 +191,64 @@
 
 /* ─── Testimonial marquee ───────────────────────────────────────────────────── */
 @keyframes testimonialLeft {
-  from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
 }
 
 @keyframes testimonialRight {
-  from { transform: translateX(-50%); }
-  to   { transform: translateX(0); }
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
 }
 
 .testimonial-row-1 {
   animation: testimonialLeft 30s ease-in-out infinite alternate;
   width: max-content;
 }
-.testimonial-row-1:hover { animation-play-state: paused; }
+.testimonial-row-1:hover {
+  animation-play-state: paused;
+}
 
 .testimonial-row-2 {
   animation: testimonialRight 30s ease-in-out infinite alternate;
   width: max-content;
 }
-.testimonial-row-2:hover { animation-play-state: paused; }
+.testimonial-row-2:hover {
+  animation-play-state: paused;
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .testimonial-row-1, .testimonial-row-2 { animation: none; }
+  .testimonial-row-1,
+  .testimonial-row-2 {
+    animation: none;
+  }
 }
 
 /* ─── Slot machine (preloader) ──────────────────────────────────────────────── */
 @keyframes slotMachine {
-  0%   { transform: translateY(0); }
-  100% { transform: translateY(-120px); } /* 6 items × 20px */
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-120px);
+  } /* 6 items × 20px */
 }
 
 /* ─── Marquee strip ─────────────────────────────────────────────────────────── */
 @keyframes marquee {
-  from { transform: translateX(0); }
-  to   { transform: translateX(-100%); }
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
 }
 
 /* Two identical tracks animate together — when first reaches -100%, second is at 0% */
@@ -228,14 +264,25 @@
 }
 
 /* ─── Scrollbar ─────────────────────────────────────────────────────────────── */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(30,64,175,0.25); border-radius: 9999px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(30,64,175,0.45); }
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(30, 64, 175, 0.25);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(30, 64, 175, 0.45);
+}
 
 /* ─── Reduced motion ────────────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
@@ -245,10 +292,146 @@
 
 /* ─── Graph product label fade-in (synced with spiral animation) ─────────────── */
 @keyframes labelFadeInRight {
-  from { opacity: 0; transform: translateY(-50%) scale(0.85); }
-  to   { opacity: 1; transform: translateY(-50%) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(-50%) scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-50%) scale(1);
+  }
 }
 @keyframes labelFadeInLeft {
-  from { opacity: 0; transform: translate(-100%, -50%) scale(0.85); }
-  to   { opacity: 1; transform: translate(-100%, -50%) scale(1); }
+  from {
+    opacity: 0;
+    transform: translate(-100%, -50%) scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-100%, -50%) scale(1);
+  }
+}
+
+/* ─── CSS Scroll-Driven Animations (Progressive Enhancement) ─────────────────
+   Uses animation-timeline: view() — runs in browser compositor thread (zero JS).
+   Supported: Chrome 115+, Edge 115+, Safari 26+, Firefox (behind flag).
+   Unsupported browsers: elements are visible by default (graceful degradation).
+   ─────────────────────────────────────────────────────────────────────────────── */
+
+/* Keyframes for scroll-driven entrance animations */
+@keyframes scroll-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scroll-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scroll-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes scroll-slide-left {
+  from {
+    opacity: 0;
+    transform: translateX(-60px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scroll-slide-right {
+  from {
+    opacity: 0;
+    transform: translateX(60px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Apply only when browser supports scroll-driven animations */
+@supports (animation-timeline: view()) {
+  .scroll-animate-up {
+    animation: scroll-fade-up linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 40%;
+  }
+
+  .scroll-animate-in {
+    animation: scroll-fade-in linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 35%;
+  }
+
+  .scroll-animate-scale {
+    animation: scroll-scale-in linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 40%;
+  }
+
+  .scroll-animate-left {
+    animation: scroll-slide-left linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 40%;
+  }
+
+  .scroll-animate-right {
+    animation: scroll-slide-right linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 40%;
+  }
+
+  /* Stagger delays for child elements */
+  .scroll-stagger > :nth-child(1) {
+    animation-range: entry 0% entry 35%;
+  }
+  .scroll-stagger > :nth-child(2) {
+    animation-range: entry 5% entry 40%;
+  }
+  .scroll-stagger > :nth-child(3) {
+    animation-range: entry 10% entry 45%;
+  }
+  .scroll-stagger > :nth-child(4) {
+    animation-range: entry 15% entry 50%;
+  }
+  .scroll-stagger > :nth-child(5) {
+    animation-range: entry 20% entry 55%;
+  }
+  .scroll-stagger > :nth-child(6) {
+    animation-range: entry 25% entry 60%;
+  }
+}
+
+/* Reduced motion override — disable scroll-driven animations too */
+@media (prefers-reduced-motion: reduce) {
+  .scroll-animate-up,
+  .scroll-animate-in,
+  .scroll-animate-scale,
+  .scroll-animate-left,
+  .scroll-animate-right {
+    animation: none !important;
+  }
 }

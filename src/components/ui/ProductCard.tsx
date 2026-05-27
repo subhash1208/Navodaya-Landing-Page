@@ -17,13 +17,15 @@ export function ProductCard({ product, className }: ProductCardProps) {
         'group flex flex-col bg-white border border-slate-100 rounded-[1.25rem] p-6 card-hover',
         'shadow-[0_4px_24px_-4px_rgba(15,23,42,0.08)]',
         'transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2',
-        className
+        className,
       )}
     >
       {/* Placeholder image area */}
       <div className="w-full aspect-square rounded-xl bg-gradient-to-br from-brand-light to-slate-100 flex items-center justify-center mb-5 overflow-hidden">
         <div className="text-center p-4">
-          <div className="text-4xl mb-2" aria-hidden="true">📦</div>
+          <div className="text-4xl mb-2" aria-hidden="true">
+            📦
+          </div>
           <span className="text-xs text-slate-400 font-medium">Photo coming soon</span>
         </div>
       </div>
@@ -34,9 +36,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
       </span>
 
       {/* Name */}
-      <h3 className="font-bold text-brand-dark text-sm leading-snug mb-1 flex-1">
-        {product.name}
-      </h3>
+      <h3 className="font-bold text-brand-dark text-sm leading-snug mb-1 flex-1">{product.name}</h3>
 
       {/* Material */}
       {product.material && (

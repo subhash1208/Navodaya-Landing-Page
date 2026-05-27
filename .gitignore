@@ -32,6 +32,9 @@ dev-tools
 
 # testing
 /coverage
+/playwright-report/
+/test-results/
+/blob-report/
 
 # next.js
 /.next/
@@ -43,6 +46,7 @@ dev-tools
 # misc
 .DS_Store
 *.pem
+build-output*.txt
 
 # debug
 npm-debug.log*

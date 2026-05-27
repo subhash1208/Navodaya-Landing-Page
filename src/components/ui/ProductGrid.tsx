@@ -41,14 +41,15 @@ export function ProductGrid() {
   const filtered = useMemo(() => {
     let list = PRODUCTS;
     if (activeCategory !== ALL_ID) {
-      list = list.filter(p => p.category.slug === activeCategory);
+      list = list.filter((p) => p.category.slug === activeCategory);
     }
     if (query.trim()) {
       const q = query.toLowerCase();
-      list = list.filter(p =>
-        p.name.toLowerCase().includes(q) ||
-        p.description.toLowerCase().includes(q) ||
-        (p.material?.toLowerCase().includes(q) ?? false)
+      list = list.filter(
+        (p) =>
+          p.name.toLowerCase().includes(q) ||
+          p.description.toLowerCase().includes(q) ||
+          (p.material?.toLowerCase().includes(q) ?? false),
       );
     }
     return list;
@@ -56,7 +57,7 @@ export function ProductGrid() {
 
   const tabs = [
     { id: ALL_ID, label: 'All Products', count: PRODUCTS.length },
-    ...PRODUCT_CATEGORIES.map(c => ({ id: c.slug, label: c.name, count: c.productCount })),
+    ...PRODUCT_CATEGORIES.map((c) => ({ id: c.slug, label: c.name, count: c.productCount })),
   ];
 
   return (
@@ -65,12 +66,15 @@ export function ProductGrid() {
       <div className="flex flex-col sm:flex-row gap-4 mb-8">
         {/* Search */}
         <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" aria-hidden="true" />
+          <Search
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"
+            aria-hidden="true"
+          />
           <input
             type="search"
             placeholder="Search products…"
             value={query}
-            onChange={e => setQuery(e.target.value)}
+            onChange={(e) => setQuery(e.target.value)}
             aria-label="Search products"
             className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-slate-200 bg-white text-sm text-brand-dark placeholder:text-slate-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 outline-none transition-all duration-200"
           />
@@ -88,13 +92,15 @@ export function ProductGrid() {
         {/* Result count */}
         <div className="flex items-center gap-2 text-sm text-slate-500 sm:ml-auto">
           <SlidersHorizontal className="w-4 h-4" aria-hidden="true" />
-          <span>{filtered.length} product{filtered.length !== 1 ? 's' : ''}</span>
+          <span>
+            {filtered.length} product{filtered.length !== 1 ? 's' : ''}
+          </span>
         </div>
       </div>
 
       {/* Category tabs */}
       <div className="flex flex-wrap gap-2 mb-10" role="tablist" aria-label="Filter by category">
-        {tabs.map(tab => (
+        {tabs.map((tab) => (
           <button
             key={tab.id}
             role="tab"
@@ -105,14 +111,18 @@ export function ProductGrid() {
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-1',
               activeCategory === tab.id
                 ? 'bg-brand-primary text-white shadow-[0_0_20px_rgba(30,64,175,0.25)]'
-                : 'bg-white border border-slate-200 text-slate-600 hover:border-brand-primary hover:text-brand-primary'
+                : 'bg-white border border-slate-200 text-slate-600 hover:border-brand-primary hover:text-brand-primary',
             )}
           >
             {tab.label}
-            <span className={cn(
-              'text-xs px-1.5 py-0.5 rounded-full font-semibold',
-              activeCategory === tab.id ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'
-            )}>
+            <span
+              className={cn(
+                'text-xs px-1.5 py-0.5 rounded-full font-semibold',
+                activeCategory === tab.id
+                  ? 'bg-white/20 text-white'
+                  : 'bg-slate-100 text-slate-500',
+              )}
+            >
               {tab.count}
             </span>
           </button>
@@ -122,7 +132,7 @@ export function ProductGrid() {
       {/* Grid */}
       {filtered.length > 0 ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-          {filtered.map(product => (
+          {filtered.map((product) => (
             <PinContainer key={product.id}>
               <MagneticWrapper>
                 <ProductCard product={product} />
@@ -132,11 +142,16 @@ export function ProductGrid() {
         </div>
       ) : (
         <div className="text-center py-20">
-          <div className="text-4xl mb-4" aria-hidden="true">🔍</div>
+          <div className="text-4xl mb-4" aria-hidden="true">
+            🔍
+          </div>
           <h3 className="font-semibold text-brand-dark mb-2">No products found</h3>
           <p className="text-sm text-slate-500 mb-4">Try a different search term or category.</p>
           <button
-            onClick={() => { setQuery(''); handleCategoryChange(ALL_ID); }}
+            onClick={() => {
+              setQuery('');
+              handleCategoryChange(ALL_ID);
+            }}
             className="text-sm font-medium text-brand-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary rounded"
           >
             Clear filters

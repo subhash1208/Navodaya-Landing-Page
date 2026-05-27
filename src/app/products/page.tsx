@@ -12,7 +12,11 @@ export const metadata: Metadata = {
 
 function GridSkeleton() {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4" aria-busy="true" aria-label="Loading products">
+    <div
+      className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4"
+      aria-busy="true"
+      aria-label="Loading products"
+    >
       {Array.from({ length: 10 }).map((_, i) => (
         <div key={i} className="bg-slate-100 rounded-[1.25rem] aspect-[3/4] animate-pulse" />
       ))}
@@ -27,8 +31,14 @@ export default function ProductsPage() {
       <div className="bg-white border-b border-slate-100">
         <div className="container mx-auto py-10">
           {/* Breadcrumb */}
-          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-slate-400 mb-4">
-            <Link href="/" className="hover:text-brand-primary transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-primary rounded">
+          <nav
+            aria-label="Breadcrumb"
+            className="flex items-center gap-1.5 text-xs text-slate-400 mb-4"
+          >
+            <Link
+              href="/"
+              className="hover:text-brand-primary transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-primary rounded"
+            >
               Home
             </Link>
             <ChevronRight className="w-3 h-3" aria-hidden="true" />
@@ -39,7 +49,8 @@ export default function ProductsPage() {
             Product Catalogue
           </h1>
           <p className="text-slate-500 text-lg">
-            {PRODUCTS.length}+ products across {PRODUCT_CATEGORIES.length} categories — hygiene, hospitality &amp; wellness.
+            {PRODUCTS.length}+ products across {PRODUCT_CATEGORIES.length} categories — hygiene,
+            hospitality &amp; wellness.
           </p>
         </div>
       </div>
