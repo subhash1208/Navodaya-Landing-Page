@@ -1,0 +1,9 @@
+# Toolchain for this project. Pinned exactly so local, CI, and agent sessions
+# resolve identical binaries.
+[tools]
+node = "26.5.0"
+pnpm = "11.12.0"
+
+# Not used by the app — required by the `sequential-thinking` MCP server in
+# .vscode/mcp.json, which launches via `uvx`.
+uv = "0.11.28"

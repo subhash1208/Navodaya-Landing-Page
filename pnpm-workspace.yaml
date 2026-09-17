@@ -1,0 +1,5 @@
+# sharp powers Next.js image optimization; unrs-resolver backs eslint-config-next
+# module resolution. Both need their native build step to run.
+allowBuilds:
+  sharp: true
+  unrs-resolver: true
