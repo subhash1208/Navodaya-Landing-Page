@@ -1,0 +1,20 @@
+# Normalize line endings to LF in the repo and working tree. Without this,
+# core.autocrlf=true checks files out as CRLF on Windows while .prettierrc
+# requires LF, so prettier --check fails and blocks the husky pre-commit hook.
+* text=auto eol=lf
+
+# Binary assets must never be line-ending converted.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.avif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.mp4 binary
+*.pdf binary
+
+# Generated - collapse in diffs and exclude from language stats.
+pnpm-lock.yaml -diff linguist-generated
