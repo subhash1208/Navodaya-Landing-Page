@@ -8,7 +8,7 @@ vi.mock('gsap', () => ({
     fromTo: vi.fn(),
     to: vi.fn(),
     set: vi.fn(),
-    context: vi.fn().mockImplementation((fn: any, ref: any) => {
+    context: vi.fn().mockImplementation((fn: any, _ref: any) => {
       fn();
       return { revert: vi.fn() };
     }),
@@ -27,7 +27,7 @@ vi.mock('gsap/SplitText', () => {
     chars: any[] = [];
     words: any[] = [];
     revert = vi.fn();
-    constructor(el?: any, config?: any) {
+    constructor(_el?: any, config?: any) {
       this.chars = config?.type?.includes('chars') ? [{ textContent: 'A' }] : [];
       this.words = config?.type?.includes('words') ? [{ textContent: 'Word' }] : [];
     }

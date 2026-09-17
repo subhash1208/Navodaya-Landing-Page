@@ -15,6 +15,10 @@
     "incremental": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
+    // vitest.config.mts sets globals:true, so vi/describe/beforeEach are ambient at
+    // runtime; "node" must stay listed because naming any type package disables
+    // automatic @types inclusion.
+    "types": ["vitest/globals", "node"],
     "plugins": [
       {
         "name": "next"

@@ -38,7 +38,7 @@ vi.mock('@vercel/analytics/react', () => ({
 
 describe('RootLayout', () => {
   it('renders children in main element', () => {
-    const { container } = render(
+    render(
       <RootLayout>
         <div data-testid="page-content">Page</div>
       </RootLayout>,

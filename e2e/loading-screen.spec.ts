@@ -7,22 +7,8 @@ test.describe('Loading Screen', () => {
     await page.evaluate(() => sessionStorage.removeItem('nv_intro_seen'));
     await page.reload();
 
-    // Loading screen should be visible initially
-    // It uses a dark overlay during the animation
-    const loadingOverlay = page.locator(
-      '[data-testid="loading-screen"], .loading-screen, [aria-label*="loading"], [aria-label*="Loading"]',
-    );
-    // If no specific selector, check for the dark overlay that covers the page
-    const darkOverlay = page.locator('div[style*="position: fixed"][style*="z-index"]');
-
-    // At least one loading indicator should be present on fresh load
-    const hasLoading = await loadingOverlay
-      .or(darkOverlay)
-      .first()
-      .isVisible()
-      .catch(() => false);
-    // Loading screen may have already completed by the time Playwright checks
-    // So we just verify the page eventually shows content
+    // The loading screen may have already finished by the time Playwright looks,
+    // so assert the outcome that must hold either way: content renders.
     await expect(page.locator('h1')).toBeVisible({ timeout: 10000 });
   });
 

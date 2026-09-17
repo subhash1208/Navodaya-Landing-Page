@@ -67,7 +67,7 @@ describe('ProductPage [slug]', () => {
     it('renders material spec when product has material', async () => {
       // surgeon-cap has material: 'Non-woven'
       const Page = await ProductPage({ params: Promise.resolve({ slug: 'surgeon-cap' }) });
-      const { container } = render(Page as any);
+      render(Page as any);
       expect(screen.getByText('Material')).toBeTruthy();
       expect(screen.getByText('Non-woven')).toBeTruthy();
     });
@@ -96,7 +96,7 @@ describe('ProductPage [slug]', () => {
 
     it('renders related products section', async () => {
       const Page = await ProductPage({ params: Promise.resolve({ slug: 'surgeon-cap' }) });
-      const { container } = render(Page as any);
+      render(Page as any);
       expect(screen.getByText('Related Products')).toBeTruthy();
       const cards = screen.getAllByTestId('product-card');
       expect(cards.length).toBeGreaterThan(0);
