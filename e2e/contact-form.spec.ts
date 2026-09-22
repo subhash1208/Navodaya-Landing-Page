@@ -48,8 +48,10 @@ test.describe('Contact Form', () => {
     const submitButton = page.locator('button[type="submit"]');
     await submitButton.click();
 
-    // Wait for success state (the form shows a success message)
-    await expect(page.locator('text=/thank|success|sent|received/i')).toBeVisible({
+    // Wait for the success state. Target the heading by role — a bare
+    // text=/thank|success|sent|received/i matched three unrelated paragraphs
+    // elsewhere on the page ("sent" is a substring of "es-sent-ials").
+    await expect(page.getByRole('heading', { name: /thank you/i })).toBeVisible({
       timeout: 10000,
     });
   });
