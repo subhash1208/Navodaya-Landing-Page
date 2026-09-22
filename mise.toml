@@ -8,6 +8,10 @@ node = "26.5.0"
 # unnoticed locally while Vercel could not build master at all.
 pnpm = "11.27.1"
 
-# Not used by the app — required by the `sequential-thinking` MCP server in
-# .vscode/mcp.json, which launches via `uvx`.
-uv = "0.11.28"
+# `uv` was pinned here only to launch the `sequential-thinking` MCP server via
+# `uvx`. That server no longer needs any Python toolchain — but note it is NOT
+# launched by `pnpm dlx` either: every fetch-on-demand launcher dies at startup
+# with ERR_MODULE_NOT_FOUND ('Cannot find package zod'), an upstream bug where
+# both MCP servers import zod without declaring it. They run from a standalone
+# pnpm project outside every repo, launched directly with `node`. Full forensics
+# and the exact paths are in `.vscode/mcp.json` and `.github/CONTROL-PLANE-NOTES.md`.

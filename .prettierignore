@@ -4,4 +4,15 @@ coverage
 playwright-report
 test-results
 build-output*.txt
+
+# Lockfiles are generated. pnpm rewrites pnpm-lock.yaml on every install, so
+# formatting it produces churn that the next install undoes. This line was
+# missed by the npm -> pnpm migration (8fac64f), which left only the npm
+# lockfile ignored — so gate 1 and the pre-commit hook failed on ANY dependency
+# change until 2026-09-18. package-lock.json stays listed because npm is banned
+# here and a stray one should not also produce format noise.
+pnpm-lock.yaml
 package-lock.json
+
+# Scratch files from verification runs (red-phase proofs, audit JSON dumps).
+.tmp-*
