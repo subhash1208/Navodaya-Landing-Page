@@ -42,6 +42,11 @@
         "type": "command",
         "command": ".github\\hooks\\scripts\\run-hook.cmd guard-writes",
         "timeout": 10
+      },
+      {
+        "type": "command",
+        "command": ".github\\hooks\\scripts\\run-pyhook.cmd guardrail",
+        "timeout": 10
       }
     ],
     "PostToolUse": [
@@ -51,5 +56,6 @@
         "timeout": 10
       }
     ]
-  }
+  },
+  "//guardrail-hook": "guardrail.py is the ONE PreToolUse command hook Claude registers. The blanket ban on command hooks existed because they HUNG on Windows -- see CLAUDE_SKIP in sync-claude.mjs for the 2026-09-17 forensics. That failure was re-measured 2026-09-22 with an instrumented probe of identical shape and is gone: stdin closes in ~5ms, every process is reaped, and cmd/conhost/node counts return to baseline with zero orphans. The residual cost is a millisecond-scale process trio per tool call. It earns that cost by inspecting tool-input CONTENT for secret material -- AWS keys, private-key headers, tokens -- which the prefix-based native deny rules in permissions.json structurally cannot do. It blocks via the exit-2 protocol and is verified by `python .github/hooks/scripts/guardrail.py --self-test`."
 }

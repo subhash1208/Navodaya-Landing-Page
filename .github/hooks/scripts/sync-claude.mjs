@@ -718,12 +718,49 @@ const MATCHERS = {
   'guard-shell': 'Bash|PowerShell',
   'guard-writes': 'Edit|Write|NotebookEdit|Read|NotebookRead',
   'gate-reminder': 'Edit|Write|NotebookEdit',
+  // Every tool that can name a path or carry a payload. Bash/PowerShell are in
+  // scope because a secret can be read through a shell command, which is the
+  // one thing native Read(...) deny rules cannot see inside.
+  guardrail: 'Bash|PowerShell|Read|Edit|Write|NotebookEdit|NotebookRead',
 };
 
 // Hooks are launched through a wrapper rather than bare `node` so that a
 // missing or broken interpreter reports itself instead of silently disarming
 // every guard. See run-hook.cmd for the full reasoning.
 const LAUNCHER = '.github\\hooks\\scripts\\run-hook.cmd';
+
+// The Python twin. `guardrail.py` is the one PreToolUse COMMAND hook Claude
+// registers, and it is spawned through its own launcher for the same
+// silent-failure reason -- see run-pyhook.cmd.
+//
+// Why this one is registered when all four .mjs hooks are in CLAUDE_SKIP: the
+// blanket ban existed because command hooks HUNG on Windows, leaving console
+// windows open indefinitely (CLAUDE_SKIP['guard-shell'] records the 2026-09-17
+// forensics). That specific failure was re-measured on 2026-09-22 with an
+// instrumented probe of the identical shape and is GONE -- stdin now closes in
+// ~5ms, every process is reaped, and counts return to baseline. What remains is
+// a per-invocation cmd/conhost/node trio lasting milliseconds, which is a cost
+// rather than a breakage. guardrail.py is worth that cost where the .mjs hooks
+// were not, because it inspects tool-input CONTENT for secret material, which
+// prefix-based native rules structurally cannot do.
+// Note the path: this points at the GENERATED copy under `.claude/hooks/`, not
+// at the `.github/` source. The launcher resolves its script via `%~dp0`, so the
+// two files travel together, and it keeps the registered command inside the tree
+// Claude Code owns. Both copies are emitted and stale-checked by this script, so
+// they cannot drift apart silently.
+const PY_LAUNCHER = '.claude\\hooks\\run-pyhook.cmd';
+
+// Interpreter-agnostic hook sources, copied verbatim into `.claude/hooks/` so
+// the generated tree is self-describing. Emitted as ordinary artifacts, which
+// means stale-detection, `--check` and orphan sweeping all cover them for free.
+const HOOK_ASSETS = ['guardrail.py', 'run-pyhook.cmd'];
+
+function buildHookAssets() {
+  return HOOK_ASSETS.map((name) => ({
+    path: join('.claude', 'hooks', name),
+    content: readFileSync(join(ROOT, '.github', 'hooks', 'scripts', name), 'utf8'),
+  }));
+}
 
 function buildSettings() {
   const src = JSON.parse(
@@ -744,15 +781,25 @@ function buildSettings() {
       // (`node ./.github/hooks/scripts/guard-shell.mjs`). Either way what we
       // need is the script basename, which selects the matcher below.
       const script =
-        /([\w-]+)\.mjs/.exec(entry.command)?.[1] ?? entry.command.trim().split(/\s+/).pop();
-      if (!script || !existsSync(join(ROOT, '.github', 'hooks', 'scripts', `${script}.mjs`))) {
+        /([\w-]+)\.(?:mjs|py)/.exec(entry.command)?.[1] ?? entry.command.trim().split(/\s+/).pop();
+      // Resolve which interpreter owns it by finding the source file. A hook
+      // named in agentic-guard.json with no script on disk is a hard error, not
+      // a warning -- it would register, fail to start, and be read as "approve".
+      const ext = ['mjs', 'py'].find((e) =>
+        existsSync(join(ROOT, '.github', 'hooks', 'scripts', `${script}.${e}`)),
+      );
+      if (!script || !ext) {
         throw new Error(`Cannot identify hook script in: ${entry.command}`);
       }
       if (CLAUDE_SKIP[script]) {
         skipped.push(script);
         continue;
       }
-      const inner = { type: 'command', command: `${LAUNCHER} ${script}`, timeout: entry.timeout };
+      const inner = {
+        type: 'command',
+        command: `${ext === 'py' ? PY_LAUNCHER : LAUNCHER} ${script}`,
+        timeout: entry.timeout,
+      };
       // UserPromptSubmit is not a tool event and takes no matcher.
       // Only create the event key once a hook actually lands in it, so a fully
       // skipped event does not emit an empty array.
@@ -1322,6 +1369,7 @@ for (const name of readdirSync(skillDir)) {
 }
 
 artifacts.push(...buildInstructionScopes());
+artifacts.push(...buildHookAssets());
 artifacts.push(buildSettings(), buildMcp(), buildReadme());
 
 const stale = artifacts.filter(({ path, content }) => {

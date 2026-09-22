@@ -11,27 +11,29 @@ alternative JSON `permissionDecision` protocol; both are valid, and exit 2 is
 the one specified for this script because a non-zero exit blocks even if the
 host cannot parse the output.
 
-REGISTRATION STATUS: deliberately NOT registered as a hook in this repo.
-    On Windows the host launches command hooks via `cmd /c` WITHOUT
-    `windowsHide`, so every invocation allocates a console window, and a hook
-    that hangs leaves that window on screen permanently -- the registered
-    `timeout` does not reap it (CONTROL-PLANE-NOTES.md section 1, observed
-    2026-09-17 as ~11 live cmd/conhost/node trios up to 4.6 minutes old).
-    PreToolUse on Bash is the highest-frequency tool in a session, so
-    registering this would litter the desktop and get the whole guard system
-    switched off -- which protects nothing.
+REGISTRATION STATUS: REGISTERED as a PreToolUse hook, 2026-09-22.
+    It was deliberately unregistered until then. The reason was real: on
+    2026-09-17 Windows command hooks were observed hanging, leaving ~11 live
+    cmd/conhost/node trios on screen up to 4.6 minutes old, which the
+    registered `timeout` did not reap (CONTROL-PLANE-NOTES.md section 1). A
+    guard that litters the desktop gets the whole guard system switched off,
+    which protects nothing.
 
-    Enforcement here therefore runs through the NATIVE `deny` rules in
-    .github/hooks/permissions.json: in-process, no spawn, no window, and they
-    still apply when no interpreter can be found. This script is the portable
-    second layer -- register it on a non-Windows host, or under a host that
-    passes `windowsHide`, by adding to permissions.json:
+    That pathology was RE-MEASURED on 2026-09-22 with an instrumented probe of
+    the identical shape, driven from fresh headless sessions: stdin now closes
+    in ~5ms, each firing costs exactly +1 cmd / +1 conhost / +1 node, and every
+    one of them exits -- process counts returned to baseline with zero orphans.
+    The hang is fixed; the per-invocation process trio remains as a cost.
 
-        "hooks": { "PreToolUse": [ { "matcher": "*", "hooks": [
-            { "type": "command",
-              "command": "python .github/hooks/scripts/guardrail.py",
-              "timeout": 5 } ] } ] }
+    The native `deny` rules in .github/hooks/permissions.json remain the FIRST
+    layer and the load-bearing one: in-process, no spawn, no window, and they
+    still apply when no interpreter can be found. This script is the second
+    layer -- it sees things a path/prefix rule cannot, notably a credential
+    pasted into a file body (CONTENT_RULES), which no permission rule can
+    inspect.
 
+    Registration lives in .github/hooks/agentic-guard.json and is translated by
+    `pnpm agents:sync`. Do not hand-edit .claude/.
     Verify with `--self-test` before and after any change to the patterns.
 
 DESIGN NOTES
@@ -148,6 +150,36 @@ def _walk_strings(node: object, keys: tuple[str, ...], depth: int = 0) -> list[s
 
 
 def _block(reason: str) -> None:
+    """Deny the tool call under BOTH documented protocols.
+
+    Exit 2 alone is the protocol this script was specified against, and on a
+    current binary it is sufficient -- exit 2 blocks whether or not JSON is
+    printed, and JSON cannot override it. On THIS machine it was not enough.
+    Measured 2026-09-22 against the `claude` on PATH, v2.1.211: the hook fired,
+    returned 2, and wrote this exact stderr line, and the host ran the tool
+    anyway -- confirmed three times (a Write carrying a PEM delimiter, a
+    PowerShell echo of one, and `printenv`, where the eventual refusal came
+    from the auto-mode classifier with a different message while this guard's
+    stderr never surfaced at all). The docs pin the behaviour change at
+    v2.1.214, one patch above what is installed.
+
+    So emit the documented JSON decision as well. On >= 2.1.214 exit 2 blocks
+    and the JSON merely supplies a cleaner reason string; on older builds the
+    JSON is what carries the denial. Belt and braces, and the cost is one line
+    of stdout.
+    """
+    sys.stdout.write(
+        json.dumps(
+            {
+                "hookSpecificOutput": {
+                    "hookEventName": "PreToolUse",
+                    "permissionDecision": "deny",
+                    "permissionDecisionReason": f"[guardrail] {reason}",
+                }
+            }
+        )
+    )
+    sys.stdout.flush()
     sys.stderr.write(f"[guardrail] BLOCKED: {reason}\n")
     sys.stderr.flush()
     sys.exit(2)
