@@ -3,3 +3,16 @@
 allowBuilds:
   sharp: true
   unrs-resolver: true
+
+# Forced transitive versions. pnpm 11 no longer reads a `pnpm.overrides` field from
+# package.json — it warns and ignores it — so overrides live here.
+overrides:
+  # GHSA: `server.fs.deny` bypass on Windows alternate paths, high, fixed in 8.0.16.
+  # vitest@4.1.7 accepts `^6 || ^7 || ^8` and @vitejs/plugin-react peers `^8.0.0`, so
+  # 8.0.16+ is well inside both ranges — but nothing re-resolves a transitive that already
+  # satisfies its parent's range, so `pnpm update` leaves it at 8.0.14 forever.
+  #
+  # Dev-only: vite is vitest's bundler here, and this repo's app dev server is Turbopack.
+  # Kept anyway because the advisory is Windows-specific and this is a Windows machine.
+  # Drop this override once vitest's own floor moves past 8.0.16.
+  vite: ^8.0.16
