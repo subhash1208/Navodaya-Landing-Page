@@ -4,9 +4,11 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { ArrowRight, ChevronDown } from 'lucide-react';
 import Image from 'next/image';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion } from 'motion/react';
 import { BRAND, ROUTES, PRODUCT_CATEGORIES, PRODUCTS } from '@/constants';
 import { useTypewriter } from '@/hooks/useTypewriter';
+import { useIsomorphicLayoutEffect } from '@/hooks/useIsomorphicLayoutEffect';
+import { useIntroFinished } from '@/hooks/useIntroFinished';
 import { ProductCategoryGraph } from '@/components/ui/ProductCategoryGraph';
 import { AuroraBackground } from '@/components/ui/AuroraBackground';
 
@@ -14,17 +16,48 @@ const HEADLINE_LINE1 = 'Premium Hygiene & Care';
 const HEADLINE_LINE2 = 'Solutions for Every Industry';
 
 export default function HeroSection() {
-  const [line2Visible, setLine2Visible] = useState(false);
-  const [contentVisible, setContentVisible] = useState(false);
+  // Seeded `true` so the server renders the hero in its FINISHED state — headline, mission
+  // copy and both CTAs present and visible in the HTML. These used to start `false` and gate
+  // their content behind `{visible && ...}`, which meant the server sent a hero containing
+  // no copy and no links at all: invisible to crawlers and to anyone without JS.
+  //
+  // The layout effect below winds them back to `false` before the first client paint, so the
+  // entrance animation is unchanged for everyone running JS.
+  const [line2Visible, setLine2Visible] = useState(true);
+  const [contentVisible, setContentVisible] = useState(true);
+  const [badgeVisible, setBadgeVisible] = useState(true);
   const [isMobile, setIsMobile] = useState<boolean | null>(null);
   const [logoScale, setLogoScale] = useState(1);
   const [expandedCategory, setExpandedCategory] = useState<number | null>(null);
   const collapseRef = useRef<(() => void) | null>(null);
   const rightPanelRef = useRef<HTMLDivElement>(null);
 
+  // False while the first-visit intro overlay is covering the page. Without this the whole
+  // entrance sequence — typewriter included — runs and finishes in the first ~1.7s, behind
+  // an opaque overlay that does not lift until 4s, and the visitor meets a static hero.
+  // Defaults to true outside <LoadingScreen>, so every other route is unaffected.
+  const introFinished = useIntroFinished();
+
+  useIsomorphicLayoutEffect(() => {
+    // Reduced motion keeps the server-rendered finished state: nothing to animate, so
+    // hiding it would only produce a pointless delay before it reappeared.
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    setLine2Visible(false);
+    setContentVisible(false);
+    setBadgeVisible(false);
+  }, []);
+
   useEffect(() => {
     setIsMobile(window.matchMedia('(max-width: 768px)').matches);
   }, []);
+
+  useEffect(() => {
+    // The badge has no upstream trigger the way line 2 and the body copy have the
+    // typewriter's onComplete, so it re-reveals itself here once the intro is out of the
+    // way. This runs after paint, by which point the layout effect above has already
+    // hidden it, so motion animates it in from hidden.
+    if (introFinished) setBadgeVisible(true);
+  }, [introFinished]);
 
   const handleLogoScale = useCallback((scale: number) => {
     setLogoScale(scale);
@@ -35,6 +68,7 @@ export default function HeroSection() {
     text: HEADLINE_LINE1,
     speed: 38,
     startDelay: 300,
+    enabled: introFinished,
     onComplete: () => {
       setTimeout(() => setLine2Visible(true), 150);
       setTimeout(() => setContentVisible(true), 600);
@@ -76,8 +110,8 @@ export default function HeroSection() {
         >
           {/* Badge */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={false}
+            animate={badgeVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ duration: 0.5, delay: 0.1 }}
             className="inline-flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-full mb-8 border self-center md:self-start"
             style={{
@@ -106,131 +140,124 @@ export default function HeroSection() {
               )}
             </span>
 
-            <AnimatePresence>
-              {line2Visible && (
-                <motion.span
-                  className="block"
-                  initial={{ opacity: 0, width: '0%' }}
-                  animate={{ opacity: 1, width: '100%' }}
-                  transition={{ duration: 0.8, ease: [0.4, 0, 0.2, 1] }}
-                  style={{ overflow: 'hidden', display: 'block' }}
-                >
-                  <span
-                    className="animate-gradient-shift"
-                    style={{
-                      display: 'inline-block',
-                      background: 'linear-gradient(-45deg, #60A5FA, #818CF8, #38BDF8, #60A5FA)',
-                      backgroundSize: '400% 400%',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
-                      backgroundClip: 'text',
-                    }}
-                  >
-                    {HEADLINE_LINE2}
-                  </span>
-                </motion.span>
-              )}
-            </AnimatePresence>
+            {/* Always mounted, never conditionally rendered: `initial={false}` makes motion
+                skip its enter animation and render straight at the `animate` value, so the
+                server emits the finished, visible state instead of `opacity: 0`. */}
+            <motion.span
+              className="block"
+              initial={false}
+              animate={line2Visible ? { opacity: 1, width: '100%' } : { opacity: 0, width: '0%' }}
+              transition={{ duration: 0.8, ease: [0.4, 0, 0.2, 1] }}
+              style={{ overflow: 'hidden', display: 'block' }}
+            >
+              <span
+                className="animate-gradient-shift"
+                style={{
+                  display: 'inline-block',
+                  background: 'linear-gradient(-45deg, #60A5FA, #818CF8, #38BDF8, #60A5FA)',
+                  backgroundSize: '400% 400%',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                }}
+              >
+                {HEADLINE_LINE2}
+              </span>
+            </motion.span>
           </h1>
 
           {/* Subheadline */}
-          {contentVisible && (
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="text-base leading-relaxed mb-8 mt-5 max-w-lg"
-              style={{ color: '#94A3B8' }}
-            >
-              {BRAND.MISSION}
-            </motion.p>
-          )}
+          <motion.p
+            initial={false}
+            animate={contentVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+            transition={{ duration: 0.5 }}
+            className="text-base leading-relaxed mb-8 mt-5 max-w-lg"
+            style={{ color: '#94A3B8' }}
+          >
+            {BRAND.MISSION}
+          </motion.p>
 
           {/* CTAs */}
-          {contentVisible && (
+          <motion.div
+            initial={false}
+            animate={contentVisible ? { opacity: 1 } : { opacity: 0 }}
+            className="flex flex-col sm:flex-row items-center md:items-start justify-center md:justify-start gap-4 mb-10"
+          >
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="flex flex-col sm:flex-row items-center md:items-start justify-center md:justify-start gap-4 mb-10"
+              initial={false}
+              animate={contentVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
             >
-              <motion.div
-                initial={{ opacity: 0, y: 40 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+              <Link
+                href={ROUTES.PRODUCTS}
+                className="group inline-flex items-center gap-2.5 rounded-full font-semibold text-base text-white transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 px-7 py-3.5 min-h-[48px]"
+                style={{
+                  background: 'linear-gradient(135deg, #1E40AF, #1D4ED8)',
+                  boxShadow: '0 4px 24px rgba(30,64,175,0.5)',
+                }}
               >
-                <Link
-                  href={ROUTES.PRODUCTS}
-                  className="group inline-flex items-center gap-2.5 rounded-full font-semibold text-base text-white transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 px-7 py-3.5 min-h-[48px]"
-                  style={{
-                    background: 'linear-gradient(135deg, #1E40AF, #1D4ED8)',
-                    boxShadow: '0 4px 24px rgba(30,64,175,0.5)',
-                  }}
-                >
-                  Explore Products
-                  <ArrowRight
-                    className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200"
-                    aria-hidden="true"
-                  />
-                </Link>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, y: 40 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 20, delay: 0.08 }}
-              >
-                <Link
-                  href={ROUTES.CONTACT}
-                  className="inline-flex items-center gap-2 rounded-full font-semibold text-base transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 px-7 py-3.5 min-h-[48px]"
-                  style={{
-                    border: '2px solid rgba(255,255,255,0.2)',
-                    color: '#E2E8F0',
-                    background: 'rgba(255,255,255,0.05)',
-                    backdropFilter: 'blur(8px)',
-                  }}
-                >
-                  Get a Quote
-                </Link>
-              </motion.div>
+                Explore Products
+                <ArrowRight
+                  className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200"
+                  aria-hidden="true"
+                />
+              </Link>
             </motion.div>
-          )}
+
+            <motion.div
+              initial={false}
+              animate={contentVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 20, delay: 0.08 }}
+            >
+              <Link
+                href={ROUTES.CONTACT}
+                className="inline-flex items-center gap-2 rounded-full font-semibold text-base transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 px-7 py-3.5 min-h-[48px]"
+                style={{
+                  border: '2px solid rgba(255,255,255,0.2)',
+                  color: '#E2E8F0',
+                  background: 'rgba(255,255,255,0.05)',
+                  backdropFilter: 'blur(8px)',
+                }}
+              >
+                Get a Quote
+              </Link>
+            </motion.div>
+          </motion.div>
 
           {/* Trust stats */}
-          {contentVisible && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="inline-flex items-center rounded-2xl self-center md:self-start"
-              style={{
-                background: 'rgba(255,255,255,0.05)',
-                backdropFilter: 'blur(12px)',
-                border: '1px solid rgba(255,255,255,0.08)',
-                padding: '16px 32px',
-              }}
-            >
-              {[
-                { value: '51+', label: 'Products' },
-                { value: '3', label: 'Categories' },
-                { value: 'B2B', label: 'Focused' },
-              ].map(({ value, label }, i) => (
-                <div key={label} className="flex items-center">
-                  <div className="text-center px-6">
-                    <div className="text-xl font-black text-white">{value}</div>
-                    <div className="text-[11px] font-medium mt-0.5" style={{ color: '#64748B' }}>
-                      {label}
-                    </div>
+          <motion.div
+            initial={false}
+            animate={contentVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="inline-flex items-center rounded-2xl self-center md:self-start"
+            style={{
+              background: 'rgba(255,255,255,0.05)',
+              backdropFilter: 'blur(12px)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              padding: '16px 32px',
+            }}
+          >
+            {[
+              { value: '51+', label: 'Products' },
+              { value: '3', label: 'Categories' },
+              { value: 'B2B', label: 'Focused' },
+            ].map(({ value, label }, i) => (
+              <div key={label} className="flex items-center">
+                <div className="text-center px-6">
+                  <div className="text-xl font-black text-white">{value}</div>
+                  <div className="text-[11px] font-medium mt-0.5" style={{ color: '#64748B' }}>
+                    {label}
                   </div>
-                  {i < 2 && (
-                    <div
-                      className="w-px h-7 shrink-0"
-                      style={{ background: 'rgba(255,255,255,0.1)' }}
-                    />
-                  )}
                 </div>
-              ))}
-            </motion.div>
-          )}
+                {i < 2 && (
+                  <div
+                    className="w-px h-7 shrink-0"
+                    style={{ background: 'rgba(255,255,255,0.1)' }}
+                  />
+                )}
+              </div>
+            ))}
+          </motion.div>
         </div>
 
         {/* RIGHT — Graph + 3D Placeholder */}

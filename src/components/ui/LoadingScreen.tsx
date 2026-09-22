@@ -1,13 +1,34 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion } from 'motion/react';
 import Image from 'next/image';
 import { BRAND } from '@/constants';
+import { IntroFinishedContext } from '@/hooks/useIntroFinished';
 
 const SESSION_KEY = 'nv_intro_seen';
 const LETTERS = 'NAVODAYA'.split('');
 const TOTAL_DURATION = 4000;
+
+// sessionStorage throws instead of returning null in some locked-down contexts (Safari
+// private mode historically, storage-blocking extensions, `Partitioned` cookie policies).
+// An exception here would abort the effect with `show` still `null`, leaving the opaque
+// overlay on screen permanently — a blank site. Both accesses fail soft instead.
+function hasSeenIntro(): boolean {
+  try {
+    return Boolean(sessionStorage.getItem(SESSION_KEY));
+  } catch {
+    return false;
+  }
+}
+
+function markIntroSeen(): void {
+  try {
+    sessionStorage.setItem(SESSION_KEY, '1');
+  } catch {
+    // Non-fatal — the visitor simply sees the intro again next time.
+  }
+}
 
 interface LoadingScreenProps {
   children: React.ReactNode;
@@ -23,7 +44,7 @@ export function LoadingScreen({ children }: LoadingScreenProps) {
     // Check reduced motion preference
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    if (sessionStorage.getItem(SESSION_KEY)) {
+    if (hasSeenIntro()) {
       setShow(false);
       return;
     }
@@ -34,7 +55,7 @@ export function LoadingScreen({ children }: LoadingScreenProps) {
       // Reduced motion: show static brand briefly then dismiss
       setStage(5);
       const t = setTimeout(() => {
-        sessionStorage.setItem(SESSION_KEY, '1');
+        markIntroSeen();
         setShow(false);
       }, 800);
       return () => clearTimeout(t);
@@ -49,7 +70,7 @@ export function LoadingScreen({ children }: LoadingScreenProps) {
       setTimeout(() => setStage(5), 2700), // Progress bar
       setTimeout(() => {
         setStage(6); // Exit
-        sessionStorage.setItem(SESSION_KEY, '1');
+        markIntroSeen();
       }, 3200),
       setTimeout(() => setShow(false), TOTAL_DURATION),
     ];
@@ -57,34 +78,40 @@ export function LoadingScreen({ children }: LoadingScreenProps) {
     return () => timers.forEach(clearTimeout);
   }, []);
 
-  // Not yet determined (SSR / pre-hydration) — show the loading overlay immediately
-  // so the main page never flashes before we know whether to show the intro
-  if (show === null) {
-    return (
-      <div
-        style={{
-          position: 'fixed',
-          inset: 0,
-          zIndex: 9999,
-          background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)',
-        }}
-        aria-hidden="true"
-      />
-    );
-  }
-
-  // Already seen — skip entirely
-  if (!show) return <>{children}</>;
-
+  // ONE return, with a fixed shape: slot 0 is the overlay, slot 1 is always `children`.
+  //
+  // This used to be three separate returns — `[<div>, children]` while undecided,
+  // `[<AnimatePresence>, children]` while showing, and `[children]` once done. React
+  // reconciles fragment children by POSITION, so the moment `show` flipped to false,
+  // `children` moved from index 1 to index 0, hit a type mismatch against the overlay
+  // that used to live there, and React destroyed and rebuilt the entire page.
+  //
+  // On a first visit that happened at TOTAL_DURATION, four seconds in: measured at
+  // +3920ms, the <form> and <h1> nodes were both replaced and anything the visitor had
+  // already typed into the contact form was silently erased. Keeping `children` pinned to
+  // one position is the whole fix.
   return (
     <>
-      <AnimatePresence>
-        {show && stage < 7 && (
+      {show === null ? (
+        // Undecided (SSR / pre-hydration) — cover the page so the intro never flashes
+        // before we know whether to play it, but still RENDER children underneath so the
+        // server HTML is complete for crawlers and no-JS visitors. The overlay is
+        // fixed/inset-0/z-9999, so this looks identical to emitting the overlay alone.
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 9999,
+            background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)',
+          }}
+          aria-hidden="true"
+        />
+      ) : (
+        show &&
+        stage < 7 && (
           <motion.div
             key="loading-screen"
             initial={{ opacity: 1 }}
-            exit={{ opacity: 0, scale: 1.02 }}
-            transition={{ duration: 0.7, ease: [0.4, 0, 0.2, 1] }}
             role="status"
             aria-label="Loading Navodaya"
             style={{
@@ -323,9 +350,11 @@ export function LoadingScreen({ children }: LoadingScreenProps) {
               </div>
             </div>
           </motion.div>
-        )}
-      </AnimatePresence>
-      {children}
+        )
+      )}
+      <IntroFinishedContext.Provider value={show === false}>
+        {children}
+      </IntroFinishedContext.Provider>
     </>
   );
 }

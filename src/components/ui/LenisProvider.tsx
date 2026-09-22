@@ -32,7 +32,6 @@ export function LenisProvider({ children }: { children: React.ReactNode }) {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     let destroyed = false;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let tickerFn: ((time: number) => void) | null = null;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let gsapRef: any = null;
