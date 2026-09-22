@@ -13,13 +13,29 @@ references
 # VSCode settings
 .vscode/
 
-# Agent / AI tooling setup — local only, not part of the product
-AGENTS.md
-CLAUDE.md
-.github/
+# Agent / AI tooling setup.
+#
+# `.github/`, AGENTS.md and CLAUDE.md were ignored from 2026-09-17 to 2026-09-22
+# as "local only, not part of the product". They are now TRACKED, because they are
+# hand-authored source with no other copy: on 2026-09-22 `.github/hooks/permissions.json`
+# was deleted and git could not restore it — the directory had never been committed —
+# so 300 permission rules had to be reconstructed from a stale generated artifact.
+# `.github/CONTROL-PLANE-NOTES.md` alone is weeks of forensics that cannot be re-derived.
+# There are no workflows here and no credentials; RESEND_API_KEY is pinned to a sentinel.
+#
+# Generated from .github/ by `pnpm agents:sync` — never committed, never edited by hand
+.claude/
+.mcp.json
 
 # Scratch output from terminal commands
 .tmp-*
+
+# mise writes these into the CWD when it cannot resolve its data dir (its Windows
+# shims are currently broken — see AGENTS.md). Harmless but noisy, and `installs/`
+# can reach gigabytes, so keep them out of the index.
+/downloads/
+/installs/
+/migrations/
 
 # Dev tools / screenshots / design references
 dev-tools
