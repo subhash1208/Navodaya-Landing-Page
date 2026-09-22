@@ -13,6 +13,14 @@ references
 # VSCode settings
 .vscode/
 
+# Agent / AI tooling setup — local only, not part of the product
+AGENTS.md
+CLAUDE.md
+.github/
+
+# Scratch output from terminal commands
+.tmp-*
+
 # Dev tools / screenshots / design references
 dev-tools
 
@@ -47,6 +55,9 @@ dev-tools
 .DS_Store
 *.pem
 build-output*.txt
+
+# MCP memory server store — per-developer, append-only JSONL, conflicts badly on merge
+knowledge-graph.jsonl
 
 # debug
 npm-debug.log*
