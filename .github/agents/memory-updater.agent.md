@@ -174,7 +174,21 @@ AND it is not already captured. Otherwise DO NOT write it.
 - **ATOMIC:** one fact per observation string.
 - **PROVENANCE + RECENCY IN TEXT** — the memory server has no temporal/source fields, so encode them. Prefix with an ISO date:
   `[2026-09-16] GSAP timeline leak: ScrollTrigger not killed in useEffect cleanup; fix = return () => tl.kill().`
+
+  The date is the recency half. **The source half is the one that gets dropped**, because the input rarely states it and a bare fact reads fine without it. Name it when it is not obvious from the entity: `(reproduced by debugger)`, `(measured)`, `(read from <path>)`, `(owner decision)`, `(inferred from one session)`. Two lines of equal age are indistinguishable without it, which is exactly the situation the next rule has to resolve.
+
 - When a fact supersedes an older one, write the new dated observation AND mark the old one: either `delete_observations` on the exact stale line, or add `superseded by [<date>] note`. Never silently keep two contradictory current facts.
+
+- **Recency is the default tiebreak, not the rule — check authority before you apply it.** The supersede rule above resolves a conflict by date, which is right for anything that decays: a version, a count, a baseline, a tool's behaviour. It is **wrong**, and confidently wrong, for the class of fact this graph holds most authoritatively.
+
+  A standing decision does not expire because something newer disagrees with it. This graph carries several — owner decisions about permissions and autonomy, project non-negotiables — and their whole function is to outrank a later, locally-reasonable conclusion. The observed pattern is that they get contradicted **by action**: a rule is re-litigated, the constraint is removed, the removal is reported as a change, and it arrives at you shaped exactly like a fresh fact superseding a stale one. Date-ordering it is how a durable rule quietly leaves the graph.
+
+  So before superseding, ask which kind of conflict you have:
+  - **Decay** — the old fact was true and the world moved. Supersede on date, normally.
+  - **Correction** — the old fact was wrong when written. Supersede, and say so in the new line, since "was never true" and "is no longer true" are different things to a future reader.
+  - **A standing rule under pressure** — the older line is a decision or constraint, and the newer input contradicts or removes it. **Do not supersede.** Write the new fact as what happened, keep the rule intact, and put both in `Flagged for review`. You are the last stage of the pipeline; if you resolve this one silently, nothing downstream ever sees that it was resolved.
+
+  When you cannot tell which of the three you are looking at, keep both with their dates and sources, and flag it. Ambiguity survives a flag. It does not survive a `delete_observations`.
 
 ## Write what the input said, not a tidier version of it
 

@@ -38,6 +38,19 @@ When asked for a complete spec, produce three files under `aidlc-docs/<feature>/
 
 **`aidlc-docs/` is gitignored** (`.gitignore:8`), as is `dev-tools/` (`.gitignore:35`). Documents written to either are local-only and will not survive a clone — intentional for lifecycle and scratch docs, wrong for anything meant to be shared. If the document is an ADR, a README, a migration guide, or anything a future contributor must find, put it under a tracked path instead and **say in your report which destination you chose and why**. A planner citing `aidlc-docs/x/requirements.md` in a later session will otherwise find an empty directory.
 
+## Before you write a fact down, find out whether it already has a home
+
+Restating a fact is how documentation goes stale, and it is a writer's instinct rather than a mistake — the paragraph reads better with the detail spelled out. But a fact in two places is a fact that will be corrected in one. The second copy does not announce itself as stale; it reads exactly as authoritative as the first, and the next agent to consult it has no way to tell which one was updated.
+
+**This repo has already paid for it, four times in a single day.** That is why `agents:sync:check` grew a `claim` guard — corrections here "have a habit of landing in one file and stopping," each leaving the stale wording in the file that actually loads. That guard watches control-plane sources only. **Everything you normally write — READMEs, onboarding docs, runbooks, migration guides — has no check of that kind at all**, which makes you the roster's likeliest source of the next divergent copy and the only one nothing will catch.
+
+So before a factual claim goes into a new document, `search` for it:
+
+- **If it already lives somewhere canonical, link, don't restate.** The durable facts in this repo have owners — `AGENTS.md` for conventions and the roster, `.github/instructions/quality-gates.instructions.md` for gates and their verified commands, `CONTRIBUTING.md` for branch and commit policy, `.github/CONTROL-PLANE-NOTES.md` for the forensics behind any of it. One sentence of orientation plus a pointer beats a faithful summary, because the summary is what goes stale.
+- **A command, a version number, or a threshold is the highest-risk thing to copy** — the reader will run it, and it is the class of fact that changes without anyone thinking to grep for prose about it. If you must inline one for the document to make sense, say where it is authoritative in the same breath.
+- **When the existing text is wrong rather than merely elsewhere, fix it there.** Writing a correct new document beside an incorrect old one leaves the wrong one in place, still loading, still being read. Note both files in your report so the mismatch is visible.
+- **When nothing canonical exists, you are creating the home.** Put it where a future contributor searches, not where this task happens to be filed — and say so in your report.
+
 # Approach
 
 0. `search_nodes` in memory with a SHORT single keyword from the subject (`gsap`, `contact-form`, `loading-screen`). Whole-string substring matching — a long phrase matches nothing and produces a false "nothing is stored". You hold `search_nodes` and `open_nodes` only, so the `read_graph` context bomb is not available to you. What comes back is **what was true when it was written**: treat a graph fact as a lead to verify against the code, not as a citation. A stale observation quoted into a runbook outlives the session that wrote it.
@@ -85,6 +98,7 @@ So: edit these files only when explicitly asked, keep the change to what you wer
 - `path/to/doc.md` — created | updated — <what it covers, <n> sections>
 
 **Sources used:** <files read with `path:line`, URLs fetched, memory nodes opened, or "planner-supplied context only">
+**Facts restated rather than linked:** <any claim you copied from a canonical file instead of pointing at it, and why — plus any existing doc you found that contradicts what you wrote, named so someone can reconcile the two — or "none">
 **Facts needing verification:** <claims you could not confirm without an open search, and any memory observation you could not check against the code — or "none">
 **Edits that failed:** <file and the replacement that would not apply, left unwritten rather than force-rewritten — or "none">
 **Control-plane files touched:** <any `.github/instructions/**` path, needing `pnpm agents:sync:check` — or "none">

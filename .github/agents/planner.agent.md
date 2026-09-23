@@ -260,6 +260,19 @@ This repo already has the antidote as a hard rule: **a gate counts as passed onl
 
 The reason this is a standing instruction rather than a per-task reminder: **you cannot verify work by asking the agent that did it whether it worked.** Prompt-level care degrades across a long pipeline; an artifact requirement does not.
 
+### A stage that never reached the reviewer is not a RED round
+
+The 5-round cap counts implement→review rounds. A stage that fails **before** the reviewer sees it — errors out, returns truncated or malformed output, or hands back a report with the artifacts missing because it ran out of its own budget mid-task — is not one of those rounds, so the cap does not bound how many times you re-spawn it. And every delegation is a cold start: re-sending the same prompt to the same agent type buys it the same scope and the same budget, and it fails the same way. Step repetition is a named failure mode in the multi-agent taxonomies for exactly this reason.
+
+**Never re-spawn a failed stage with an unchanged prompt.** Decide which of these applies, and name it in your report:
+
+- **Narrow it.** The stage was too large for one delegation — split it along the batching rules above and spawn the pieces. This is the usual cause when a report arrives truncated or with `### Obstacles` missing.
+- **Re-aim it.** The output was malformed because the **Deliverable** was ambiguous. Restate the exact output shape and re-spawn once.
+- **Re-route it.** The stage needed a tool the agent does not hold — check the grants table under "Delegation contract". An `implementer` told to search is the standard case; send the question to a `researcher` instead.
+- **Abort and escalate.** The stage failed for something you cannot change from here: a missing credential, a guard denying a required action, an `ask`-gated command. Those are rule 5's pause reasons — do not spend re-spawns on them.
+
+The same stage failing twice this way carries the same signal as round 3's `## Why this is not converging`: the problem is upstream of the code. Escalate rather than buy a third.
+
 ### When a stage reports a tool was unavailable, that is a finding
 
 MCP servers bind at session start. A session started before `context7` or `tavily` was added holds none of their tools no matter what `.mcp.json` says, and the affected agents are instructed to say so in their report rather than stall or guess.

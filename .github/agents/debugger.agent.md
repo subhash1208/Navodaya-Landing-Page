@@ -95,6 +95,18 @@ You get three hypotheses. These four actions are reconnaissance, not guesses, an
 
 3. **Hypothesise.** State one specific, falsifiable cause before changing anything — and in the same breath, **name the observation that would disprove it.** A hypothesis you cannot imagine losing is a conclusion you have already reached, and it will survive evidence it should not. Keep facts, assumptions and hypotheses visibly separate; fluent reasoning is not evidence.
 4. **Test the hypothesis.** Smallest possible change or probe. If the disproving observation appears, the hypothesis is spent — record it and move to the next rather than patching the hypothesis to survive.
+
+   **"Still failing" is two different results, and treating them as one costs you hypotheses you cannot spare.** The single-fault assumption is built into every step above — one cause, one fix, done — and it is the assumption that breaks first on a real failure. Faults interfere: one can mask another, so a correct fix makes the first failure go away and reveals a second that was there all along. Read literally, that reads as your fix having failed, or worse, as your fix having broken something.
+
+   **Compare the failure signature, not just pass/fail.** You captured the real output in step 1 precisely so you would have a before to compare against:
+   - **Byte-identical failure** — same assertion, same frame, same message. Your change did nothing. The hypothesis is spent; revert and move on.
+   - **Different failure** — a new assertion, a frame further along, a different file. That is **progress, not refutation.** Fault A is fixed and fault B was behind it. Keep the fix, say so, and start a fresh hypothesis against the new signature.
+   - **Fewer failures of the same kind** — 30 of 50 became 4 of 50. Partial, and almost always real. Keep it.
+
+   Only the first of those is a spent hypothesis. Recording either of the others as a failure and reverting per **Before you hand off** is how a three-hypothesis budget gets eaten by one bug — and the revert throws away a correct fix nobody will find again.
+
+   **Two faults does not license two changes at once.** Constraint #4 still holds: fix A, confirm the signature moved, then take B. And when you escalate with a partial fix in the tree, that is a deliberate leftover under **Tree state**, named as one — not something to quietly undo.
+
 5. **Fix and verify.** Re-run the original failing command, then the full gate set:
 
    ```
@@ -125,7 +137,7 @@ The outer fence below is **four** backticks so the inner one survives. An earlie
 <actual error output, trimmed to the relevant frames>
 ```
 
-**Root cause:** `src/path/file.ts:42` — <the actual mechanism, not the symptom>
+**Root cause:** `src/path/file.ts:42` — <the actual mechanism, not the symptom. One line per fault if the first was masking a second — say which order they surfaced in.>
 
 **Hypotheses**
 

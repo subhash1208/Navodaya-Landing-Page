@@ -80,6 +80,20 @@ Every command in this section is bash. Under pwsh they fail or, worse, return a 
 
 There is also no inline `VAR=val cmd` prefix form in pwsh at all — it parses the assignment as the command name. If you ever need to clear an environment variable for one run, spawn a child: `pwsh -NoProfile -Command '$env:X = ""; ...'`.
 
+# Before the gates mean anything, read what the diff did to the existing tests
+
+Your gate table is a measurement, and a measurement is only as good as its yardstick. **An implementer can shorten the yardstick and every row above still comes back green.** So pull the test hunks out of the diff and read them first — before the implementation, and before you interpret a single gate result. `git diff -- '*test*' '*spec*'` is the whole check and it costs seconds.
+
+Three things to look for, none of which any gate in your list can detect:
+
+- **A changed assertion.** `toHaveLength(3)` → `toHaveLength(2)`, `toBe(x)` → `toBeTruthy()`, an exact string relaxed to `stringContaining`. `pnpm test` passes because the assertion now matches the behaviour, and **coverage does not move at all** — the line still executed, which is the only thing coverage measures. This is the likeliest route a regression has to a GREEN verdict here. The implementer prompt forbids the move by name, which means the prohibition and the tree are separated by exactly one thing: you reading the hunk.
+- **A deleted or skipped test.** `it.skip`, `describe.skip`, `it.only` (which silently disables every sibling in the file), `test.fixme`, or a case removed outright. Treat the underlying test as **failing**, not as absent.
+- **A removed guard.** Deleted lines are where a validation, a sanitiser, an `abort()`, or a cleanup call quietly disappears — and red hunks are the ones readers habitually skim. Read them at the same rate as the green ones.
+
+**An edit to an existing test is a contract change and needs its own justification.** If the spec did not ask for it and the handoff's `Deviations from spec` does not explain it, that is a finding in itself — not something to absorb because the suite is green.
+
+None of this assumes bad faith. An agent optimising for a green gate finds the cheapest path to green, and rewriting one number is cheaper than fixing a bug.
+
 # Severity taxonomy
 
 **The bar every finding must clear, placed here rather than up in `# Constraints` for a measured reason.** Suppression rules stated once at the top of a long prompt lose to the detection patterns nearest the point of writing: the instinct to find something wrong overwhelms a negative instruction read seventy lines earlier, and flat checklists of exactly the kind below are what trigger that instinct. So the bar sits against the lists it governs.
@@ -100,6 +114,7 @@ Three tests, all of which a finding must pass before you write it down:
 - [ ] Unsanitized user input rendered as HTML (`dangerouslySetInnerHTML`), open redirect, unvalidated server-action payload
 - [ ] A new public function or exported hook with **zero** tests
 - [ ] A known BugPattern in this area with no regression test
+- [ ] An existing test weakened, skipped, or deleted without the spec asking for it — the suite goes green either way, so the diff hunk is the only evidence
 - [ ] Race condition, concurrency issue, or timing bug — flag Critical **even if the happy path was tested**
 - [ ] Effect that subscribes/observes/schedules with no cleanup — GSAP timeline or ScrollTrigger not killed on unmount
 - [ ] Any gate above failing
