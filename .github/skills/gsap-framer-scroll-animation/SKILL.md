@@ -26,6 +26,9 @@ Production-grade scroll animations with GitHub Copilot prompts, ready-to-use cod
 - **Always kill timelines and ScrollTrigger instances in effect cleanup.** Leaked timelines are this repo's most common bug. Prefer `gsap.context()` / `ctx.revert()`.
 - **Respect `prefers-reduced-motion` on every animation** — non-negotiable, even when a recipe below omits it.
 - **Import from `motion/react`**, not `framer-motion`.
+- **Never let a `motion.*` element SSR an `initial` prop when it holds page content.** `motion` serialises `initial` into inline styles during server render, so `initial={{ opacity: 0 }}` ships literal `style="opacity:0"` in the HTML — invisible before hydration, and invisible permanently if JS never runs. That is precisely the defect gate 10 exists to catch. **Recipe 2 below is written the forbidden way upstream and has been corrected here.** The primitive is `initial={false}` with a state-driven `animate`, wound back to hidden in a layout effect before first paint; the full pattern is in `.github/instructions/quality-gates.instructions.md` under "Never let `motion` SSR an `initial` prop".
+- **Never gate content behind a `mounted` flag.** `const [mounted, setMounted] = useState(false); … if (!mounted) return null` guarantees the server sends an empty tree. This repo has already shipped that bug once — `LoadingScreen` server-rendered a homepage with no `<h1>` and no links while all nine gates were green. `references/framer.md` offers exactly this snippet under the words **"SSR-safe"**, which is the opposite of what it is; that section has been corrected, and if it returns from an upstream merge, delete it.
+- **The GSAP recipes below target document-global string selectors — this repo does not.** Every animation in `src/` passes a ref (`AboutSection.tsx:69`, `WhyUsSection.tsx:70`). `gsap.from('.card', …)` matches every `.card` in the document, so a component rendered twice has each mount animate both instances, and the second mount re-runs the first one's entrance. Pass refs, or give the context a scope — `gsap.context(fn, scopeRef)`, where the **second argument** is what confines selector lookups to that subtree. The recipes below omit it because they are written for vanilla JS pages with one of each element.
 - Animation code is client-side: `'use client'`, pushed as low in the tree as possible.
 - Compose classes with `cn()` from `src/utils/cn.ts`.
 - The `premium-frontend-ui` skill is **not installed** and is not available. Every cross-reference to it below has been removed; if one reappears from an upstream merge, delete it rather than acting on it.
@@ -92,14 +95,20 @@ gsap.from('.card', {
 
 ### 2. Fade-in on enter (Framer Motion)
 
+**Upstream writes this as `initial={{ opacity: 0, y: 40 }}`. Do not copy that form for anything a visitor needs to read** — see the repo overrides above. `initial` is serialised into the server HTML, so the element ships at `opacity:0` and stays there if hydration never happens.
+
+For content, animate **transform only** and leave opacity alone. The element is legible in the server HTML, merely offset, and the motion still reads as an entrance:
+
 ```jsx
 <motion.div
-  initial={{ opacity: 0, y: 40 }}
-  whileInView={{ opacity: 1, y: 0 }}
+  initial={{ y: 40 }}
+  whileInView={{ y: 0 }}
   viewport={{ once: true, margin: '-80px' }}
   transition={{ duration: 0.6 }}
 />
 ```
+
+The opacity form is fine for genuinely decorative elements — a glow, a divider, a background flourish — where an invisible no-JS render costs the visitor nothing. Decide which one you have before choosing; "it's below the fold" is not the test, because a crawler has no fold.
 
 ### 3. Scrub / scroll-linked (GSAP)
 

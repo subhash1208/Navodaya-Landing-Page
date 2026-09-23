@@ -14,10 +14,12 @@ name: 'Agentic Workflow'
 | `implementer`    | Code **and its tests**, self-verified                       | Review its own work        |
 | `reviewer`       | All gates + the GREEN/RED verdict                           | Fix what it finds          |
 | `scribe`         | Docs, specs, research notes                                 | Write code or run commands |
-| `memory-updater` | Knowledge-graph consolidation                               | Touch the filesystem       |
+| `memory-updater` | Knowledge-graph consolidation                               | Write to the filesystem    |
 | `debugger`       | Reproduce-first root-cause hunting                          | Build to spec              |
 
 The planner is the only agent that delegates. It is both the decomposer and the orchestrator — splitting those two roles loses the decomposition in the handoff.
+
+**`memory-updater` reads — it just cannot write.** An earlier revision of the row above said "touch the filesystem", which reads as "cannot open a file" and is wrong in the direction that costs the most: the agent grants `read` and `search`, its own definition describes it as "read-only on the filesystem", and its ontology has a provenance tag `(read from <path>)` that presupposes exactly that. A memory-updater that believes it is blind writes the fact it was handed instead of the fact that is true, and a graph entry naming a file that no longer exists is worse than no entry — it is confidently wrong the next time someone searches for it. **Verify a durable claim against the repo before storing it.**
 
 ## Delegation contract
 
@@ -70,6 +72,16 @@ implementer ──> reviewer ──> VERDICT: GREEN ──> memory-updater ─�
 The cap is 5 rounds and it is not advisory. Five failed rounds means the spec is wrong, not the code. Escalate with: what was tried, what still fails, and the specific decision needed.
 
 `commit` is a stage, not a suggestion. A GREEN pipeline commits its own work locally — Conventional Commits format per `CONTRIBUTING.md`, staged file-by-file, never `git add -A`. The owner's gate is `git push`, which `permissions.ask` enforces independently, so stopping short of the commit only costs a human turn and protects nothing. `.husky/pre-commit` re-runs prettier, eslint and coverage, so a bad commit is caught there; if it fails, the GREEN verdict was wrong and the loop opens another round. `--no-verify` is never the answer.
+
+**Check the branch before that commit, because the owner's gate fires one step too late.** `permissions.ask` covers `git push` and nothing earlier, so a pipeline that goes GREEN on `master` or `develop` has already written the commit by the time the human is asked anything — and `CONTRIBUTING.md` forbids exactly that: feature work reaches `develop` by PR from a `<type>/<name>` branch, and `master` only by PR from `develop`. Declining the push at that point does not undo it; the human is left rewinding history instead of approving work.
+
+So make the branch a precondition of the commit stage, not an afterthought:
+
+```bash
+git rev-parse --abbrev-ref HEAD
+```
+
+On `master` or `develop`, create the branch first — `git switch -c fix/mobile-nav-pointer-events`, naming it from the table in `CONTRIBUTING.md`. Branching is additive and costs nothing if it turns out to be unnecessary; committing to a protected branch is the thing that cannot be cheaply undone. On an existing `feature/`, `fix/`, `perf/`, `test/` or `chore/` branch, commit where you are.
 
 Pass reviewer findings to the implementer **verbatim**. Summarising a fix list loses the precision that makes it actionable.
 
@@ -138,14 +150,15 @@ Queries go to third parties — context7 to Upstash, tavily to Tavily. They carr
 
 ## Anti-patterns
 
-| Anti-pattern                                           | Why it fails                                                   |
-| ------------------------------------------------------ | -------------------------------------------------------------- |
-| Planner writing code itself                            | Loses tool isolation; context fills with implementation detail |
-| One researcher, many questions                         | Shallow answers, no parallelism gain                           |
-| One stage per todo item                                | 8 orchestrations for 8 related edits — pure overhead           |
-| Asking permission mid-loop                             | Turns an automatic pipeline into a manual one                  |
-| Reviewer fixing what it finds                          | No independent verification of the fix                         |
-| Unbounded review rounds                                | Scope drift, budget burn, no human decision point              |
-| Recalling a Next.js 16 API instead of reading the docs | Confidently wrong code, costs a full round                     |
-| Skipping memory-updater                                | Every session re-learns the same facts from scratch            |
-| `read_graph` to "see what we know"                     | Blows the context window in one call                           |
+| Anti-pattern                                           | Why it fails                                                    |
+| ------------------------------------------------------ | --------------------------------------------------------------- |
+| Planner writing code itself                            | Loses tool isolation; context fills with implementation detail  |
+| One researcher, many questions                         | Shallow answers, no parallelism gain                            |
+| One stage per todo item                                | 8 orchestrations for 8 related edits — pure overhead            |
+| Asking permission mid-loop                             | Turns an automatic pipeline into a manual one                   |
+| Reviewer fixing what it finds                          | No independent verification of the fix                          |
+| Unbounded review rounds                                | Scope drift, budget burn, no human decision point               |
+| Recalling a Next.js 16 API instead of reading the docs | Confidently wrong code, costs a full round                      |
+| Skipping memory-updater                                | Every session re-learns the same facts from scratch             |
+| Committing the pipeline's work onto `master`/`develop` | The `git push` gate fires after the commit — nothing catches it |
+| `read_graph` to "see what we know"                     | Blows the context window in one call                            |

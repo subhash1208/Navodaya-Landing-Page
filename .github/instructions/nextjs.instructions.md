@@ -8,23 +8,28 @@ applyTo: 'src/**/*.tsx, src/**/*.ts'
   Local edits: applyTo narrowed to src/ TS only; repo overrides added below; §5 (API
   Routes) and §7 (Cache Components) reduced to stubs, and the Jest/Cache-Components
   lines in §6 corrected, because this file loads on EVERY src/**/*.ts(x) task and those
-  sections describe surfaces this repo does not have. Section numbering is preserved so
-  the overrides table's §-references still resolve. No longer byte-diffable against
-  upstream — that tradeoff was made deliberately; see the overrides table.
+  sections describe surfaces this repo does not have. Later passes also corrected the
+  two "co-locate tests" claims in §1 and §3 in place (the overrides table alone was not
+  enough — testing.instructions.md does not load on these paths), added a §2.1 note that
+  bare option-less dynamic() is deliberate here, and added the RESEND_API_KEY sentinel to
+  §6. Section numbering is preserved so the overrides table's §-references still resolve.
+  No longer byte-diffable against upstream — that tradeoff was made deliberately; see the
+  overrides table.
 -->
 
 ## Repo overrides — these win over anything below
 
 This project is Next.js **16.3.5**; the guide below targets 16.1.1. Where they disagree, `node_modules/next/dist/docs/` is authoritative — it ships with the installed version, so it cannot go stale the way this line can. Check `node_modules/next/package.json` if the number here looks wrong.
 
-| Guide says                                              | This repo does instead                                                                                                                                                                                                                                                                                                                                               |
-| ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| "Co-locate tests with components (`UserCard.test.tsx`)" | Tests live in `src/__tests__/`, mirroring `src/` paths. **Never** co-locate.                                                                                                                                                                                                                                                                                         |
-| "Use Jest, React Testing Library"                       | **Vitest** + Testing Library. Never add Jest.                                                                                                                                                                                                                                                                                                                        |
-| Top-level `lib/`, `contexts/`, `styles/`                | `src/utils/`, `src/constants/`, `src/types/`. Do not create `lib/`.                                                                                                                                                                                                                                                                                                  |
-| §5 API Routes                                           | Stubbed out — no route handlers exist here. If you add the first one, read the installed Next docs and pick a validator deliberately.                                                                                                                                                                                                                                |
-| §7 Cache Components                                     | Stubbed out — `cacheComponents` is not enabled and `next.config.ts` sets only `images.remotePatterns`. Do not turn it on to satisfy a guide.                                                                                                                                                                                                                         |
-| `resolve_library_id` / `get_library_docs` (§10)         | **Those tool names do not exist.** Context7's real tools are `resolve-library-id` and `query-docs` — hyphens, not underscores. The server **is** configured and enabled here. Use it for the parts of this stack the Next.js docs do not cover (React 19, Tailwind, GSAP, Motion, Lenis, Vitest, Playwright); use `node_modules/next/dist/docs/` for Next.js itself. |
+| Guide says                                              | This repo does instead                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| "Co-locate tests with components (`UserCard.test.tsx`)" | Tests live in `src/__tests__/`, mirroring `src/` paths. **Never** co-locate. This correction matters more than a duplicate normally would: `testing.instructions.md` is scoped to `src/__tests__/**`, so it is **not loaded** while you are writing the component and deciding where its test goes. In that moment this file is the only one in context, and the upstream body below says "co-locate" twice. Both occurrences are corrected in place — §1 and §3. |
+| "Use Jest, React Testing Library"                       | **Vitest** + Testing Library. Never add Jest.                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| Top-level `lib/`, `contexts/`, `styles/`                | `src/utils/`, `src/constants/`, `src/types/`. Do not create `lib/`.                                                                                                                                                                                                                                                                                                                                                                                               |
+| "Store secrets in `.env.local`" (§6)                    | True in general, incomplete here. Settings-injected `env` **beats** `.env.local`, and `RESEND_API_KEY` is deliberately pinned to a sentinel so gate 7 cannot email the real business inbox. Never delete either one. Detail in §6.                                                                                                                                                                                                                                |
+| §5 API Routes                                           | Stubbed out — no route handlers exist here. If you add the first one, read the installed Next docs and pick a validator deliberately.                                                                                                                                                                                                                                                                                                                             |
+| §7 Cache Components                                     | Stubbed out — `cacheComponents` is not enabled and `next.config.ts` sets only `images.remotePatterns`. Do not turn it on to satisfy a guide.                                                                                                                                                                                                                                                                                                                      |
+| `resolve_library_id` / `get_library_docs` (§10)         | **Those tool names do not exist.** Context7's real tools are `resolve-library-id` and `query-docs` — hyphens, not underscores. The server **is** configured and enabled here. Use it for the parts of this stack the Next.js docs do not cover (React 19, Tailwind, GSAP, Motion, Lenis, Vitest, Playwright); use `node_modules/next/dist/docs/` for Next.js itself.                                                                                              |
 
 Also still binding: compose classes with `cn()`, kill GSAP/ScrollTrigger in effect cleanup, respect `prefers-reduced-motion`, no `any`, pnpm only.
 
@@ -50,7 +55,7 @@ This document summarizes the latest, authoritative best practices for building, 
   - `styles/` — Global and modular stylesheets
   - `hooks/` — Custom React hooks
   - `types/` — TypeScript type definitions
-- **Colocation:** Place files (components, styles, tests) near where they are used, but avoid deeply nested structures.
+- **Colocation:** Place components near where they are used, but avoid deeply nested structures. **Tests are the exception here** — they are never co-located; see §3.
 - **Route Groups:** Use parentheses (e.g., `(admin)`) to group routes without affecting the URL path.
 - **Private Folders:** Prefix with `_` (e.g., `_internal`) to opt out of routing and signal implementation details.
 - **Feature Folders:** For large apps, group by feature (e.g., `app/dashboard/`, `app/auth/`).
@@ -94,6 +99,10 @@ export default async function DashboardPage() {
 **Summary:**
 Always move client-only UI into a Client Component and import it directly in your Server Component. Never use `next/dynamic` with `{ ssr: false }` in a Server Component.
 
+**Repo note — `dynamic()` without options is a different thing, and this repo depends on it.** The rule above is about `{ ssr: false }` specifically. A bare `dynamic(() => import(...))` with **no options object** keeps SSR on; it only splits the chunk, and it is legal in a Server Component. `src/app/page.tsx:6-16` is a Server Component that does exactly this five times — every below-fold section is a `dynamic()` import.
+
+Do not "simplify" those into static imports on the strength of the sentence above ("no need for `next/dynamic`"). That sentence is answering the client-boundary question, not the code-splitting one, and collapsing the five would fold their chunks into the initial bundle — moving the gate 9 baseline (`310.6 KB gzipped`, recorded in `.github/instructions/quality-gates.instructions.md`) for no functional gain. It would also break the timing assumption `e2e/visual-regression.spec.ts` is written around; see `.github/instructions/testing.instructions.md` under "Visual regression on this page is timing-sensitive".
+
 ### 2.2. Next.js 16+ async request APIs (App Router)
 
 - **Assume request-bound data is async in Server Components and Route Handlers.** In Next.js 16, APIs like `cookies()`, `headers()`, and `draftMode()` are async in the App Router.
@@ -127,7 +136,7 @@ Always move client-only UI into a Client Component and import it directly in you
   - Use TypeScript interfaces for props.
   - Prefer explicit prop types and default values.
 - **Testing:**
-  - Co-locate tests with components (e.g., `UserCard.test.tsx`).
+  - **Corrected for this repo — do not co-locate.** Upstream says to put `UserCard.test.tsx` beside `UserCard.tsx`. Tests here mirror the source path under `src/__tests__/`: `src/components/sections/AboutSection.tsx` → `src/__tests__/components/sections/AboutSection.test.tsx`. Nothing mechanical catches a misplaced test — it runs, it counts toward coverage, and it passes every gate — so the wrong convention ships silently and is only found by the next person looking for it. Conventions for what to assert and what not to mock are in `.github/instructions/testing.instructions.md`, which does **not** load on this file's paths; read it before writing the spec.
 
 ## 4. Naming Conventions (General)
 
@@ -148,6 +157,7 @@ If you are adding the first route handler, read `node_modules/next/dist/docs/` f
 - **TypeScript:** Use TypeScript for all code. Enable `strict` mode in `tsconfig.json`.
 - **ESLint & Prettier:** Enforce code style and linting. Use the official Next.js ESLint config. In Next.js 16, prefer running ESLint via the ESLint CLI (not `next lint`).
 - **Environment Variables:** Store secrets in `.env.local`. Never commit secrets to version control.
+  - **`.env.local` is not the last word in this repo, and the difference has emailed a real customer.** Claude Code injects `env` from settings into every shell it spawns, and `@next/env` **does not overwrite an already-present variable** — so a value in the environment beats the same key in `.env.local`. `RESEND_API_KEY` is pinned there to the sentinel `your_resend_api_key_here` on purpose: `e2e/contact-form.spec.ts` submits the contact form for real, and `src/app/actions/contact.ts` only takes the mock path when the key is falsy or equal to that sentinel. If you put a live key in `.env.local` and wonder why it is not applying, that is the control working. **Do not delete the sentinel and do not delete the key from `.env.local`** — the first re-arms gate 7 to email the business inbox, the second is a destructive edit to an untracked file. Full mechanism, including its dependence on workspace trust, is in `.github/instructions/quality-gates.instructions.md`.
   - In Next.js 16, `serverRuntimeConfig` / `publicRuntimeConfig` are removed. Use environment variables instead.
   - `NEXT_PUBLIC_` variables are **inlined at build time** (changing them after build won’t affect a deployed build).
   - If you truly need runtime evaluation of env in a dynamic context, follow Next.js guidance (e.g., call `connection()` before reading `process.env`).

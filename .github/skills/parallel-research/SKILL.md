@@ -23,7 +23,15 @@ Useful decomposition axes:
 
 Invoke the `researcher` subagent **once per question in a single parallel batch**. Each researcher receives exactly one question and no others.
 
-When all return, produce a consolidated brief:
+When all return, produce a consolidated brief.
+
+**Two of its sections are yours, not theirs — and the brief must say which.** Each researcher answered one question and cited it. `What exists` and `Test coverage today` are those findings forwarded. `Pattern to follow` and `Blast radius` are **your inference on top**: nobody was asked "is this the convention?" or "what breaks?", they were asked what one file does. Written in the same voice, carrying the same `path:line`, that inference reaches the implementer indistinguishable from a verified finding — and the citation travels to a claim it was never attached to.
+
+Anthropic's production research system runs a **separate citation pass after synthesis** for precisely this reason: attribution is what breaks when one agent writes prose over another's condensed findings. You get no such pass, so do it inline as you write:
+
+- **A `path:line` may appear only on a sentence a researcher actually supported.** Generalising from one cited example to a repo-wide convention is fine — say "one instance, at `path:line`". A bare citation on that sentence reads as a survey nobody ran.
+- **Do not fill a section nobody researched.** If you asked two questions and neither covered integration, `### Blast radius` reads "not researched — no question covered this". The template is a checklist of what to report, not a quota of paragraphs to produce. An empty section is a cheap gap; a plausible invented one costs a review round to disprove.
+- **"Not found" is a finding, not an omission.** "Nobody established whether X exists" and "X does not exist" are different claims, and an implementer acts differently on each. Forward the first as the first.
 
 ```markdown
 ## Research brief: <topic>
