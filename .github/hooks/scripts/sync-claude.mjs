@@ -108,6 +108,41 @@ function parseFrontmatter(block) {
         continue;
       }
 
+      // ...and the THIRD spelling: a flow sequence WRAPPED onto the following
+      // lines. Not exotic — it is the one `prettier` emits. Any `tools: [...]`
+      // longer than the print width gets reflowed into a bare `tools:` plus an
+      // indented `[ ... ]`, so the repo's own format gate manufactures the form
+      // the parser could not read.
+      //
+      // The failure was total and silent. `[` and `read,` are not `key: value`,
+      // so the map branch below matched nothing, `tools` came back `{}`,
+      // `mapTools` saw a non-Array and returned null, and the emitter's
+      // `if (tools?.length)` dropped the `tools:` line — which in Claude Code
+      // does not mean "no tools", it means INHERIT EVERY TOOL.
+      //
+      // Five of seven agents were unrestricted this way, and the tell is that
+      // the only two that survived (`researcher`, `scribe`) are the only two
+      // whose lists fit on one line. `reviewer` ("DO NOT edit any file. You have
+      // no edit tool"), `memory-updater` ("NEVER call read_graph ... You do not
+      // have the tool") and `implementer` ("you have no delegation tool") each
+      // held the exact tool its own prompt told it it lacked. Worse, the
+      // capability-promise lint below opens with `if (!tools?.length) return`,
+      // so those five were exempt from the one check that would have noticed.
+      if ((lines[i + 1] ?? '').trim().startsWith('[')) {
+        const buf = [];
+        while (i + 1 < lines.length) {
+          buf.push(lines[++i].trim());
+          if (buf[buf.length - 1].endsWith(']')) break;
+        }
+        out[key] = buf
+          .join(' ')
+          .replace(/^\[|\]$/g, '')
+          .split(',')
+          .map((s) => unquote(s.trim()))
+          .filter(Boolean);
+        continue;
+      }
+
       const child = {};
       while (i + 1 < lines.length && /^\s+\S/.test(lines[i + 1])) {
         const cm = /^\s+([A-Za-z0-9_-]+):\s*(.*)$/.exec(lines[++i]);
@@ -340,11 +375,27 @@ const PROMISES = [
     cap: 'sequential-thinking/*',
   },
   {
-    re: /\bcontext7\b|\bresolve-library-id\b|\bquery-docs\b/i,
+    re: /\bresolve-library-id\b|\bquery-docs\b/i,
     needs: 'mcp__context7__query-docs',
     cap: 'context7/*',
   },
-  { re: /\btavily\b/i, needs: 'mcp__tavily__tavily_search', cap: 'tavily/*' },
+  // These two match the FUNCTION names only, never the bare brand word. That is
+  // the difference between "use tavily_search to find X" and "you deliberately
+  // do not hold `tavily`" -- a regex on `\btavily\b` fires identically on both,
+  // because it reads mention and cannot read polarity.
+  //
+  // It cost four false positives to learn. Every agent that documents which
+  // tools it lacks -- which is most of them now, deliberately, because an agent
+  // that knows its own limits routes around them instead of guessing -- tripped
+  // a guard whose stated contract (see above) is to fire only on instruction.
+  // The fix restores that contract rather than punching per-file `allow` holes,
+  // which would have switched the rule OFF for the four files most likely to
+  // gain a real promise later.
+  //
+  // Accepted cost: "use tavily to search the web", written without a function
+  // name, is no longer caught. That is the block's own trade -- prefer missing
+  // a case to inventing one.
+  { re: /\btavily_(search|extract)\b/i, needs: 'mcp__tavily__tavily_search', cap: 'tavily/*' },
   { re: /`Skill` tool|\bload the `[a-z0-9-]+` skill\b/i, needs: 'Skill', cap: 'skill' },
 ];
 
