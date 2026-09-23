@@ -158,7 +158,7 @@ grep -iE '\bwarn(ing)?\b' build.txt
 
 `PIPESTATUS[0]` rather than `$?` for the reason given below — the `sed` is what `$?` would describe. Strip ANSI before grepping, same as for Playwright and Vitest.
 
-**Warning baseline: not yet recorded.** Until it is, gate 6's honest verdict is "build succeeded; warnings not comparable, no baseline" — say that rather than asserting a clean run you cannot substantiate.
+**Warning baseline, `next@16.3.5`, 2026-09-23: zero.** `grep -icE '\bwarn(ing)?\b'` over a stripped `pnpm build` log returns `0`, confirmed on two consecutive builds. So gate 6's verdict is now mechanical: any non-zero count is a new warning and the diff owns it. Update this number in the same commit as any deliberate change, exactly as for the bundle baseline above.
 
 Gate 8's `--prod` scope is correct for the gate but hides dev-dependency advisories — the wider `pnpm audit --audit-level=high` found 14 more on 2026-09-18. That, the reason `pnpm update` silently refuses to move some transitives, and the fact that **pnpm 11 ignores `pnpm.overrides` in `package.json`** are all in the `/dependency-audit` skill. Read it before touching a dependency; it is not loaded here because it is only relevant during dependency work.
 

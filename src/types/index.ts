@@ -20,10 +20,13 @@ export interface ProductItem {
   slug: string;
 }
 
+/** The catalogue's three fixed categories. Widening this forces every rule map to be updated. */
+export type CategorySlug = 'hygiene-safety' | 'hotel-amenities' | 'spa-salon';
+
 export interface ProductCategory {
   id: string;
   name: string;
-  slug: string;
+  slug: CategorySlug;
   description: string;
   icon: string;
   productCount: number;

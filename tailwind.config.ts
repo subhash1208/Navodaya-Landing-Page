@@ -64,6 +64,13 @@ export default {
           'clamp(2.25rem, 5vw, 4rem)',
           { lineHeight: '0.98', letterSpacing: '-0.025em' },
         ],
+        // Reproduces the hero headline's pre-SEALED ramp exactly. `display-2` is 25% larger at
+        // 1280px and wraps the constrained hero column to six lines — see fix 1 in the Wave 2
+        // review. Keep this token whenever a headline must not grow.
+        'display-3': [
+          'clamp(2rem, 4vw, 3.75rem)',
+          { lineHeight: '1.05', letterSpacing: '-0.02em' },
+        ],
         'heading-1': [
           'clamp(1.75rem, 3vw, 2.5rem)',
           { lineHeight: '1.1', letterSpacing: '-0.02em' },

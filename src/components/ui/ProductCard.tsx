@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { ROUTES } from '@/constants';
+import { CATEGORY_RULE } from '@/constants/categoryRule';
 import type { ProductItem } from '@/types';
 
 interface ProductCardProps {
@@ -10,41 +11,53 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, className }: ProductCardProps) {
+  // Catalogue reference, derived entirely from existing data: category initials + product slug.
+  const categoryCode = product.category.slug
+    .split('-')
+    .map((word) => word[0])
+    .join('');
+  const reference = `${categoryCode}-${product.slug}`;
+
   return (
     <Link
       href={ROUTES.PRODUCT(product.slug)}
       className={cn(
-        'group flex flex-col bg-white border border-slate-100 rounded-[1.25rem] p-6 card-hover',
-        'shadow-[0_4px_24px_-4px_rgba(15,23,42,0.08)]',
-        'transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2',
+        'group relative flex h-full flex-col border border-grey-200 bg-paper p-6 pt-7',
+        'shadow-e0 transition-shadow duration-200 hover:shadow-e1',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2',
         className,
       )}
     >
-      {/* Placeholder image area */}
-      <div className="w-full aspect-square rounded-xl bg-gradient-to-br from-brand-light to-slate-100 flex items-center justify-center mb-5 overflow-hidden">
-        <div className="text-center p-4">
-          <div className="text-4xl mb-2" aria-hidden="true">
-            📦
-          </div>
-          <span className="text-xs text-slate-400 font-medium">Photo coming soon</span>
-        </div>
+      {/* Category identifier — a 2px rule, the only permitted colour use */}
+      <span
+        aria-hidden="true"
+        className={cn(
+          'absolute top-0 left-0 right-0 h-[2px]',
+          CATEGORY_RULE[product.category.slug],
+        )}
+      />
+
+      {/* Specimen header — category on the left, derived catalogue reference on the right */}
+      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+        <span className="font-mono text-label uppercase text-grey-500">
+          {product.category.name}
+        </span>
+        <span aria-hidden="true" className="font-mono text-label uppercase text-grey-400">
+          {reference}
+        </span>
       </div>
 
-      {/* Category badge */}
-      <span className="inline-block text-[10px] font-semibold uppercase tracking-wider text-brand-secondary bg-sky-50 px-2.5 py-1 rounded-full mb-2 self-start">
-        {product.category.name}
-      </span>
+      <h3 className="mt-5 text-heading-2 text-ink">{product.name}</h3>
 
-      {/* Name */}
-      <h3 className="font-bold text-brand-dark text-sm leading-snug mb-1 flex-1">{product.name}</h3>
+      <p className="mt-3 text-body-sm text-grey-600 line-clamp-3">{product.description}</p>
 
-      {/* Material */}
       {product.material && (
-        <p className="text-xs text-slate-400 mb-3">Material: {product.material}</p>
+        <p className="mt-5 border-t border-grey-100 pt-3 font-mono text-data text-grey-500">
+          Material: {product.material}
+        </p>
       )}
 
-      {/* CTA */}
-      <div className="flex items-center gap-1 text-xs font-semibold text-brand-primary mt-auto pt-3 border-t border-slate-50 group-hover:gap-2 transition-all duration-200">
+      <div className="mt-auto flex items-center gap-2 border-t border-grey-100 pt-4 font-mono text-label uppercase text-ink transition-all duration-200 group-hover:gap-3">
         View Details
         <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
       </div>

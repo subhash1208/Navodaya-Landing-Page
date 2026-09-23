@@ -118,6 +118,19 @@ describe('ContactSection', () => {
     expect(screen.getByText('Get in Touch')).toBeTruthy();
   });
 
+  it('renders the section index and mono field labels', () => {
+    render(<ContactSection />);
+    expect(screen.getByText('05')).toBeTruthy();
+    expect(screen.getByText('Message').className).toContain('font-mono');
+  });
+
+  it('renders the heading in the dark-ground inversion, never near-black on near-black', () => {
+    render(<ContactSection />);
+    const heading = screen.getByText('Request a Quote');
+    expect(heading.className).toContain('text-paper');
+    expect(heading.className).not.toContain('text-ink');
+  });
+
   it('renders location info', () => {
     render(<ContactSection />);
     expect(screen.getByText(/Gandhi Nagar, Hyderabad/)).toBeTruthy();

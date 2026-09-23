@@ -126,8 +126,7 @@ export default function HeroSection() {
 
           {/* Headline */}
           <h1
-            className="font-black leading-[1.05] tracking-tight mb-2 font-display"
-            style={{ fontSize: 'clamp(2rem, 4vw, 3.75rem)' }}
+            className="font-black leading-[1.05] tracking-tight mb-2 font-display text-display-3"
             aria-label={`${HEADLINE_LINE1} ${HEADLINE_LINE2}`}
           >
             <span className="block text-white">

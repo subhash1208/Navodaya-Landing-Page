@@ -178,10 +178,11 @@ describe('ProductCategoriesSection', () => {
     expect(screen.getByText('Our Product Categories')).toBeTruthy();
   });
 
-  it('renders category cards with gradient top border', () => {
+  it('renders category cards with a top rule in their own category colour', () => {
     const { container } = render(<ProductCategoriesSection />);
-    const borders = container.querySelectorAll('.bg-gradient-to-r');
-    expect(borders.length).toBeGreaterThan(0);
+    expect(container.querySelectorAll('.bg-category-hygiene').length).toBe(1);
+    expect(container.querySelectorAll('.bg-category-hotel').length).toBe(1);
+    expect(container.querySelectorAll('.bg-category-spa').length).toBe(1);
   });
 
   it('renders category icons', () => {
@@ -192,8 +193,14 @@ describe('ProductCategoriesSection', () => {
 
   it('renders section with correct background', () => {
     const { container } = render(<ProductCategoriesSection />);
-    const section = container.querySelector('.bg-surface-muted');
+    const section = container.querySelector('.bg-grey-50');
     expect(section).toBeTruthy();
+  });
+
+  it('renders the section index and the total category count', () => {
+    render(<ProductCategoriesSection />);
+    expect(screen.getByText('02')).toBeTruthy();
+    expect(screen.getByText('3 categories')).toBeTruthy();
   });
 
   it('renders subheading text', () => {

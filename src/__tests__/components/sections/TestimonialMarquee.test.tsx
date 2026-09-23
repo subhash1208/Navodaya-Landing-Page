@@ -19,6 +19,11 @@ describe('TestimonialMarquee', () => {
     expect(screen.getByText(/Trusted by hotels, hospitals/)).toBeTruthy();
   });
 
+  it('renders the section index number', () => {
+    render(<TestimonialMarquee />);
+    expect(screen.getByText('04')).toBeTruthy();
+  });
+
   it('renders testimonial rows', () => {
     render(<TestimonialMarquee />);
     // Multiple copies of testimonials exist

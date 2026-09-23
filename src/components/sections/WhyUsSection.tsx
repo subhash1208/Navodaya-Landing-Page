@@ -9,36 +9,24 @@ const REASONS = [
     title: 'Uncompromising Quality',
     description:
       'Every product is sourced and verified to meet international hygiene and safety standards. No shortcuts.',
-    iconBg: '#EFF6FF',
-    iconColor: '#1E40AF',
-    accent: '#1E40AF',
   },
   {
     icon: Truck,
     title: 'Prompt Delivery',
     description:
       'We understand that your operations depend on timely supply. We deliver on schedule, every time.',
-    iconBg: '#F0F9FF',
-    iconColor: '#0EA5E9',
-    accent: '#0EA5E9',
   },
   {
     icon: Users,
     title: 'B2B Expertise',
     description:
       'We work exclusively with businesses — hotels, hospitals, spas, and industries. We speak your language.',
-    iconBg: '#F5F3FF',
-    iconColor: '#7C3AED',
-    accent: '#7C3AED',
   },
   {
     icon: Leaf,
     title: 'Eco-Conscious Options',
     description:
       'Biodegradable shower caps, jute products, and sustainable alternatives available across our range.',
-    iconBg: '#F0FDF4',
-    iconColor: '#16A34A',
-    accent: '#16A34A',
   },
 ] as const;
 
@@ -75,7 +63,7 @@ export default function WhyUsSection() {
             { opacity: 0, letterSpacing: '0.4em', y: 20 },
             {
               opacity: 1,
-              letterSpacing: '0.1em',
+              letterSpacing: '0.12em',
               y: 0,
               duration: 0.7,
               ease: 'power3.out',
@@ -119,29 +107,19 @@ export default function WhyUsSection() {
           );
         }
 
-        // ── 4. Cards — skip GSAP if CSS handles it ────────────────────────
+        // ── 4. Rows — skip GSAP if CSS handles it ─────────────────────────
         if (!hasScrollTimeline) {
           const cards = cardsRef.current?.querySelectorAll('.why-card');
           if (cards) {
             gsap.fromTo(
               cards,
-              {
-                opacity: 0,
-                y: 120,
-                rotationX: 30,
-                rotationZ: (i) => (i % 2 === 0 ? -8 : 8),
-                scale: 0.8,
-                transformPerspective: 1000,
-              },
+              { opacity: 0, y: 40 },
               {
                 opacity: 1,
                 y: 0,
-                rotationX: 0,
-                rotationZ: 0,
-                scale: 1,
-                duration: 0.9,
-                stagger: 0.12,
-                ease: 'back.out(1.3)',
+                duration: 0.7,
+                stagger: 0.1,
+                ease: 'power3.out',
                 scrollTrigger: { trigger: cardsRef.current, start: 'top 78%', once: true },
               },
             );
@@ -199,51 +177,56 @@ export default function WhyUsSection() {
       ref={sectionRef}
       id="why-us"
       aria-labelledby="why-us-heading"
-      className="py-24 bg-white overflow-hidden"
+      className="py-24 bg-paper overflow-hidden"
     >
       <div className="container mx-auto">
-        <div className="text-center mb-16">
-          <span
-            ref={labelRef}
-            className="inline-block text-[11px] font-semibold tracking-[0.1em] uppercase text-brand-secondary mb-3 scroll-animate-up"
-          >
-            Why Navodaya
-          </span>
-          <h2
-            ref={headingRef}
-            id="why-us-heading"
-            className="font-display text-[clamp(1.75rem,3vw,2.5rem)] font-bold text-brand-dark mb-4"
-          >
-            Why Businesses Choose Us
-          </h2>
-          <p ref={subRef} className="text-[17px] text-slate-500 max-w-lg mx-auto scroll-animate-up">
+        {/* Specification list — the title is the list's header row, not a block above it */}
+        <div className="border-t border-grey-200">
+          <div className="flex flex-col gap-4 py-8 md:flex-row md:items-baseline md:justify-between">
+            <div className="flex items-baseline gap-5">
+              <span aria-hidden="true" className="font-mono text-label text-grey-300">
+                03
+              </span>
+              <h2
+                ref={headingRef}
+                id="why-us-heading"
+                className="font-display text-heading-1 text-ink"
+              >
+                Why Businesses Choose Us
+              </h2>
+            </div>
+            <span
+              ref={labelRef}
+              className="font-mono text-label uppercase text-grey-500 scroll-animate-up"
+            >
+              Why Navodaya
+            </span>
+          </div>
+
+          <p ref={subRef} className="max-w-xl pb-8 text-body-lg text-grey-600 scroll-animate-up">
             We&apos;re not just a supplier — we&apos;re a partner committed to your operations.
           </p>
-        </div>
 
-        <div
-          ref={cardsRef}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 scroll-stagger"
-        >
-          {REASONS.map(({ icon: Icon, title, description, iconBg, iconColor, accent }) => (
-            <div
-              key={title}
-              className="why-card card-hover-feature bg-surface-muted rounded-[16px] p-7 border border-slate-200 h-full scroll-animate-up"
-            >
+          <div ref={cardsRef} className="scroll-stagger">
+            {REASONS.map(({ icon: Icon, title, description }, i) => (
               <div
-                className="why-icon w-12 h-12 rounded-[12px] flex items-center justify-center mb-5"
-                style={{ background: iconBg }}
+                key={title}
+                className="why-card grid grid-cols-[2.5rem_1fr] items-start gap-x-5 border-t border-grey-100 py-8 scroll-animate-up"
               >
-                <Icon className="w-6 h-6" style={{ color: iconColor }} aria-hidden="true" />
+                <span aria-hidden="true" className="pt-1 font-mono text-label text-grey-300">
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <div>
+                  <div className="flex items-center gap-3">
+                    <Icon className="why-icon w-4 h-4 text-grey-400" aria-hidden="true" />
+                    <h3 className="text-heading-2 text-ink">{title}</h3>
+                  </div>
+                  <div className="accent-bar my-4 h-px w-full bg-grey-100" aria-hidden="true" />
+                  <p className="max-w-2xl text-body text-grey-600">{description}</p>
+                </div>
               </div>
-              <div
-                className="accent-bar w-full h-[3px] rounded-full mb-4"
-                style={{ background: accent }}
-              />
-              <h3 className="font-bold text-brand-dark mb-2 text-[15px]">{title}</h3>
-              <p className="text-[13px] text-slate-500 leading-[1.65]">{description}</p>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </section>
