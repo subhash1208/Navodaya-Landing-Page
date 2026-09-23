@@ -48,11 +48,18 @@ const dropWarnings = [];
 // ---------------------------------------------------------------------------
 // Minimal frontmatter reader.
 //
-// Deliberately not a full YAML parser. It handles exactly the five shapes that
+// Deliberately not a full YAML parser. It handles exactly the six shapes that
 // can appear in this repo's agent and skill files: scalars, flow sequences
-// (`[a, b]`), block sequences (`- a` lines), folded blocks (`>-`), and one level
-// of nested map (`metadata:`). Anything else is preserved verbatim rather than
-// silently mangled.
+// (`[a, b]`), the SAME flow sequence wrapped across lines by prettier, block
+// sequences (`- a` lines), folded blocks (`>-`), and one level of nested map
+// (`metadata:`). Anything else is preserved verbatim rather than silently
+// mangled.
+//
+// The wrapped form is listed second on purpose. It was missing for four days
+// after the block-sequence fix, and because a parse failure here ends in an
+// omitted `tools:` line -- which Claude Code reads as INHERIT EVERYTHING -- it
+// left five of seven agents unrestricted. See CONTROL-PLANE-NOTES.md 12.24.
+// Before adding a shape, ask what `pnpm format` can turn the others into.
 // ---------------------------------------------------------------------------
 
 function splitFrontmatter(raw) {

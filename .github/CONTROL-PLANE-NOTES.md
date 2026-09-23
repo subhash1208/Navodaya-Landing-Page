@@ -872,7 +872,7 @@ itself.
 `effort` is passed through but deliberately **not adopted**: `CHANGELOG.md:603` (2.1.267, above
 this binary) shows it is ignored on effort-pinned models, so on 2.1.211 it is real-but-unreliable.
 
-### 12.9 What the seven instances have in common
+### 12.9 What the eight instances have in common
 
 | #   | Declared                                 | Reachable                   | Where it hid                  |
 | --- | ---------------------------------------- | --------------------------- | ----------------------------- |
@@ -883,6 +883,7 @@ this binary) shows it is ignored on effort-pinned models, so on 2.1.211 it is re
 | 5   | seven agents author frontmatter          | only four keys emitted      | `buildAgent` dropped the rest |
 | 6   | `model:` preference lists                | unmappable name → `inherit` | `mapModel` fell back silently |
 | 7   | five `applyTo` globs scope instructions  | 3 coarsened, 2 dropped      | `globToDir()` — see §12.14    |
+| 8   | seven agents author `tools:`             | 5 inherited EVERY tool      | wrapped flow — see §12.24     |
 
 Every one reads correctly if you read either half alone. Every one is a **silent drop** — nothing
 errored, nothing warned, and the generated output looked plausible. Three mechanical guards now
@@ -916,11 +917,15 @@ Two sub-findings from instance 6 that are independent bugs in their own right:
   _flow_ sequences (`[a, b]`); the identical list written as `- a` lines fell into the nested-map
   branch, whose child regex cannot match a `- item` line, and yielded `{}`. `mapModel({})` then
   returned `inherit`. **Two legal spellings of one YAML list produced two different models.** The
-  parser now handles five shapes, not four.
+  parser gained a fifth shape here — **and that fix was itself incomplete.** A _third_ spelling of
+  the same list, the wrapped flow sequence Prettier emits, went on failing for another four days and
+  left five of seven agents holding every tool in the session. See §12.24; the parser now handles
+  six shapes.
 
-The generalisable rule, paid for seven times: **a capability is not adopted until something mechanical
-proves an agent can reach it.** Prose in an instruction file is not that proof — nothing reads it at
-the moment it matters.
+The generalisable rule, paid for eight times: **a capability is not adopted until something mechanical
+proves an agent can reach it** — and, per instance 8, a restriction is not applied until something
+mechanical proves an agent cannot. Prose in an instruction file is not that proof — nothing reads it
+at the moment it matters.
 
 ### 12.10 The reviewer's gate list had drifted from the gates
 
@@ -1615,6 +1620,73 @@ mode those agents were told to avoid. An open search from one of them is a `rese
 
 **Still session-bound:** MCP servers bind at session start (§12.13). Nothing above is reachable in
 the session that wrote it — `tavily` appears only in a session started after the sync.
+
+### 12.24 The format gate manufactured a frontmatter shape the parser could not read
+
+Found 2026-09-22 during the seven-agent prompt audit, fixed in `f7d4c65`. **Instance 8** of the
+§12.9 class, and the most serious one yet: for an unknown period, **five of the seven agents held
+every tool in the session**, including `edit` and `execute` on agents whose own prompts told them
+they had neither.
+
+The mechanism is three links long and every link is individually reasonable:
+
+1. `tools:` is authored as a flow sequence, `tools: [read, search, ...]`.
+2. **Prettier reflows any such line past the print width** into a bare `tools:` followed by an
+   indented `[ ... ]` across several lines. This is not exotic formatting anybody chose — it is what
+   `pnpm format` does, which means **the repo's own gate 1 manufactured the input**.
+3. `parseFrontmatter` knew the one-line flow form and the block-sequence form. The wrapped flow form
+   matched neither, fell through to the nested-map branch, and — because `[` and `read,` are not
+   `key: value` — produced `{}`. `mapTools({})` saw a non-Array and returned `null`. The emitter's
+   `if (tools?.length)` then omitted the `tools:` line entirely.
+
+That last step is where a drop becomes an escalation. **In Claude Code an absent `tools:` does not
+mean "no tools" — it means inherit every tool.** The failure mode of a parser returning nothing was
+not a crippled agent but an omnipotent one, which is the opposite of how silent failures usually
+present and the reason nobody noticed.
+
+The tell was visible in the data the whole time: the only two agents that survived, `researcher` and
+`scribe`, are precisely the two whose tool lists were short enough to fit on one line. Everything
+else about them is unremarkable. **When exactly the short rows are correct, suspect the formatter,
+not the content.**
+
+Three properties made this durable:
+
+- **Every generated file looked plausible.** A `.claude/agents/*.md` with no `tools:` line is a
+  legal, common, deliberate shape — it is how you write an agent that should inherit. Nothing about
+  the output said "this was supposed to be restricted."
+- **The prompts contradicted the grants, in writing, and nothing compared them.** `reviewer` said
+  "DO NOT edit any file. You have no edit tool"; `memory-updater` said "NEVER call `read_graph` …
+  You do not have the tool"; `implementer` said "you have no delegation tool." All three held the
+  tool each disclaimed. The prose was the accurate half.
+- **The one guard that would have caught it was disabled by the same bug.** `lintCapabilityPromises`
+  opens with `if (!tools?.length) return;` — sound in isolation, since inheriting everything cannot
+  _under_-grant. But the five broken agents arrived with exactly that empty `tools`, so the promise
+  lint skipped precisely the five files it was written for. **A guard whose skip condition is also
+  the bug's signature is not a guard.**
+
+The parser now handles the wrapped form (`sync-claude.mjs:131-144`) — six shapes, not five.
+
+**A second, unrelated defect surfaced while fixing the first.** With `tools` finally parsing, the
+promise lint ran on all seven agents for the first time and returned four false positives. The
+`tavily` rule matched the bare brand word `\btavily\b`, which fires identically on an instruction
+("use tavily to search") and on a **denial** ("you deliberately do not hold `tavily`") — a regex
+reads mention and cannot read polarity. Since the audit had just added exactly that kind of
+self-limit prose to most agents, the guard fired hardest on the files that had just been improved.
+Tightened to function names only, `\btavily_(search|extract)\b`, matching what the neighbouring
+`context7` rule (`sync-claude.mjs:378`) already did. Per-file `allow` holes were rejected as the fix:
+they would have switched the rule off for the four files most likely to gain a genuine promise later.
+
+Two rules to carry forward, both paid for here:
+
+- **Your formatter is part of your parser's input contract.** A hand-rolled reader must accept every
+  shape the project's own tooling can emit, not merely the shapes a human would type. Anything else
+  is a latent bug with a scheduled trigger — the next time a list grows one entry past the print
+  width.
+- **When a parse failure means "inherit", the safe default is to fail loudly.** `mapTools` returning
+  `null` and the emitter quietly omitting the line was a permissive failure in a security-adjacent
+  path. §12.9's rule was "a capability is not adopted until something mechanical proves an agent can
+  reach it"; instance 8 adds its mirror — **a restriction is not applied until something mechanical
+  proves an agent cannot.**
 
 ## 13. One thing only the human can do — and one that turned out not to be
 
