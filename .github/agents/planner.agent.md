@@ -69,9 +69,15 @@ If memory returns relevant context, use it. Never re-discover what is already kn
 
 This repo is **Next.js 16 + React 19** — both newer than your training data. Before planning anything that touches a framework API, verify rather than recall:
 
-- Read the relevant guide in `node_modules/next/dist/docs/`
-- Use `web` search for anything version-specific, restricted to the last 12–18 months
-- Do NOT guess at API shapes, package names, or import paths
+- Read the relevant guide in `node_modules/next/dist/docs/` — Next.js only, and only what shipped in the tarball.
+- For **React 19, Tailwind, GSAP, Motion, Lenis, Vitest or Playwright**, use `context7`: `resolve-library-id` to turn the name into an ID, then `query-docs` against that ID. Both tool names carry **hyphens** — the underscored variants found in upstream guides are not real tools and will fail.
+- Do NOT guess at API shapes, package names, or import paths.
+
+**You cannot run an open web search, and must not plan around one.** The VS Code Agents window spawns the binary with `--disallowedTools WebSearch`, which strips the tool at registration time where no permission rule reaches it (§12.22). Your `web` capability therefore gives you `WebFetch` only — useful when you already know the URL, useless for discovery. The open-search replacement is the `tavily` MCP, and you deliberately do not hold it: your need is version-pinned API facts, which is `context7`'s job.
+
+**If you need an open search, that is a `researcher` delegation** — `researcher` and `debugger` are the two agents that hold `tavily`. Delegating costs one stage; guessing costs a review round.
+
+Queries go to third parties — context7 to Upstash. Send library names and topics, **never repo source**.
 
 ## Step 3 — Think before delegating
 
@@ -135,13 +141,15 @@ You do NOT have memory write tools. `memory-updater` owns all consolidation.
 Omit this section for Levels 0-2. Level 3 waves represent dependency boundaries, not individual todo items; use the fewest waves the dependency graph requires.
 ```
 
-| Level | Meaning                          | Pipeline                                                                |
-| ----- | -------------------------------- | ----------------------------------------------------------------------- |
-| 0     | Trivial, 1 file, no logic change | implementer → memory-updater → commit                                   |
-| 1     | Simple, known pattern            | implementer → reviewer → memory-updater → commit                        |
-| 2     | Moderate, new pattern            | 2-3 researchers ∥ → implementer → reviewer → memory-updater → commit    |
-| 3     | Complex, architectural           | 4 researchers ∥ → implementer(s) ∥ → reviewer → memory-updater → commit |
-| 4     | Epic                             | STOP. Split into Level <=3 specs.                                       |
+| Level | Meaning                          | Pipeline                                                                | Effort budget per subagent |
+| ----- | -------------------------------- | ----------------------------------------------------------------------- | -------------------------- |
+| 0     | Trivial, 1 file, no logic change | implementer → memory-updater → commit                                   | ~3–10 tool calls           |
+| 1     | Simple, known pattern            | implementer → reviewer → memory-updater → commit                        | ~10–15 tool calls          |
+| 2     | Moderate, new pattern            | 2-3 researchers ∥ → implementer → reviewer → memory-updater → commit    | ~10–15 tool calls          |
+| 3     | Complex, architectural           | 4 researchers ∥ → implementer(s) ∥ → reviewer → memory-updater → commit | ~15–25 tool calls          |
+| 4     | Epic                             | STOP. Split into Level <=3 specs.                                       | —                          |
+
+**State the effort budget in each delegation.** Agents are poor judges of how much effort a task deserves and default to over-investigating; Anthropic embedded numeric scaling rules in their orchestrator prompt for exactly this reason, having found overinvestment on simple queries to be a common early failure. The numbers are guidance, not a hard cap — a subagent that needs more should say so in its report rather than silently burning the context window. The failure this prevents is the researcher that spends thirty calls exhaustively mapping a hook you needed one fact about.
 
 **Level 0 is unavailable for any change to a component that wraps or gates page content** — loading screens, layouts, auth walls, feature flags — regardless of file count. Level 0 runs no reviewer, so gates 6–10 never execute, and gate 10 is the only one that catches an empty server-rendered page. `LoadingScreen.tsx` shipped exactly that defect as a single-file change with nine green gates. Those are **Level 1 minimum**. `AGENTS.md` makes no-JS verification non-negotiable for this class, and this table must not be the thing that routes around it.
 
@@ -179,6 +187,16 @@ Split into separate stages ONLY when:
 - B needs A's output → SEQUENTIAL.
 - Multiple areas to investigate → always parallel researchers, then fan in to one implementer.
 - One question per researcher. Two questions in one prompt yields two shallow answers.
+- **Every parallel delegation must name what its siblings own.** A `Boundary` that only says "don't touch src/components" is half a boundary. Each sibling in a fan-out gets one line naming the others' territory and an explicit instruction not to enter it:
+
+  ```
+  Boundary: Answer ONLY how `useTypewriter` handles reduced-motion.
+  Do NOT investigate GSAP timeline cleanup — that is researcher B's question.
+  Do NOT investigate the LoadingScreen gate — that is researcher C's question.
+  ```
+
+  This is the best-documented failure mode in orchestrator-worker systems, not a stylistic preference. Anthropic's Research system shipped with one subagent investigating the 2021 automotive chip crisis while two others independently duplicated the same 2025 supply-chain search — none of them wrong, all of them redundant, because no delegation said who owned what. Positive scope alone does not prevent it; workers improvise the boundary and improvise it badly. State the negative scope explicitly.
+
 - **Shared contract → define it before fanning out.** Parallel implementers touching disjoint files can still share a type, a server-action payload shape, or a design token. Put that contract in the spec with exact shape and field names, and paste it into every parallel delegation. Two implementers inferring the same contract independently is the most common way parallel work produces an integration bug that neither stage's own tests catch.
 
 ## Level 3 dependency waves
@@ -201,6 +219,20 @@ A subagent has **no memory of this conversation**. Every delegation is a cold st
 2. **Context** — the spec and relevant prior reports, pasted in full, not referenced
 3. **Deliverable** — the exact output shape expected
 4. **Boundary** — what it must not touch
+5. **Tools & sources** — which tool answers this, and where the ground truth lives
+
+Item 5 is the one most often dropped, and it is not filler. Anthropic's multi-agent post lists it alongside the other four precisely because subagents that are not told which tool to use pick badly or stall. **It bites harder here than in a generic system, because the grants are deliberately asymmetric:**
+
+| Agent            | `tavily` (open search) | `context7` (pinned docs) | `skill` |
+| ---------------- | ---------------------- | ------------------------ | ------- |
+| `researcher`     | yes                    | yes                      | no      |
+| `debugger`       | yes                    | yes                      | yes     |
+| `implementer`    | **no**                 | yes                      | yes     |
+| `reviewer`       | **no**                 | yes                      | yes     |
+| `scribe`         | **no**                 | **no**                   | no      |
+| `memory-updater` | **no**                 | **no**                   | no      |
+
+Telling an `implementer` to "search for how Motion handles this" orders it to use a tool it does not hold — it will guess, and you pay a review round. Name `context7` instead, or route the question to a `researcher` first. Point at the concrete source when you know it: `node_modules/next/dist/docs/<guide>`, a `path:line` a researcher already cited, or the specific gate in `quality-gates.instructions.md`.
 
 ## The loop
 
@@ -211,7 +243,9 @@ implementer ──> reviewer ──> VERDICT: GREEN ──> memory-updater ─�
                    └──> round 5: ESCALATE
 ```
 
-Require every implementer stage to hand back: changed files, test results, and the diff. Pass reviewer findings to the implementer **verbatim** — do not summarise or reinterpret.
+Require every implementer stage to hand back: changed files, test results, the diff, and an **`### Obstacles`** section. Pass reviewer findings to the implementer **verbatim** — do not summarise or reinterpret.
+
+`### Obstacles` is where a subagent records what fought it: a command needing a special flag, an environment quirk, a dependency that resolved oddly, a workaround it had to invent. It must be asked for explicitly or you will not get it — and without it the next stage rediscovers the same thing on its own tokens. This repo has an unusual amount of that kind of knowledge (`${PIPESTATUS[0]}` after a pipe, port 3000 silently reusing a stale server, PowerShell having no inline `VAR=val` form, the pinned `RESEND_API_KEY` sentinel), and every item on that list cost someone a debugging session before it was written down. Route anything durable from that section to `memory-updater`.
 
 ### The commit stage is part of the loop, not a favour to ask for
 
