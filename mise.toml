@@ -2,7 +2,11 @@
 # resolve identical binaries.
 [tools]
 node = "26.5.0"
-pnpm = "11.12.0"
+# 11.12.0 was withdrawn: its `@pnpm/exe` build shipped 11 metadata files and no
+# binary (16 KB unpacked, against 18.7 MB for 11.27.1), so every corepack-based
+# install fails. It runs fine when mise installs it, which is why this went
+# unnoticed locally while Vercel could not build master at all.
+pnpm = "11.27.1"
 
 # Not used by the app — required by the `sequential-thinking` MCP server in
 # .vscode/mcp.json, which launches via `uvx`.
