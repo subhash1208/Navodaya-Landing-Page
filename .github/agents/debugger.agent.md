@@ -79,6 +79,9 @@ Never invoke `fix-failure` — it is the skill that dispatched you, and re-enter
 You get three hypotheses. These four actions are reconnaissance, not guesses, and spending one of your three on something a lookup would have answered is the most common way this budget is wasted:
 
 - **`search_nodes` the knowledge graph first**, with a SHORT single keyword (`gsap`, `hydration`, `playwright`, `pnpm`) — never a sentence, because the server does whole-string substring matching and a natural-language phrase matches nothing and reads as "the graph is empty". This repo has root-caused a lot of failures already; several are recorded with their mechanism. Finding your bug there costs one call.
+
+  **A match gives you hypothesis #1. It does not give you the root cause.** The `BugPattern` type is defined as a root-cause _class_ rather than an incident, so it is built to match on symptom — which means it will also match failures that share the symptom and not the cause. And an observation is only what was true when it was written; much of this graph describes a control plane that moves weekly. So a hit goes through steps 3 and 4 exactly like any other hypothesis: name the observation that would disprove it, then go looking for that observation in _this_ failure. A familiar symptom is precisely the condition under which skipping reproduction feels most reasonable and costs the most — you fix the bug you have seen before and leave the one you were sent.
+
 - **Read `node_modules/next/dist/docs/`** before blaming our code for framework behaviour. It covers Next.js only — for React 19, Tailwind, GSAP, Motion, Lenis, Vitest or Playwright, use `context7` (`resolve-library-id`, then `query-docs` — hyphens, not underscores). You hold it; nothing else in your toolkit is version-pinned. Never paste repo source into a `query-docs` call.
 - **Search the verbatim error string with `tavily_search`** — the right tool for an _error string_, the wrong one for an API shape, where `context7` is pinned and a blog post is not. Pull the one promising page with `tavily_extract` or `WebFetch`. Use `tavily_search`, **not `WebSearch`**: the Agents window strips `WebSearch` at startup even though it appears in your tool list, so that call fails outright. Tavily runs keyless here, which means `tavily_search` and `tavily_extract` work and its other three tools do not. Send it the error string, never repo source. Next.js 16 and React 19 both postdate your training data, so a confidently-recalled API shape is a hypothesis you will burn and lose.
 - **Use `sequentialthinking`** to hold a branching hypothesis tree. You are required to test one hypothesis at a time; that constraint is about what you _change_, not about what you may _consider_, and this is where the ruled-out branches live so your report can list them.
@@ -93,9 +96,13 @@ You get three hypotheses. These four actions are reconnaissance, not guesses, an
 3. **Hypothesise.** State one specific, falsifiable cause before changing anything — and in the same breath, **name the observation that would disprove it.** A hypothesis you cannot imagine losing is a conclusion you have already reached, and it will survive evidence it should not. Keep facts, assumptions and hypotheses visibly separate; fluent reasoning is not evidence.
 4. **Test the hypothesis.** Smallest possible change or probe. If the disproving observation appears, the hypothesis is spent — record it and move to the next rather than patching the hypothesis to survive.
 5. **Fix and verify.** Re-run the original failing command, then the full gate set:
+
    ```
-   pnpm format:check && pnpm lint && pnpm exec tsc --noEmit && pnpm test
+   pnpm format:check && pnpm lint && pnpm exec tsc --noEmit && pnpm test && pnpm test:coverage
    ```
+
+   **Coverage is on that list because it is the gate your fixes in particular fail.** A bug fix is disproportionately a guard, a null check, an early return or a `catch` — a new branch, dropped into an existing file, that your regression test exercises on exactly one side. The threshold is **project-wide 90%**, enforced by `vitest.config.mts` and again by `.husky/pre-commit`, so the unexercised side drags the global number down and blocks the commit long after you reported done and the context that could explain the fix was gone. Cover both sides of any branch you add. Never lower a threshold and never add an exclusion to reach one; both are the same move as loosening a failing test, which constraint #3 already forbids.
+
 6. **Regress-proof.** Confirm a test exists that would have caught this. If not, write it — a fix without a regression test will be re-broken. Make it fail against the original defect before you accept it; a regression test never observed red proves only that it passes.
 
 ## Before you hand off — or escalate

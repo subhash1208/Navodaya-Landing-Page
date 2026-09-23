@@ -247,6 +247,27 @@ Require every implementer stage to hand back: changed files, test results, the d
 
 `### Obstacles` is where a subagent records what fought it: a command needing a special flag, an environment quirk, a dependency that resolved oddly, a workaround it had to invent. It must be asked for explicitly or you will not get it — and without it the next stage rediscovers the same thing on its own tokens. This repo has an unusual amount of that kind of knowledge (`${PIPESTATUS[0]}` after a pipe, port 3000 silently reusing a stale server, PowerShell having no inline `VAR=val` form, the pinned `RESEND_API_KEY` sentinel), and every item on that list cost someone a debugging session before it was written down. Route anything durable from that section to `memory-updater`.
 
+### A stage is not done because it says it is
+
+You never see what a subagent saw. You inherit a few hundred tokens of summary, and that summary is the only reality you have — so a stage that went wrong and a stage that went right **arrive looking identical**. The failure has a name, **summary-as-truth**, and in orchestrator-worker systems it is the most common way a pipeline reports success over broken work. The lead agent is not being lied to; it is reasoning correctly over a lossy view and has no way to tell the view is lossy.
+
+This repo already has the antidote as a hard rule: **a gate counts as passed only when its literal output appears in the transcript.** Apply it to your stages, not just to your own turns.
+
+- **Require the verbatim line, not the claim.** `Tests  356 passed (356)`, `✓ Compiled successfully`, `50 passed (2.1m)`. An implementer that writes "all tests pass" has not shown you a passing run, and from here you cannot tell the difference between that and a run it never made.
+- **A missing artifact is a RED round, not a formatting nit.** Send it back. Do **not** re-run the command yourself to fill the gap: your terminal is read-only for inspection, and re-deriving a stage's evidence hides which stage was sloppy and teaches the loop that you will cover for it.
+- **When a count and an exit code disagree, believe the count — and say so.** This repo has produced the failure in both directions: a backgrounded wrapper printing `[exited with code 0]` over a failing inner run, and `$?` reading 0 after a pipe while 30 of 50 Playwright tests failed.
+- **Round 3's `## Why this is not converging` is an artifact too.** If it is missing, the reviewer did not follow its own prompt. That is a finding about the stage, not something to read past.
+
+The reason this is a standing instruction rather than a per-task reminder: **you cannot verify work by asking the agent that did it whether it worked.** Prompt-level care degrades across a long pipeline; an artifact requirement does not.
+
+### When a stage reports a tool was unavailable, that is a finding
+
+MCP servers bind at session start. A session started before `context7` or `tavily` was added holds none of their tools no matter what `.mcp.json` says, and the affected agents are instructed to say so in their report rather than stall or guess.
+
+**That line is addressed to you.** It means the answer you just received was assembled from `node_modules/` and training data instead of version-pinned docs. Treat it as lower-confidence: do not promote it into a spec assumption without a second source, and tell the human a fresh session would have answered better. Re-spawning the same agent in the same session cannot fix it — the binding is already made.
+
+**A subagent also cannot answer a permission prompt.** It has no channel to reach you or the human, so an action sitting behind a `permissions.ask` rule does not pause for approval — it is refused, and the stage may carry on and hand back success-shaped output describing something that never happened. `ask` holds exactly two rules, both `git push`. That is precisely why the commit stage below is safe to delegate and why a push stage is not. Never delegate an action you know is `ask`-gated; route it to the human instead.
+
 ### The commit stage is part of the loop, not a favour to ask for
 
 After `memory-updater`, spawn a final one-line `implementer` stage to `git add` the changed files and `git commit` them using the Conventional Commits format in `CONTRIBUTING.md`. Do not ask first, and do not end the pipeline with the work sitting uncommitted — that turns every successful run into a human turn spent typing a command Claude could have typed.

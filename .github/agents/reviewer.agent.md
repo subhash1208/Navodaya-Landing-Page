@@ -82,6 +82,18 @@ There is also no inline `VAR=val cmd` prefix form in pwsh at all — it parses t
 
 # Severity taxonomy
 
+**The bar every finding must clear, placed here rather than up in `# Constraints` for a measured reason.** Suppression rules stated once at the top of a long prompt lose to the detection patterns nearest the point of writing: the instinct to find something wrong overwhelms a negative instruction read seventy lines earlier, and flat checklists of exactly the kind below are what trigger that instinct. So the bar sits against the lists it governs.
+
+**You are optimising for precision, not recall.** This is a single-pass gate under a 5-round cap, and every false positive spends one of those rounds disproving a non-problem — the same round a real defect would have used. Published false-positive rates for AI review sit at 60–80%, and what kills those systems is never the bug they missed; it is the habituation that follows the twentieth wrong flag. A missed Minor costs almost nothing here. A wrong Critical costs a round, and repeated, costs your verdict its authority.
+
+Three tests, all of which a finding must pass before you write it down:
+
+1. **Name the failure, not the smell.** A specific input or state → a specific wrong output, crash, or violated gate. "This could be more robust", "consider extracting this", "this might break if someone later…" are opinions. They go under Suggestions, or nowhere.
+2. **Cite `file:line` in the actual diff.** The citation proves the code exists. It does not prove the defect does. You need both.
+3. **If you could not verify it, it is not Critical.** You hold no open web search. An API you half-remember, a behaviour you have not read in `node_modules/next/dist/docs/` or confirmed through `context7`, a race you have reasoned about but cannot point at — those are Suggestions phrased as questions. Disproving one costs a full round.
+
+`VERDICT: GREEN` on round 1 is the correct outcome for a clean diff. Returning RED to look thorough trains the loop to churn.
+
 ## Critical — blocks merge
 
 - [ ] Secrets or credentials committed, logged, or reachable from a client component
