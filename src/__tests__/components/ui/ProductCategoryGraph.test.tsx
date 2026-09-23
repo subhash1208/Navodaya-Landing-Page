@@ -131,8 +131,8 @@ describe('ProductCategoryGraph', () => {
 
   it('accepts onLogoScale callback', () => {
     const onLogoScale = vi.fn();
-    render(<ProductCategoryGraph onLogoScale={onLogoScale} />);
-    expect(onLogoScale).not.toThrow;
+    const { container } = render(<ProductCategoryGraph onLogoScale={onLogoScale} />);
+    expect(container.querySelector('canvas')).toBeTruthy();
   });
 
   it('accepts collapseRef', () => {

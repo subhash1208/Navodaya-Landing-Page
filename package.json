@@ -15,6 +15,9 @@
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
+    "agents:sync": "node ./.github/hooks/scripts/sync-claude.mjs",
+    "agents:sync:check": "node ./.github/hooks/scripts/sync-claude.mjs --check",
+    "mcp:versions": "node ./.github/hooks/scripts/mcp-versions.mjs",
     "prepare": "husky"
   },
   "dependencies": {
@@ -24,7 +27,7 @@
     "lenis": "^1.3.23",
     "lucide-react": "^1.8.0",
     "motion": "^12.38.0",
-    "next": "16.2.4",
+    "next": "16.3.5",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "resend": "^6.12.0",
@@ -46,7 +49,7 @@
     "eslint-config-prettier": "^10.1.8",
     "husky": "^9.1.7",
     "jsdom": "^29.1.1",
-    "postcss": "^8.5.10",
+    "postcss": "^8.5.28",
     "prettier": "^3.8.3",
     "typescript": "^5",
     "vitest": "^4.1.7"

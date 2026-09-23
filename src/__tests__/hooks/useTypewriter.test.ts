@@ -19,6 +19,41 @@ describe('useTypewriter', () => {
     expect(result.current.showCursor).toBe(true);
   });
 
+  it('holds at an empty string while disabled, then types once enabled', () => {
+    // `enabled` exists so the hero headline does not type itself out behind the intro
+    // overlay and sit there finished by the time the overlay lifts.
+    const onComplete = vi.fn();
+    const { result, rerender } = renderHook(
+      ({ enabled }) =>
+        useTypewriter({ text: 'Hi', speed: 40, startDelay: 100, enabled, onComplete }),
+      { initialProps: { enabled: false } },
+    );
+
+    act(() => {
+      vi.advanceTimersByTime(5000);
+    });
+    expect(result.current.displayed).toBe('');
+    expect(onComplete).not.toHaveBeenCalled();
+
+    rerender({ enabled: true });
+
+    act(() => {
+      vi.advanceTimersByTime(100);
+    });
+    expect(result.current.displayed).toBe('H');
+
+    act(() => {
+      vi.advanceTimersByTime(40);
+    });
+    expect(result.current.displayed).toBe('Hi');
+
+    // onComplete fires on the tick *after* the final character is written.
+    act(() => {
+      vi.advanceTimersByTime(40);
+    });
+    expect(onComplete).toHaveBeenCalledTimes(1);
+  });
+
   it('types text progressively after start delay', () => {
     const { result } = renderHook(() => useTypewriter({ text: 'Hi', speed: 40, startDelay: 100 }));
 
