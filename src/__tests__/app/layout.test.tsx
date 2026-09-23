@@ -2,10 +2,12 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import RootLayout, { metadata } from '@/app/layout';
 
-vi.mock('next/font/google', () => ({
-  Inter: () => ({ variable: '--font-sans' }),
-  Outfit: () => ({ variable: '--font-display' }),
-  Plus_Jakarta_Sans: () => ({ variable: '--font-body' }),
+vi.mock('geist/font/sans', () => ({
+  GeistSans: { variable: '--font-geist-sans', className: 'font-geist-sans' },
+}));
+
+vi.mock('geist/font/mono', () => ({
+  GeistMono: { variable: '--font-geist-mono', className: 'font-geist-mono' },
 }));
 
 vi.mock('@/components/layout/Header', () => ({
@@ -82,6 +84,16 @@ describe('RootLayout', () => {
       </RootLayout>,
     );
     expect(screen.getByTestId('custom-cursor')).toBeTruthy();
+  });
+
+  it('applies both Geist Sans and Geist Mono CSS variable classes to the html element', () => {
+    render(
+      <RootLayout>
+        <div>Content</div>
+      </RootLayout>,
+    );
+    expect(document.documentElement.className).toContain('--font-geist-sans');
+    expect(document.documentElement.className).toContain('--font-geist-mono');
   });
 });
 
