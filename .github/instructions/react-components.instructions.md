@@ -70,6 +70,10 @@ If a component gates, wraps, or conditionally returns the page's content — a l
 
 Full explanation, the failure each one produced, and how to test for them is in `.github/instructions/quality-gates.instructions.md` under "Two rules for any component that wraps page content". Verify with JavaScript disabled — check what the server actually sends, not the post-hydration jsdom render.
 
+**The mechanism for that check is a `.ssr.test.tsx` spec, and this file is the only one that will tell you so while you are writing the component.** `testing.instructions.md` owns the convention but is scoped to `src/__tests__/**`, so it is not loaded here — the identical reach problem `nextjs.instructions.md` already records for test _placement_, left unsolved for the more expensive rule. Copy `src/__tests__/components/sections/HeroSection.ssr.test.tsx`, today the repo's only one: name it `<Component>.ssr.test.tsx` mirroring the source path, render with `renderToStaticMarkup` from `react-dom/server` — which never runs effects, so it observes the true server branch jsdom can never reach — and assert the real `<h1>`, the body copy and every link a crawler needs against the returned HTML string.
+
+**Do not mock `motion/react` in that spec.** Every behavioural spec in this repo replaces it with a passthrough that strips `initial` and `animate`. That is correct for behaviour and fatal here: the mock discards the exact prop that serialises to `style="opacity:0"` in the server HTML, so it reports the defect as fine. Mock only what genuinely cannot render on a server, such as `next/image`.
+
 ## Hooks
 
 - Mirror the existing shape in `src/hooks/` — see `useTypewriter.ts` and `useMagneticHover.ts`.

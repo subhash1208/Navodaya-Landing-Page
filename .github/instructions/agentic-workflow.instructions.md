@@ -127,11 +127,14 @@ Queries go to third parties — context7 to Upstash, tavily to Tavily. They carr
 
 ## Memory discipline
 
-- `planner`, `researcher`, `implementer`, `reviewer`, and `scribe` have **read-only** memory access. Only `memory-updater` writes.
+- `planner`, `researcher`, `implementer`, `reviewer`, `scribe` **and `debugger`** have **read-only** memory access. Only `memory-updater` writes. An earlier revision of this line named the first five and left `debugger` out — of the one agent whose principal output is a durable fact. Its grant is `memory/search_nodes` and `memory/open_nodes`, identical to the others (`.github/agents/debugger.agent.md:14-15`), and its own prompt already says so at `:162`; the omission was here, in the file that is always loaded.
 - **Never `read_graph`.** It dumps the whole graph and destroys the context window. Retrieve with `search_nodes` and `open_nodes` only.
 - **Search with SHORT single keywords** (`gsap`, `contact-form`, `typewriter`). The memory server does whole-string substring matching, not per-word OR — a long natural-language phrase matches nothing and produces a false "the graph is empty" conclusion. If a search comes back empty, retry with a shorter keyword before assuming the fact isn't stored.
 - Every pipeline that produced code changes, decisions, or durable findings ends with a `memory-updater` stage.
 - When unsure whether a fact is durable, delegate it anyway. The memory-updater is the curator and will discard, merge, or flag it. Skipping delegation is how knowledge is silently lost.
+- **"Ends with a `memory-updater` stage" is an instruction to the planner, and to nobody else.** `planner` is the only agent holding a delegation tool — `agent` in its `tools:`, absent from all six others. So the two bullets above describe something five of the seven agents are structurally unable to do, and an agent that reads "delegate it anyway" as addressed to itself will look for a tool it does not have.
+
+  The consequence worth planning around: **a `debugger` invoked directly by the human has no memory-updater stage at all**, because there is no planner in that call to spawn one. That is the common shape — `/fix-failure` is usually reached because something is already broken, not because a pipeline decided to debug. The agent does the right thing on its side; it ends its report with a `Durable facts (for memory-updater)` section. Whoever invoked it has to carry that section into a `memory-updater` delegation, and if nobody does, the root cause dies with the session and the next one rediscovers it at full price. The same applies to any agent you invoke directly rather than through the planner.
 
 ## Context hygiene
 

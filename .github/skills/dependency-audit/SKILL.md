@@ -3,9 +3,16 @@ name: dependency-audit
 description: >-
   This skill should be used when the user asks to "audit dependencies", "check for
   vulnerabilities", "fix a CVE", "run pnpm audit", "upgrade a vulnerable package", or
-  types /dependency-audit — and before any release or scheduled security sweep. Covers
-  triaging advisories by what actually pins each package and fixing within existing
-  semver ranges before reaching for overrides or a major bump.
+  types /dependency-audit — and before any release or scheduled security sweep. Also use
+  it whenever pnpm refuses to move a package: "pnpm update says already up to date", "the
+  override isn't working", "why is it still on the old version". Those are resolution
+  problems rather than debugging problems, and this skill carries the pnpm 11 behaviour
+  behind them — `pnpm.overrides` in package.json is silently ignored, and
+  minimumReleaseAge quarantines publishes under 24 hours old by falling back quietly
+  instead of failing. Covers triaging advisories by what actually pins each package and
+  fixing within existing semver ranges before reaching for overrides or a major bump. Do
+  NOT use it to add a new dependency, or to bump one for its features rather than its
+  advisories — that is ordinary implementation work.
 argument-hint: 'Optional: a package name to focus on'
 ---
 
@@ -238,5 +245,13 @@ something other than what was asked.
   and a flat `node_modules`, breaking pnpm's linked store.
 - Never suppress a finding to make a gate green.
 - Never bump a major version to clear a `low` without asking first.
-- Back up `package.json` and `pnpm-lock.yaml` before a framework bump so a bad upgrade is one
-  `cp` from reverted.
+- **Recover a bad upgrade with `git restore`, not a `cp` backup.** `package.json` and
+  `pnpm-lock.yaml` are both tracked (`git ls-files` confirms it), so the pre-bump state is
+  already saved, already immutable, and already one command away:
+  `git restore package.json pnpm-lock.yaml && pnpm install --frozen-lockfile`. An earlier
+  revision of this line said to `cp` them first. That is strictly worse on a tracked file
+  and it actively costs something: `.bak` is not in `.gitignore` (verified — `git
+check-ignore` exits 1 on it), so the copies land as untracked paths in `git status`,
+  where `/review-loop`'s scoping step has to stop and reason about whether they belong to
+  the change. The same correction was already applied to the control plane when it moved
+  into git; this was the copy that did not get it.

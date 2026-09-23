@@ -4,7 +4,12 @@ description: >-
   This skill should be used when the user asks to "investigate", "explore", "research",
   "look into", or "understand how X works" in the codebase before implementing, or types
   /parallel-research. Covers fanning researchers out across several angles at once and
-  consolidating their findings into one brief. Read-only.
+  consolidating their findings into one brief. Read-only. Do NOT use it for a single
+  narrow question — one question is one `researcher` delegation, or just opening the
+  file, and wrapping that in a planner plus a parallel batch is overhead that buys
+  nothing. The fan-out has to be paying for genuine parallelism across two or more
+  non-overlapping angles. When the answer is wanted in order to then build something,
+  that is /ship-feature, which runs this stage itself.
 argument-hint: 'Topic or area to investigate'
 ---
 
@@ -20,6 +25,9 @@ Useful decomposition axes:
 - **Convention** — what pattern the codebase already uses for this
 - **Integration** — what consumes it, what it consumes, what breaks if it changes
 - **Verification** — how this area is currently tested, and what coverage exists
+- **Installed API** — what the version actually in `node_modules` does, whenever the topic touches Next.js, React, Tailwind, GSAP, Motion, Lenis, Vitest or Playwright
+
+**That fifth axis is the only one on this list that cannot be answered by reading this repo, which is exactly why it goes missing.** The other four point inward at code you can open. This one asks what a dependency does in the version installed _here_ — the question `AGENTS.md` opens the whole file with ("This is NOT the Next.js you know"). It is also the axis you are least equipped to skip on your own: `researcher` is one of only two agents holding `tavily`, and it holds `context7` too, so an API question you answer yourself instead of delegating gets answered from training data that predates the installed version. Route it to a researcher with the library named, and expect a `node_modules/next/dist/docs/` path or a `query-docs` citation back — not recalled prose.
 
 Invoke the `researcher` subagent **once per question in a single parallel batch**. Each researcher receives exactly one question and no others.
 

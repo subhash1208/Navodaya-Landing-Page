@@ -4,7 +4,12 @@ description: >-
   This skill should be used when the user asks to "build", "add", "implement", or "ship"
   a feature, or types /ship-feature. Covers running that request through the full agentic
   pipeline — plan, parallel research, implement with tests, review loop, consolidate to
-  memory, and commit locally.
+  memory, and commit locally. Do NOT use it for a change whose shape is already obvious
+  and contained: a typo, a copy tweak, a one-line fix, a rename, or anything the user has
+  already specified precisely enough to simply do. Six delegated stages have to buy
+  decomposition or review that the change genuinely needs. When the code already exists
+  and only the verdict is wanted, that is /review-loop; when something is broken and the
+  cause is not yet understood, that is /fix-failure.
 argument-hint: 'Describe the feature to build'
 ---
 
@@ -34,7 +39,11 @@ Execute in order, without pausing between stages:
 
    Paste **the explicit list of paths**, taken from the implementer's and scribe's own reports rather than re-derived, and say to stage exactly those and nothing else. A path in `git status` that is not on your list is a finding to report, not a file to include.
 
-   **Check the branch in the same delegation:** `git rev-parse --abbrev-ref HEAD`. `CONTRIBUTING.md` makes `master` PR-only and `develop` merge-from-feature-only, `.husky/pre-commit` enforces neither, and this pipeline commits without pausing — so a run that began on `master` lands a commit there before anyone reads the branch name. If HEAD is `master` or `develop`, stop and report it. Do not branch automatically; choosing the branch name is the kind of decision the human expects to make.
+   **Check the branch in the same delegation:** `git rev-parse --abbrev-ref HEAD`. `CONTRIBUTING.md` makes `master` PR-only and `develop` merge-from-feature-only, `.husky/pre-commit` enforces neither, and this pipeline commits without pausing — so a run that began on `master` lands a commit there before anyone reads the branch name.
+
+   **If HEAD is `master` or `develop`, branch before committing — do not stop and ask.** An earlier revision of this line said to stop and report, reasoning that naming a branch is the human's call. That is the wrong trade twice over. The owner cut `permissions.ask` from 41 rules to 2 precisely because guards were interrupting ordinary work, and pausing here is an interruption for something that is not `git push`; and the asymmetry runs the other way regardless — a badly-named branch is one `git branch -m`, while an unwanted commit on `master` is a history rewind. `.github/instructions/agentic-workflow.instructions.md` has said "create the branch first" since the same pass that left this line contradicting it.
+
+   The objection that line was reaching for is real, though, and worth keeping: **a cold-start commit agent has no idea what the work was, so it cannot name a branch.** So the pipeline names it, not the commit agent. You hold the spec — derive the name from the table in `CONTRIBUTING.md` (`feature/`, `fix/`, `perf/`, `test/`, `chore/`, lowercase with hyphens) and paste the exact `git switch -c <name>` into the delegation alongside the file list. Name the branch you created in your final report, so a rename stays one command away. On an existing `feature/`, `fix/`, `perf/`, `test/` or `chore/` branch, commit where you are.
 
 If the feature needs documentation, run `scribe` in parallel with `implementer`.
 

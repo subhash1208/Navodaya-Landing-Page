@@ -33,7 +33,7 @@ Cover, in this order: happy path → boundaries (empty, zero, one, max) → erro
 - Do not mock the thing under test.
 - Do not assert on implementation details that a valid refactor would break.
 - Do not depend on real network or external services — Playwright specs must be hermetic.
-- Do not pad coverage with assertion-free renders. A meaningful 80% beats a hollow 95%.
+- Do not pad coverage with assertion-free renders — a hollow percentage is worth less than an honest one. **There is deliberately no number in that sentence.** An earlier revision read "a meaningful 80% beats a hollow 95%": a bar that exists nowhere else in this repo, stated in the one file that loads precisely while tests are being written. Read as permission, it stops you at 82%, where `.husky/pre-commit` blocks the commit against the 90% project-wide floor recorded at the bottom of this same file. That is the identical defect already corrected at the end of the Coverage section — same file, same cause, one bullet apart. The floor is 90%; meaningfulness is how you reach it honestly, never a discount on it.
 - Do not use arbitrary `waitForTimeout`. Wait on a condition.
 - **Do not mock a wrapper into a passthrough and then treat its branches as covered.** `src/__tests__/app/page.test.tsx:39` replaces `LoadingScreen` with `({ children }) => <div>{children}</div>`. That is a reasonable way to test the page, but it makes `LoadingScreen`'s own gating branch structurally unreachable from that file — and that branch is the one that shipped an empty homepage. If you mock a wrapper away, the wrapper still needs its own spec that does not.
 

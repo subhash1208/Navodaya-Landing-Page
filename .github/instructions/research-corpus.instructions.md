@@ -96,8 +96,12 @@ be hostile to be wrong for you.
   `.github/` instead. The `_probe*` directories are the exception — they are disposable scratch
   repos built to test one behaviour, and they exist to be edited.
 - **Do not let the sync near it.** `pnpm agents:sync` sweeps stale generated `CLAUDE.md` files, but
-  only ones carrying its own banner, so the 29 third-party files are safe. Never add this tree to a
-  glob that writes.
+  only ones carrying its own banner, so the third-party ones are safe. Never add this tree to a glob
+  that writes. **Note the absence of a number in that sentence.** An earlier revision read "so the 29
+  third-party files are safe" — quoting the exact figure the section above had already superseded and
+  expressly told you not to quote, two paragraphs later in the same file. Counted today: **25 files,
+  300 KB**, matching that correction. If you need the number, run the `find` above; if the point is
+  only that the clones go untouched, the sentence does not need one.
 
 ## Where the conclusions live
 

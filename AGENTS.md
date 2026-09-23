@@ -57,7 +57,7 @@ Specialist agents live in `.github/agents/`. Pick `planner` for anything non-tri
 | ---------------- | ---------------------------------------------------------------------------- | -------------------------------------------- |
 | `planner`        | Decomposes into a spec, then drives every other agent through the pipeline   | read/execute (read-only terminal) + delegate |
 | `researcher`     | Answers ONE narrow codebase question — run several in parallel               | read-only                                    |
-| `implementer`    | Writes code **and its tests**, self-verifies with gates 1–3                  | read/edit/execute/**skill**                  |
+| `implementer`    | Writes code **and its tests**, self-verifies with gates 1–5                  | read/edit/execute/**skill**                  |
 | `reviewer`       | Runs all gates + security/bundle/a11y audit, returns GREEN or RED + fix list | read/execute/**skill**                       |
 | `scribe`         | Docs, specs, ADRs, research notes — never code                               | read/edit docs                               |
 | `memory-updater` | Consolidates durable facts into the knowledge graph                          | memory only                                  |

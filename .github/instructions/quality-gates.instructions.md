@@ -317,9 +317,21 @@ Gates 1, 2 and 5 exist to catch that before commit time rather than after. Never
 
 ## Quick sequence
 
-```powershell
-pnpm format:check; pnpm lint; pnpm exec tsc --noEmit; pnpm test
+```bash
+pnpm format:check && pnpm lint && pnpm exec tsc --noEmit && pnpm test && pnpm test:coverage
 ```
+
+```powershell
+pnpm format:check && pnpm lint && pnpm exec tsc --noEmit && pnpm test && pnpm test:coverage
+```
+
+Identical in both shells — pwsh 7 has the `&&` pipeline chain operator, verified here: `pnpm exec node -e "process.exit(5)" && Write-Host "SHOULD-NOT-PRINT"` printed nothing.
+
+**`&&`, not `;`, and the difference is the whole point of this file.** An earlier revision of this block read `pnpm format:check; pnpm lint; pnpm exec tsc --noEmit; pnpm test` — four gates separated by `;`, which is the exact opposite of the instruction this document opens with ("Run in order. Stop at the first failure … a later gate's output is meaningless if an earlier one failed"). Measured in both shells: after a command exiting 5, the next one ran anyway, and the **final status read 0** — `LASTEXITCODE=0` in pwsh, `EXIT=0` in bash. So a gate-2 failure scrolls off the top while a green `Tests 339 passed` sits at the bottom, which is the false-green shape the evidence requirement above exists to prevent, handed to you pre-assembled by this file's own copy-paste block.
+
+It also stopped at gate 4. Gate 5 is the one `.husky/pre-commit` independently blocks on, and coverage is **project-wide** — a new uncovered `catch` in an existing file moves the global number just as a new file does. A "quick sequence" that omits the gate most likely to reject the commit is quick in the wrong direction.
+
+The five gates above are exactly the implementer's ownership column in the table at the top. Gates 6–10 belong to the reviewer and are not in this block on purpose.
 
 ## What already enforces this, and the `/goal` escalation
 

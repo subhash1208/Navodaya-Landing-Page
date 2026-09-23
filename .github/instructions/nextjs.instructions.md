@@ -1,6 +1,6 @@
 ---
 description: 'Best practices for building Next.js (App Router) apps with modern caching, tooling, and server/client boundaries (aligned with Next.js 16.1.1).'
-applyTo: 'src/**/*.tsx, src/**/*.ts'
+applyTo: 'src/**/*.tsx, src/**/*.ts, next.config.ts'
 ---
 
 <!--
@@ -32,6 +32,8 @@ This project is Next.js **16.3.5**; the guide below targets 16.1.1. Where they d
 | `resolve_library_id` / `get_library_docs` (§10)         | **Those tool names do not exist.** Context7's real tools are `resolve-library-id` and `query-docs` — hyphens, not underscores. The server **is** configured and enabled here. Use it for the parts of this stack the Next.js docs do not cover (React 19, Tailwind, GSAP, Motion, Lenis, Vitest, Playwright); use `node_modules/next/dist/docs/` for Next.js itself.                                                                                              |
 
 Also still binding: compose classes with `cn()`, kill GSAP/ScrollTrigger in effect cleanup, respect `prefers-reduced-motion`, no `any`, pnpm only.
+
+**`next.config.ts` is in this file's `applyTo` on purpose, and was not until now.** The glob read `src/**/*.tsx, src/**/*.ts`, which excludes the repo root — so the two sections here that govern nothing _but_ that file were unreachable from it. §7 says "do not enable `cacheComponents` to satisfy this section" and §8 says to configure Turbopack through the top-level `turbopack` field rather than the removed `experimental.turbo`; the single moment either could change a decision is while `next.config.ts` is open, which was the one moment neither loaded. Bare root filenames are a supported `applyTo` entry — `testing.instructions.md` already lists `vitest.config.mts` and `playwright.config.ts` the same way.
 
 ---
 
