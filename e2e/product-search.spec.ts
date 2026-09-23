@@ -4,6 +4,23 @@ test.describe('Product Search & Filter', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/products');
     await page.waitForLoadState('networkidle');
+
+    // `/products` renders its grid entirely on the CLIENT. `ProductGrid` calls
+    // `useSearchParams()` (src/components/ui/ProductGrid.tsx:15), which puts it behind a
+    // Suspense boundary — so the prerendered HTML contains zero product links and no search
+    // box at all. Verified: `.next/server/app/products.html` matches `href="/products/…"`
+    // 0 times and `type="search"` 0 times.
+    //
+    // `networkidle` only means the network went quiet; it says nothing about React having
+    // hydrated and committed. Reading a count before that legitimately returns 0, and
+    // `fill()` on the search box writes straight to the DOM of a *controlled* input
+    // (`value={query}`, ProductGrid.tsx:76) whose `onChange` is not attached yet — React
+    // never learns about the keystroke and clobbers the value on its first render.
+    //
+    // A visible product card is the honest hydration signal: the cards only exist once the
+    // client has rendered. This flake cost a full gate-7 run — the spec passed in isolation
+    // in 1.9s and failed under seven parallel workers.
+    await expect(page.locator('a[href^="/products/"]').first()).toBeVisible();
   });
 
   test('search input is visible', async ({ page }) => {
@@ -17,16 +34,15 @@ test.describe('Product Search & Filter', () => {
     const searchInput = page.locator(
       'input[type="search"], input[placeholder*="search" i], input[placeholder*="Search" i]',
     );
+    const productCards = page.locator('a[href^="/products/"]');
+    const initialCount = await productCards.count();
+
     await searchInput.fill('Surgeon');
 
-    // Wait for filter to apply
-    await page.waitForTimeout(300);
-
-    // Should show filtered results containing "Surgeon"
-    const productCards = page.locator('a[href^="/products/"]');
-    const count = await productCards.count();
-    expect(count).toBeGreaterThan(0);
-    expect(count).toBeLessThan(50); // Should be filtered, not all products
+    // Poll for the filtered count rather than sleeping 300ms and hoping. The old fixed
+    // wait was both slower than it needed to be and not actually a guarantee.
+    await expect.poll(() => productCards.count()).toBeLessThan(initialCount);
+    expect(await productCards.count()).toBeGreaterThan(0);
   });
 
   test('search with no results shows empty state', async ({ page }) => {
@@ -35,50 +51,43 @@ test.describe('Product Search & Filter', () => {
     );
     await searchInput.fill('xyznonexistentproduct123');
 
-    await page.waitForTimeout(300);
-
-    // Should show empty state or zero results
+    // `toBeVisible()` already auto-waits, so the 300ms sleep that used to sit here bought
+    // nothing but wall-clock time.
     const emptyState = page.locator('text=/no.*found|no.*results|no.*products/i');
     await expect(emptyState).toBeVisible();
   });
 
   test('category tabs filter products', async ({ page }) => {
-    // Find category tab buttons
-    const tabs = page.locator(
-      'button[role="tab"], [data-category], button:has-text("Hygiene"), button:has-text("Hotel"), button:has-text("Spa")',
-    );
-    const tabCount = await tabs.count();
+    // Assert the tabs exist rather than guarding on `if (tabCount > 0)`. ProductGrid
+    // renders a real `role="tablist"` with `role="tab"` children (ProductGrid.tsx:102,107),
+    // so absence is a failure, not a reason to skip — the old guard let this test pass
+    // vacuously, having asserted nothing at all, whenever the grid had not rendered yet.
+    const tabs = page.locator('button[role="tab"]');
+    await expect(tabs.first()).toBeVisible();
+    expect(await tabs.count()).toBeGreaterThan(1);
 
-    if (tabCount > 0) {
-      // Click second tab (not "All")
-      const secondTab = tabs.nth(1);
-      await secondTab.click();
-      await page.waitForTimeout(300);
+    // Click the second tab (not "All")
+    await tabs.nth(1).click();
 
-      // Products should be filtered
-      const productCards = page.locator('a[href^="/products/"]');
-      const count = await productCards.count();
-      expect(count).toBeGreaterThan(0);
-      expect(count).toBeLessThan(50);
-    }
+    const productCards = page.locator('a[href^="/products/"]');
+    await expect.poll(() => productCards.count()).toBeLessThan(50);
+    expect(await productCards.count()).toBeGreaterThan(0);
   });
 
   test('result count updates on filter', async ({ page }) => {
-    // Look for a result count indicator
-    const resultCount = page.locator('text=/\\d+.*product|showing.*\\d+/i');
-    if (await resultCount.isVisible()) {
-      const initialText = await resultCount.textContent();
+    // The rendered card count IS the result count. The previous version matched
+    // text=/\d+.*product|showing.*\d+/i, which hit both the page intro copy
+    // ("50+ products across…") and a category tab badge ("50 products") — a strict
+    // mode violation — and then silently skipped its assertions behind isVisible().
+    const productCards = page.locator('a[href^="/products/"]');
+    const initialCount = await productCards.count();
+    expect(initialCount).toBeGreaterThan(0);
 
-      // Apply a search filter
-      const searchInput = page.locator(
-        'input[type="search"], input[placeholder*="search" i], input[placeholder*="Search" i]',
-      );
-      await searchInput.fill('Gloves');
-      await page.waitForTimeout(300);
+    const searchInput = page.locator(
+      'input[type="search"], input[placeholder*="search" i], input[placeholder*="Search" i]',
+    );
+    await searchInput.fill('Gloves');
 
-      // Count should change
-      const filteredText = await resultCount.textContent();
-      expect(filteredText).not.toBe(initialText);
-    }
+    await expect.poll(() => productCards.count()).toBeLessThan(initialCount);
   });
 });

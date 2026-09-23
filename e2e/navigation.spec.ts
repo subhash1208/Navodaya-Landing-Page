@@ -24,8 +24,11 @@ test.describe('Navigation', () => {
 
   test('navigation links work from homepage', async ({ page }) => {
     await page.goto('/');
-    // Click "Explore Products" CTA
-    await page.click('a[href="/products"]');
+    // Target the hero CTA by its accessible name, not by href. `a[href="/products"]`
+    // matches five links on this page and Playwright takes the first — the desktop header
+    // nav item, which is display:none at the mobile viewport. The click then waited the
+    // full 30s for an element that can never become visible there.
+    await page.getByRole('link', { name: /explore products/i }).click();
     await expect(page).toHaveURL('/products');
   });
 });
@@ -33,8 +36,9 @@ test.describe('Navigation', () => {
 test.describe('Product Catalogue', () => {
   test('category filter works', async ({ page }) => {
     await page.goto('/products?category=hotel-room-slippers-guest-amenities');
-    // Should show filtered results
-    await expect(page.locator('[data-testid="product-grid"], .grid')).toBeVisible();
+    // `#product-grid-panel` is the tabpanel id ProductGrid renders on BOTH the
+    // results and the empty-state branch. A bare `.grid` also matched the footer.
+    await expect(page.locator('#product-grid-panel')).toBeVisible();
   });
 
   test('product card links to detail page', async ({ page }) => {

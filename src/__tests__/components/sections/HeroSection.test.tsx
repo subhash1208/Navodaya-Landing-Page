@@ -145,6 +145,27 @@ describe('HeroSection', () => {
     expect(screen.getByTestId('product-graph')).toBeTruthy();
   });
 
+  it('keeps hero content visible immediately when prefers-reduced-motion is set', () => {
+    vi.mocked(window.matchMedia).mockImplementation((query: string) => ({
+      matches: query === '(prefers-reduced-motion: reduce)',
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    }));
+
+    render(<HeroSection />);
+
+    // With reduced motion the layout effect returns early and leaves the server-rendered
+    // finished state in place, so the copy is present without waiting on any animation.
+    expect(screen.getByText(/Solutions for Every Industry/)).toBeTruthy();
+    expect(screen.getByText('Explore Products')).toBeTruthy();
+    expect(screen.getByText('Get a Quote')).toBeTruthy();
+  });
+
   it('calls handleLogoScale callback when ProductCategoryGraph invokes onLogoScale', () => {
     // The ProductCategoryGraph mock already calls onLogoScale in the module-level mock
     // We verify the component handles it without error by checking it renders

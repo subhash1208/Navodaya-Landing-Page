@@ -28,7 +28,19 @@ const eslintConfig = defineConfig([
     files: ['src/__tests__/**/*.{ts,tsx}'],
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/no-unused-vars': 'warn',
+      // Motion/GSAP mocks strip animation-only props by destructuring them alongside
+      // `...rest`, then spread only `rest` onto a DOM node. Those names are unused on
+      // purpose — without `ignoreRestSiblings` the pattern emits a warning per prop and
+      // buries genuinely unused variables. `^_` marks a deliberately ignored binding.
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        {
+          ignoreRestSiblings: true,
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+        },
+      ],
       '@next/next/no-img-element': 'off',
       'jsx-a11y/alt-text': 'off',
     },

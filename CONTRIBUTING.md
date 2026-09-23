@@ -53,22 +53,38 @@ chore(hooks): add husky pre-commit with lint+test+coverage
 - No period at the end of the subject line
 - Scope is optional but recommended (component/file name)
 
+## Package Manager
+
+This project uses **pnpm**. Never run `npm` or `npx` here — `npm install` would create a
+competing `package-lock.json` and a flat `node_modules`, breaking pnpm's linked store.
+Toolchain versions are pinned in `mise.toml`.
+
 ## Pre-Commit Checks
 
-Every commit automatically runs:
+`.husky/pre-commit` runs, on every commit:
 
-1. **Prettier** — format check (run `npm run format` to fix)
+1. **Prettier** — format check (run `pnpm format` to fix)
 2. **ESLint** — lint check
 3. **Vitest** — all tests + 90% coverage threshold
 
-If any check fails, the commit is blocked. Fix the issue and try again.
+If any check fails, the commit is blocked. Fix the issue and try again — never use
+`--no-verify`, and never lower the threshold in `vitest.config.mts` to get green.
+
+The coverage threshold is **project-wide, not changed-files-only**. Adding an untested
+file lowers the global number and blocks the commit even when your own diff is fully
+covered.
 
 ## Commands
 
 ```bash
-npm run format        # Auto-fix formatting
-npm run lint          # Run ESLint
-npm run test          # Run tests
-npm run test:coverage # Run tests with coverage report
-npm run test:e2e      # Run Playwright E2E tests
+pnpm format           # Auto-fix formatting
+pnpm format:check     # Check formatting, no writes
+pnpm lint             # Run ESLint
+pnpm exec tsc --noEmit # Typecheck (there is no `type-check` script)
+pnpm test             # Run tests
+pnpm test:coverage    # Run tests with coverage report
+pnpm test:e2e         # Run Playwright E2E tests
 ```
+
+E2E needs browser binaries: `pnpm exec playwright install`. The full gate table lives in
+`.github/instructions/quality-gates.instructions.md`.
