@@ -1,6 +1,8 @@
+import { PRODUCTS, PRODUCT_CATEGORIES } from '@/constants';
+
 const ITEMS = [
-  '51+ Products',
-  '3 Categories',
+  `${PRODUCTS.length}+ Products`,
+  `${PRODUCT_CATEGORIES.length} Categories`,
   'B2B Focused',
   'Gandhi Nagar, Hyderabad',
   'Hotels',

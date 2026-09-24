@@ -184,7 +184,7 @@ export default function WhyUsSection() {
         <div className="border-t border-grey-200">
           <div className="flex flex-col gap-4 py-8 md:flex-row md:items-baseline md:justify-between">
             <div className="flex items-baseline gap-5">
-              <span aria-hidden="true" className="font-mono text-label text-grey-300">
+              <span aria-hidden="true" className="font-mono text-label text-grey-500">
                 03
               </span>
               <h2
@@ -213,7 +213,7 @@ export default function WhyUsSection() {
                 key={title}
                 className="why-card grid grid-cols-[2.5rem_1fr] items-start gap-x-5 border-t border-grey-100 py-8 scroll-animate-up"
               >
-                <span aria-hidden="true" className="pt-1 font-mono text-label text-grey-300">
+                <span aria-hidden="true" className="pt-1 font-mono text-label text-grey-500">
                   {String(i + 1).padStart(2, '0')}
                 </span>
                 <div>

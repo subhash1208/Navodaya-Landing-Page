@@ -95,7 +95,7 @@ export default function ContactSection() {
             className="text-paper"
           >
             <div className="flex items-baseline gap-5 border-t border-grey-700 pt-8">
-              <span aria-hidden="true" className="font-mono text-label text-grey-500">
+              <span aria-hidden="true" className="font-mono text-label text-grey-400">
                 05
               </span>
               <span className="font-mono text-label uppercase text-grey-400">Get in Touch</span>

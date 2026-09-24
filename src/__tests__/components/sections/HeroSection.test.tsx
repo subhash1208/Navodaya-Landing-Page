@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, act, fireEvent } from '@testing-library/react';
 import HeroSection from '@/components/sections/HeroSection';
+import { PRODUCTS } from '@/constants';
 
 vi.mock('motion/react', () => ({
   motion: new Proxy(
@@ -94,7 +95,7 @@ describe('HeroSection', () => {
     act(() => {
       vi.advanceTimersByTime(1000);
     });
-    expect(screen.getByText('51+')).toBeTruthy();
+    expect(screen.getByText(`${PRODUCTS.length}+`)).toBeTruthy();
     expect(screen.getByText('Products')).toBeTruthy();
   });
 

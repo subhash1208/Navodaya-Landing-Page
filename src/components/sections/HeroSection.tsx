@@ -187,8 +187,8 @@ export default function HeroSection() {
             style={{ padding: '16px 32px' }}
           >
             {[
-              { value: '51+', label: 'Products' },
-              { value: '3', label: 'Categories' },
+              { value: `${PRODUCTS.length}+`, label: 'Products' },
+              { value: `${PRODUCT_CATEGORIES.length}`, label: 'Categories' },
               { value: 'B2B', label: 'Focused' },
             ].map(({ value, label }, i) => (
               <div key={label} className="flex items-center">

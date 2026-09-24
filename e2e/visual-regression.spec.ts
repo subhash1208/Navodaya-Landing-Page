@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
+import { PRODUCTS, PRODUCT_CATEGORIES } from '@/constants';
 
 /**
  * Visual regression tests — screenshot key sections at mobile + desktop.
@@ -27,8 +28,11 @@ const HERO_HEADLINE = 'Premium Hygiene & Care';
 /**
  * Mirrors `STATS` in `src/components/sections/AboutSection.tsx:27`, which is not exported.
  * These are the values each `CounterStat` settles on — see `waitForStatsToSettle`.
+ *
+ * The first two are DERIVED, exactly as the component derives them, so a catalogue edit cannot
+ * leave this helper waiting forever on text the page no longer renders.
  */
-const ABOUT_STATS = ['51+', '3', '100%', 'HYD'];
+const ABOUT_STATS = [`${PRODUCTS.length}+`, `${PRODUCT_CATEGORIES.length}`, '100%', 'HYD'];
 
 /**
  * Block until `window.scrollY` has held the same value for 10 consecutive frames.

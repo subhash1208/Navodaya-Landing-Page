@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { test, expect, type Page, type TestInfo } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 
 /**
  * Derived, not imported. `axe-core` is a transitive dependency of `@axe-core/playwright`, so
@@ -20,60 +20,15 @@ type Violation = ScanResults['violations'][number];
  *
  * Automated checks catch a minority of real accessibility defects. A green run here is a
  * floor, not a certificate.
+ *
+ * No rule is escalated and nothing is allowlisted — this spec asserts a plain zero. The three
+ * `color-contrast` pairs that were previously escalated by pinned per-route node count
+ * (7 / 50 / 4) were fixed at source: `grey-300` and `grey-400` raised to `grey-500` on light
+ * grounds, `grey-500` lowered to `grey-400` on ink. If a rule fails here, fix it or escalate
+ * it to a human; never add it to an exception list to turn a red run green.
  */
 
 const WCAG_A_AA = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'];
-
-/**
- * ────────────────────────────────────────────────────────────────────────────────────────
- * READ THIS BEFORE ASSUMING A GREEN RUN MEANS ZERO VIOLATIONS.
- *
- * `color-contrast` IS CURRENTLY VIOLATED ON ALL THREE ROUTES AND IS NOT FIXED. It is
- * ESCALATED to the site owner, not suppressed, because every instance is a SEALED palette
- * value and choosing a different one is a design decision this spec has no authority to make.
- * Three distinct pairs, measured 2026-09-24 against `next@16.3.5`:
- *
- *   grey-300 #B0B0AA on paper #FAFAF8 — 2.08:1  (needs 4.5:1) — hero + section index numerals
- *   grey-400 #8A8A83 on paper #FAFAF8 — 3.32:1  (needs 4.5:1) — product specimen codes
- *   grey-500 #6B6B64 on ink   #0A0B0D — 3.66:1  (needs 4.5:1) — hero stat strip labels
- *
- * Until the owner picks replacement values, this spec asserts the strictly weaker — but
- * honest — claim that `color-contrast` is the ONLY rule still outstanding, AND that it is
- * outstanding on EXACTLY the number of elements measured below — no fewer, no more. A blanket
- * "any amount of color-contrast is fine" allowlist would let a brand-new low-contrast element,
- * anywhere on the page, pass silently forever. Pinning the count closes that hole: a new
- * violation changes the count and fails the run, and so does the owner fixing one of the
- * existing three pairs (a stale expectation should fail loudly, not rot silently).
- *
- * Counts, re-measured twice on 2026-09-24 (identical both times, chromium + mobile projects):
- *
- *   `/`                        — 7  nodes (hero index numerals + "why" card labels + stat strip)
- *   `/products`                — 50 nodes (one product-code label per catalogue row — the
- *                                 catalogue has 50 SKUs; this count moves with the catalogue
- *                                 size, which is expected and correct)
- *   `/products/surgeon-cap`    — 4  nodes (related-product code labels on the detail page)
- *
- * A per-route COUNT was chosen over a per-route TARGET-SELECTOR allowlist: `/products`' 50
- * targets are one `a[href$="<slug>"] > ... > .text-grey-400...` per catalogue row, so a fixed
- * selector list would be a 50-entry copy of the product catalogue that needs hand-editing on
- * every SKU add/remove/reorder for no extra safety over a count — the count already fails the
- * run the moment the number of affected rows changes, which is the actual signal that matters.
- *
- * Every escalated violation is also attached to the test report on each run, so the exact
- * targets stay inspectable rather than sinking into a passing tick.
- *
- * DO NOT add a rule to this list to make a red run go green. A violation is either fixed or
- * escalated to a human, and escalation means the human has been told.
- * ────────────────────────────────────────────────────────────────────────────────────────
- */
-const ESCALATED_RULES: readonly string[] = ['color-contrast'];
-
-/** Expected `color-contrast` node count per route — see the block comment above. */
-const ESCALATED_COLOR_CONTRAST_COUNTS: Readonly<Record<string, number>> = {
-  '/': 7,
-  '/products': 50,
-  '/products/surgeon-cap': 4,
-};
 
 /**
  * Run under `prefers-reduced-motion: reduce`, for the same reason `visual-regression.spec.ts`
@@ -96,27 +51,13 @@ function summarise(violations: Violation[]) {
   }));
 }
 
-async function expectOnlyEscalatedViolations(page: Page, testInfo: TestInfo, route: string) {
+async function expectNoViolations(page: Page) {
   const results = await scan(page);
-  const escalated = results.violations.filter((v) => ESCALATED_RULES.includes(v.id));
-  const outstanding = results.violations.filter((v) => !ESCALATED_RULES.includes(v.id));
-
-  if (escalated.length > 0) {
-    await testInfo.attach('escalated-violations-awaiting-owner-decision', {
-      body: JSON.stringify(summarise(escalated), null, 2),
-      contentType: 'application/json',
-    });
-  }
-
-  expect(summarise(outstanding)).toEqual([]);
-
-  const contrast = results.violations.find((v) => v.id === 'color-contrast');
-  const contrastNodeCount = contrast ? contrast.nodes.length : 0;
-  expect(contrastNodeCount).toBe(ESCALATED_COLOR_CONTRAST_COUNTS[route]);
+  expect(summarise(results.violations)).toEqual([]);
 }
 
 test.describe('Accessibility (WCAG 2.0/2.1 A + AA)', () => {
-  test('homepage has no unescalated violations', async ({ page }, testInfo) => {
+  test('homepage has no violations', async ({ page }) => {
     test.setTimeout(60000);
     await page.goto('/');
     // `LoadingScreen` mounts only on this route (`src/app/page.tsx:20`) and still paints an
@@ -127,10 +68,10 @@ test.describe('Accessibility (WCAG 2.0/2.1 A + AA)', () => {
     await page.waitForLoadState('networkidle');
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
 
-    await expectOnlyEscalatedViolations(page, testInfo, '/');
+    await expectNoViolations(page);
   });
 
-  test('products catalogue has no unescalated violations', async ({ page }, testInfo) => {
+  test('products catalogue has no violations', async ({ page }) => {
     await page.goto('/products');
     await page.waitForLoadState('networkidle');
     // `ProductGrid` calls `useSearchParams()`, so the catalogue sits behind a Suspense
@@ -138,14 +79,29 @@ test.describe('Accessibility (WCAG 2.0/2.1 A + AA)', () => {
     // hydrates would audit the `GridSkeleton` fallback instead of the grid.
     await expect(page.getByRole('tabpanel')).toBeVisible();
 
-    await expectOnlyEscalatedViolations(page, testInfo, '/products');
+    await expectNoViolations(page);
   });
 
-  test('product detail page has no unescalated violations', async ({ page }, testInfo) => {
+  test('product detail page has no violations', async ({ page }) => {
     await page.goto('/products/surgeon-cap');
     await page.waitForLoadState('networkidle');
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
 
-    await expectOnlyEscalatedViolations(page, testInfo, '/products/surgeon-cap');
+    await expectNoViolations(page);
+  });
+
+  test('not-found page has no violations', async ({ page }) => {
+    // There is no `/404` route. `src/app/not-found.tsx` is the root not-found boundary, which
+    // Next.js renders for *any* unmatched URL app-wide and serves with an HTTP 404 status —
+    // `node_modules/next/dist/docs/01-app/03-api-reference/03-file-conventions/not-found.md:133`.
+    // So the trigger is any path the router cannot match. `page.goto` resolves normally on a 404
+    // (it rejects only on network-level failures), and the status assertion is what proves the
+    // boundary actually rendered rather than a real page or a redirect to one.
+    const response = await page.goto('/this-route-does-not-exist');
+    expect(response?.status()).toBe(404);
+    await page.waitForLoadState('networkidle');
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+
+    await expectNoViolations(page);
   });
 });

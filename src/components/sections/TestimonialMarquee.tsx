@@ -65,7 +65,7 @@ export function TestimonialMarquee() {
         {/* Quiet mono header line — the marquee is the content, not the heading */}
         <div className="flex flex-col gap-2 border-t border-grey-800 pt-6 md:flex-row md:items-baseline md:justify-between">
           <div className="flex items-baseline gap-5">
-            <span aria-hidden="true" className="font-mono text-label text-grey-500">
+            <span aria-hidden="true" className="font-mono text-label text-grey-400">
               04
             </span>
             <h2 className="font-mono text-label uppercase text-grey-300">What Our Clients Say</h2>

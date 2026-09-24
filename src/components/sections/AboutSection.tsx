@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { Award, Globe, Handshake } from 'lucide-react';
-import { BRAND } from '@/constants';
+import { BRAND, PRODUCTS, PRODUCT_CATEGORIES } from '@/constants';
 import { CounterStat } from '@/components/ui/CounterStat';
 
 const PILLARS = [
@@ -25,8 +25,8 @@ const PILLARS = [
 ] as const;
 
 const STATS = [
-  { value: '51+', label: 'Products in catalogue' },
-  { value: '3', label: 'Product categories' },
+  { value: `${PRODUCTS.length}+`, label: 'Products in catalogue' },
+  { value: `${PRODUCT_CATEGORIES.length}`, label: 'Product categories' },
   { value: '100%', label: 'B2B focused' },
   { value: 'HYD', label: 'Based in Hyderabad' },
 ];
@@ -214,7 +214,7 @@ export default function AboutSection() {
         {/* Asymmetric editorial split — title hard left, mission offset right and lower */}
         <div className="grid grid-cols-1 gap-8 pt-8 mb-16 md:grid-cols-12 md:gap-12">
           <div className="md:col-span-5">
-            <span aria-hidden="true" className="font-mono text-label text-grey-300">
+            <span aria-hidden="true" className="font-mono text-label text-grey-500">
               01
             </span>
             <span

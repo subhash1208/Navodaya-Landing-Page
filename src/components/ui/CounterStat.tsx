@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react';
 
 interface CounterStatProps {
-  value: string; // e.g. "51+", "3", "100%", "HYD"
+  value: string; // e.g. "50+", "3", "100%", "HYD"
   label: string;
 }
 

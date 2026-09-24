@@ -42,7 +42,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
         <span className="font-mono text-label uppercase text-grey-500">
           {product.category.name}
         </span>
-        <span aria-hidden="true" className="font-mono text-label uppercase text-grey-400">
+        <span aria-hidden="true" className="font-mono text-label uppercase text-grey-500">
           {reference}
         </span>
       </div>
