@@ -1,4 +1,5 @@
 import '@testing-library/dom';
+import React from 'react';
 
 // Mock next/navigation
 //
@@ -25,7 +26,7 @@ vi.mock('next/navigation', () => ({
 // Mock next/image
 vi.mock('next/image', () => ({
   default: (props: Record<string, unknown>) => {
-    return props;
+    return React.createElement('img', props);
   },
 }));
 
