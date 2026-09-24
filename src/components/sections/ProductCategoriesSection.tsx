@@ -2,11 +2,26 @@
 
 import { useEffect, useRef, useMemo } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { ArrowRight, BookOpen } from 'lucide-react';
 import { PRODUCT_CATEGORIES, ROUTES } from '@/constants';
 import { CATEGORY_RULE } from '@/constants/categoryRule';
 import { AnimateIn } from '@/components/ui/AnimateIn';
 import { cn } from '@/utils/cn';
+import type { CategorySlug } from '@/types';
+
+/**
+ * Describes what each specimen plate photograph actually shows. Deliberately not the category
+ * name — the adjacent <h3> already announces that, so repeating it here would be noise.
+ */
+const PLATE_ALT: Record<CategorySlug, string> = {
+  'hygiene-safety':
+    'Four sheets of white medical-grade non-woven fabric fanned out in overlapping layers, showing the fibrous surface and clean-cut edges',
+  'hotel-amenities':
+    'A folded white terry cloth towel resting on a second towel over pale card, showing the looped pile and woven border',
+  'spa-salon':
+    'A sheet of soft grey non-woven fabric draped into deep, even waves under raking light',
+};
 
 const CARD_ORIGINS = [
   { x: -100, y: 0 },
@@ -114,8 +129,14 @@ export default function ProductCategoriesSection() {
                   )}
                   aria-hidden="true"
                 />
-                <div className="text-3xl mb-6 leading-none" role="img" aria-label={category.name}>
-                  {category.icon}
+                <div className="relative mb-6 aspect-[4/5] overflow-hidden border border-grey-200 bg-grey-50">
+                  <Image
+                    src={`/categories/${category.slug}.webp`}
+                    alt={PLATE_ALT[category.slug]}
+                    fill
+                    sizes="(min-width: 1152px) 288px, (min-width: 640px) 25vw, calc(100vw - 7rem)"
+                    className="object-cover"
+                  />
                 </div>
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <h3 className="text-heading-2 text-ink">{category.name}</h3>

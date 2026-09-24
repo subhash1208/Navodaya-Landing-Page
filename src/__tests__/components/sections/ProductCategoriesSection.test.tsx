@@ -31,6 +31,10 @@ vi.mock('next/link', () => ({
   ),
 }));
 
+vi.mock('next/image', () => ({
+  default: ({ fill, ...props }: any) => <img {...props} />,
+}));
+
 vi.mock('lucide-react', () => ({
   ArrowRight: (props: any) => <svg data-testid="arrow-right" {...props} />,
   BookOpen: (props: any) => <svg data-testid="book-open" {...props} />,
@@ -185,10 +189,41 @@ describe('ProductCategoriesSection', () => {
     expect(container.querySelectorAll('.bg-category-spa').length).toBe(1);
   });
 
-  it('renders category icons', () => {
-    const { container } = render(<ProductCategoriesSection />);
-    const icons = container.querySelectorAll('[role="img"]');
-    expect(icons.length).toBe(3);
+  it('renders one specimen plate per category, pointing at the slug-derived path', () => {
+    render(<ProductCategoriesSection />);
+    const plates = screen.getAllByRole('img');
+    expect(plates.length).toBe(3);
+    expect(plates[0].getAttribute('src')).toBe('/categories/hygiene-safety.webp');
+    expect(plates[1].getAttribute('src')).toBe('/categories/hotel-amenities.webp');
+    expect(plates[2].getAttribute('src')).toBe('/categories/spa-salon.webp');
+  });
+
+  it('gives every plate descriptive alt text that does not merely repeat the category name', () => {
+    render(<ProductCategoriesSection />);
+    const plates = screen.getAllByRole('img');
+    const names = [
+      'Disposable Hygiene & Safety',
+      'Hotel Slippers & Guest Amenities',
+      'Disposable Spa & Salon',
+    ];
+    const alts = plates.map((p) => p.getAttribute('alt') ?? '');
+
+    alts.forEach((alt, i) => {
+      expect(alt.length).toBeGreaterThan(0);
+      expect(alt).not.toBe(names[i]);
+    });
+    expect(new Set(alts).size).toBe(3);
+  });
+
+  it('gives every plate an explicit sizes attribute and no priority hint', () => {
+    render(<ProductCategoriesSection />);
+    screen.getAllByRole('img').forEach((plate) => {
+      expect(plate.getAttribute('sizes')).toBe(
+        '(min-width: 1152px) 288px, (min-width: 640px) 25vw, calc(100vw - 7rem)',
+      );
+      expect(plate.hasAttribute('priority')).toBe(false);
+      expect(plate.hasAttribute('fetchpriority')).toBe(false);
+    });
   });
 
   it('renders section with correct background', () => {

@@ -139,7 +139,7 @@ $total += (gzip -c $f.FullName | Measure-Object -Property Length -Sum).Sum
 
 Redirecting to a file and reading `.Length` is what avoids that, which is why the verified form uses `Start-Process -RedirectStandardOutput`.
 
-**Bundle baseline, `next@16.3.5`, 2026-09-24:** 962.4 KB raw (985489 B) across 24 files, **310.4 KB gzipped** (317896 B). Compare against this, and update it in the same commit as any deliberate change. (Prior 2026-09-18: 963.0 KB raw, 310.6 KB / 318067 B gzipped — the SEALED design waves' `geist` fonts and `extendTailwindMerge` moved it **−171 B**, effectively flat, because font assets are not `.js` and never enter this measurement.)
+**Bundle baseline, `next@16.3.5`, 2026-09-24:** 963.0 KB raw (986089 B) across 24 files, **310.7 KB gzipped** (318180 B). Compare against this, and update it in the same commit as any deliberate change. (Prior 2026-09-24, before the category specimen plates: 962.4 KB raw, 310.4 KB / 317896 B gzipped — swapping the emoji category icons for `next/image` panels moved it **+284 B**, +0.09%, and the file count held at 24 because `next/image` was **already** bundled by `Header.tsx`, `HeroSection.tsx` and `LoadingScreen.tsx`, so no new runtime entered; the delta is the three `PLATE_ALT` string literals, ~335 chars, plus the new JSX props. Prior 2026-09-18: 963.0 KB raw, 310.6 KB / 318067 B gzipped — the SEALED design waves' `geist` fonts and `extendTailwindMerge` moved it **−171 B**, effectively flat, because font assets are not `.js` and never enter this measurement.)
 
 ## Gate 6's "no new warnings" has the same hole gate 9 had
 
