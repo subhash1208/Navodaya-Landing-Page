@@ -51,7 +51,7 @@ export default async function ProductPage({ params }: PageProps) {
   const quoteUrl = `/?product=${encodeURIComponent(product.name)}#contact`;
 
   return (
-    <div className="min-h-screen bg-surface-muted">
+    <div className="min-h-screen bg-grey-50">
       {/* Page header */}
       <div className="bg-paper border-b border-grey-100">
         <div className="container mx-auto py-6">
@@ -107,14 +107,14 @@ export default async function ProductPage({ params }: PageProps) {
             <p className="text-grey-500 leading-relaxed mb-8 text-base">{product.description}</p>
 
             {/* Specs table */}
-            <div className="bg-surface-subtle p-5 mb-8 border border-grey-100">
-              <h2 className="text-xs font-semibold uppercase tracking-wider text-grey-500 mb-4">
+            <div className="bg-grey-100 p-5 mb-8 border border-grey-100">
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-grey-600 mb-4">
                 Product Specifications
               </h2>
               <dl className="space-y-3">
                 {specs.map(({ label, value }) => (
                   <div key={label} className="flex items-start justify-between gap-4 text-sm">
-                    <dt className="text-grey-500 font-medium shrink-0">{label}</dt>
+                    <dt className="text-grey-600 font-medium shrink-0">{label}</dt>
                     <dd className="text-ink font-semibold text-right">{value}</dd>
                   </div>
                 ))}

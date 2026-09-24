@@ -1,6 +1,6 @@
 export default function ProductsLoading() {
   return (
-    <div className="min-h-screen bg-surface-muted">
+    <div className="min-h-screen bg-grey-50">
       <div className="bg-paper border-b border-grey-100">
         <div className="container mx-auto py-10">
           <div className="h-3 w-32 bg-grey-100 rounded animate-pulse mb-4" />

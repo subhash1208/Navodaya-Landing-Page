@@ -26,7 +26,7 @@ function GridSkeleton() {
 
 export default function ProductsPage() {
   return (
-    <div className="min-h-screen bg-surface-muted">
+    <div className="min-h-screen bg-grey-50">
       {/* Page header */}
       <div className="bg-paper border-b border-grey-100">
         <div className="container mx-auto py-10">
