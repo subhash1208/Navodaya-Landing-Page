@@ -81,7 +81,7 @@ export default function ContactSection() {
       ref={sectionRef}
       id="contact"
       aria-labelledby="contact-heading"
-      className="py-24 bg-gradient-to-br from-ink to-grey-900 cursor-spotlight"
+      className="py-24 bg-ink cursor-spotlight"
       onMouseMove={handleMouseMove}
     >
       <div className="container mx-auto">

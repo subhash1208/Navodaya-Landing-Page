@@ -13,13 +13,13 @@ export default function NotFound() {
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link
             href={ROUTES.HOME}
-            className="px-6 py-3 rounded-xl bg-ink text-white font-semibold text-sm hover:bg-ink/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2"
+            className="px-6 py-3 bg-ink text-white font-semibold text-sm hover:bg-ink/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2"
           >
             Go Home
           </Link>
           <Link
             href={ROUTES.PRODUCTS}
-            className="px-6 py-3 rounded-xl border-2 border-grey-200 text-grey-600 font-semibold text-sm hover:border-ink hover:text-ink transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink"
+            className="px-6 py-3 border-2 border-grey-200 text-grey-600 font-semibold text-sm hover:border-ink hover:text-ink transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink"
           >
             Browse Products
           </Link>

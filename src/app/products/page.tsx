@@ -18,7 +18,7 @@ function GridSkeleton() {
       aria-label="Loading products"
     >
       {Array.from({ length: 10 }).map((_, i) => (
-        <div key={i} className="bg-grey-100 rounded-[1.25rem] aspect-[3/4] animate-pulse" />
+        <div key={i} className="bg-grey-100 aspect-[3/4] animate-pulse" />
       ))}
     </div>
   );

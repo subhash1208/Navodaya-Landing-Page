@@ -78,6 +78,14 @@ describe('ContactSection', () => {
     expect(section).toBeTruthy();
   });
 
+  it('renders the section on a solid ink surface, not a gradient, keeping cursor-spotlight', () => {
+    const { container } = render(<ContactSection />);
+    const section = container.querySelector('#contact') as HTMLElement;
+    expect(section.className).toContain('bg-ink');
+    expect(section.className).not.toContain('bg-gradient-');
+    expect(section.className).toContain('cursor-spotlight');
+  });
+
   it('renders heading', () => {
     render(<ContactSection />);
     expect(screen.getByText('Request a Quote')).toBeTruthy();

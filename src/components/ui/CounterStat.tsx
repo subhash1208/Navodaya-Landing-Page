@@ -79,7 +79,7 @@ export function CounterStat({ value, label }: CounterStatProps) {
   }, [value]);
 
   return (
-    <div className="bg-paper rounded-[14px] p-5 border border-grey-200 shadow-[0_2px_8px_rgba(10,11,13,0.06)]">
+    <div className="bg-paper p-5 border border-grey-200 shadow-e1">
       <div ref={numRef} className="text-[26px] font-black text-brand-blue mb-1" aria-label={value}>
         {value}
       </div>

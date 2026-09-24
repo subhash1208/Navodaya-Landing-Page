@@ -107,7 +107,7 @@ export default async function ProductPage({ params }: PageProps) {
             <p className="text-grey-500 leading-relaxed mb-8 text-base">{product.description}</p>
 
             {/* Specs table */}
-            <div className="bg-surface-subtle rounded-xl p-5 mb-8 border border-grey-100">
+            <div className="bg-surface-subtle p-5 mb-8 border border-grey-100">
               <h2 className="text-xs font-semibold uppercase tracking-wider text-grey-500 mb-4">
                 Product Specifications
               </h2>
@@ -122,7 +122,7 @@ export default async function ProductPage({ params }: PageProps) {
             </div>
 
             {/* Pricing note */}
-            <div className="bg-grey-50 border border-grey-200 rounded-xl p-4 mb-8">
+            <div className="bg-grey-50 border border-grey-200 p-4 mb-8">
               <p className="text-sm text-brand-blue font-medium mb-1">Pricing on Request</p>
               <p className="text-xs text-grey-500 leading-relaxed">
                 We offer flexible B2B pricing based on order quantity and requirements. Contact us
@@ -134,14 +134,14 @@ export default async function ProductPage({ params }: PageProps) {
             <div className="flex flex-col sm:flex-row gap-3 mt-auto">
               <Link
                 href={quoteUrl}
-                className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-ink text-white font-semibold text-sm hover:bg-ink/90 hover:-translate-y-0.5 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 min-h-[44px]"
+                className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-ink text-white font-semibold text-sm hover:bg-ink/90 hover:-translate-y-0.5 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 min-h-[44px]"
               >
                 <MessageSquare className="w-4 h-4" aria-hidden="true" />
                 Request a Quote
               </Link>
               <Link
                 href={`${ROUTES.PRODUCTS}?category=${product.category.slug}`}
-                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl border-2 border-grey-200 text-grey-600 font-semibold text-sm hover:border-ink hover:text-ink transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink min-h-[44px]"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 border-2 border-grey-200 text-grey-600 font-semibold text-sm hover:border-ink hover:text-ink transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink min-h-[44px]"
               >
                 <ArrowLeft className="w-4 h-4" aria-hidden="true" />
                 More in Category

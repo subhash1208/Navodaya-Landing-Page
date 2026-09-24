@@ -60,7 +60,7 @@
   }
   .card-hover:hover {
     will-change: transform;
-    @apply -translate-y-1.5 shadow-xl;
+    @apply -translate-y-1.5 shadow-e2;
   }
 
   .card-hover-category {
@@ -68,7 +68,7 @@
   }
   .card-hover-category:hover {
     will-change: transform;
-    @apply -translate-y-2 shadow-2xl;
+    @apply -translate-y-2 shadow-e3;
   }
 
   .card-hover-feature {
@@ -76,7 +76,7 @@
   }
   .card-hover-feature:hover {
     will-change: transform;
-    @apply -translate-y-1 bg-paper shadow-lg;
+    @apply -translate-y-1 bg-paper shadow-e1;
   }
 }
 
