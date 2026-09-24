@@ -76,7 +76,7 @@ Full explanation, the failure each one produced, and how to test for them is in 
 
 ## Hooks
 
-- Mirror the existing shape in `src/hooks/` — see `useTypewriter.ts` and `useMagneticHover.ts`.
+- Mirror the existing shape in `src/hooks/` — see `useTypewriter.ts` and `useIntroFinished.ts`.
 - Every effect that subscribes, observes, or schedules must return a cleanup function.
 - Dependency arrays must be complete and honest. Do not silence the lint rule.
 

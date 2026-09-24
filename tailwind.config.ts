@@ -27,11 +27,6 @@ export default {
           blue: '#085898', // LIGHT surfaces only
           cyan: '#08B8F8', // DARK surfaces only
         },
-        surface: {
-          DEFAULT: '#FFFFFF',
-          muted: '#F8FAFC',
-          subtle: '#F1F5F9',
-        },
         ink: '#0A0B0D',
         paper: '#FAFAF8',
         grey: {
@@ -107,19 +102,6 @@ export default {
           '0%': { left: '-100%' },
           '100%': { left: '200%' },
         },
-        shimmer: {
-          '0%': { backgroundPosition: '-200% 0' },
-          '100%': { backgroundPosition: '200% 0' },
-        },
-        gradientShift: {
-          '0%': { backgroundPosition: '0% 50%' },
-          '50%': { backgroundPosition: '100% 50%' },
-          '100%': { backgroundPosition: '0% 50%' },
-        },
-        aurora: {
-          from: { backgroundPosition: '50% 50%, 50% 50%' },
-          to: { backgroundPosition: '350% 50%, 350% 50%' },
-        },
       },
       animation: {
         float: 'float 6s ease-in-out infinite',
@@ -128,8 +110,6 @@ export default {
         'fade-up': 'fadeUp 0.6s ease forwards',
         'fade-in': 'fadeIn 0.5s ease forwards',
         'gradient-sweep': 'gradientSweep 0.8s ease forwards',
-        'gradient-shift': 'gradientShift 3s ease infinite',
-        aurora: 'aurora 60s linear infinite',
       },
     },
   },

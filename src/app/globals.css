@@ -52,34 +52,6 @@
   }
 }
 
-/* ─── Component layer ───────────────────────────────────────────────────────── */
-@layer components {
-  /* Card hover states */
-  .card-hover {
-    @apply transition-all duration-300 ease-out;
-  }
-  .card-hover:hover {
-    will-change: transform;
-    @apply -translate-y-1.5 shadow-e2;
-  }
-
-  .card-hover-category {
-    @apply transition-all duration-300 ease-out;
-  }
-  .card-hover-category:hover {
-    will-change: transform;
-    @apply -translate-y-2 shadow-e3;
-  }
-
-  .card-hover-feature {
-    @apply transition-all duration-200 ease-out;
-  }
-  .card-hover-feature:hover {
-    will-change: transform;
-    @apply -translate-y-1 bg-paper shadow-e1;
-  }
-}
-
 /* ─── Utility layer ─────────────────────────────────────────────────────────── */
 @layer utilities {
   /* Display font */

@@ -31,7 +31,7 @@ There is no `type-check` script — use `pnpm exec tsc --noEmit`.
 ```
 src/app/          routes, layouts, server actions
 src/components/   layout/ · sections/ · ui/
-src/hooks/        useTypewriter, useMagneticHover, ...
+src/hooks/        useTypewriter, useIntroFinished, ...
 src/constants/    design tokens, content
 src/utils/        cn() class merger
 src/__tests__/    unit tests, mirrors src/ paths

@@ -14,7 +14,7 @@ description: >-
   or page transition, a loading spinner, or a typewriter effect. "text animations" and
   "entrance animation" appear above only in their scroll-triggered sense; arrived at any
   other way they are ordinary component work, and this repo already has
-  src/hooks/useTypewriter.ts and useMagneticHover.ts for two of them.
+  src/hooks/useTypewriter.ts and useIntroFinished.ts for two of them.
 metadata:
   author: 'Utkarsh Patrikar'
   author_url: 'https://github.com/utkarsh232005'
