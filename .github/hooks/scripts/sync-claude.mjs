@@ -650,15 +650,34 @@ const SKILL_PASSTHROUGH = [
   'argument-hint', // 2.0.0; SKILL.md-specific fixes at 2.1.47 and 2.1.149
   'disallowed-tools', // 2.1.152 "Skills and slash commands can now set..."
   'effort', // 2.1.80 -- but see 2.1.267: ignored on effort-pinned models
+  // Real, parsed skill fields (docs: code.claude.com/docs/en/skills). Spec Kit
+  // ships both at their defaults, so passing them through is a no-op today --
+  // and stops being one the moment upstream flips either. `user-invocable` is
+  // the skill-side half of the correction at AGENT_DROP_SILENT above.
+  'user-invocable', // default true; false = Claude-only, hidden from `/`, but does NOT block the Skill tool
+  'disable-model-invocation', // default false; true = user-only, drops the description from context and (2.1.196+) blocks subagent preload + scheduled tasks
 ];
 
 // No Claude equivalent. Dropping these is correct, so it stays silent.
-const SKILL_DROP_SILENT = ['name', 'description', 'metadata'];
+//
+// `compatibility` and `license` are Agent Skills SPEC fields -- Claude Code
+// accepts both and acts on neither (docs: code.claude.com/docs/en/skills), so
+// there is no behaviour to preserve. `license` is not authored anywhere here
+// yet; it is listed now because it is the same class as `compatibility` and
+// would otherwise fire a `dropped` finding the moment upstream adds it.
+const SKILL_DROP_SILENT = ['name', 'description', 'metadata', 'compatibility', 'license'];
 
 function skillFrontmatter(sourceFile, fm) {
   const lines = [];
   for (const key of SKILL_PASSTHROUGH) {
-    if (fm[key] !== undefined) lines.push(`${key}: ${yamlString(String(fm[key]))}`);
+    const value = fm[key];
+    if (value === undefined) continue;
+    // The two fields added above are BOOLEANS upstream, and `yamlString` is
+    // JSON.stringify -- it would emit `disable-model-invocation: "true"`, a YAML
+    // string, not the boolean the author wrote. Same silent-drop class as the
+    // rest of this file, one layer down: the key survives and its type does not.
+    const raw = String(value);
+    lines.push(`${key}: ${raw === 'true' || raw === 'false' ? raw : yamlString(raw)}`);
   }
 
   const where = relative(ROOT, sourceFile).split(sep).join('/');

@@ -67,9 +67,27 @@ Pipeline: `planner → researcher ×N (parallel) → implementer (code + tests) 
 
 The pipeline ends with a **local commit**, not with a request for one. `permissions.ask` gates `git push` and nothing earlier, so a GREEN run commits its own work in Conventional Commits format and `.husky/pre-commit` re-runs the gates as an independent check. Pushing remains the human's call.
 
-Slash commands (agent skills in `.github/skills/`): `/ship-feature` · `/parallel-research` · `/review-loop` · `/fix-failure` · `/dependency-audit` · `/gsap-framer-scroll-animation`
+Slash commands (agent skills in `.github/skills/`): `/ship-feature` · `/parallel-research` · `/review-loop` · `/fix-failure` · `/dependency-audit` · `/gsap-framer-scroll-animation` — plus the ten `/speckit-*` lifecycle commands below.
 
 Coordination rules — delegation contract, batching, parallel fan-out, memory discipline, escalation triggers — are in `.github/instructions/agentic-workflow.instructions.md`.
+
+## AI-DLC layer: GitHub Spec Kit
+
+This repo's spec/plan/tasks lifecycle runs on **GitHub Spec Kit** (`github/spec-kit`, MIT), adopted 2026-09-24 to replace ad-hoc "waves" planning. It won over three other candidates evaluated the same day — AWS `awslabs/aidlc-workflows` (MIT-0, closest name match, rejected because its Claude Code file footprint could not be confirmed from its docs against a repo where `.claude/` is wiped on every sync), BMAD-METHOD (rejected: npm-based, and ships its own competing 5-agent roster), and Agent OS (rejected: v3 retired its orchestration phases in favour of Claude's Plan Mode) — for two reasons:
+
+- Its installer (`uv tool install specify-cli` + `specify init`) is Python/`uv`-based and touches **no Node packages**, critical here where `npm`/`npx` are banned (see "Never run `npm` or `npx`" above).
+- It is a pure lifecycle/artifact layer — constitution → specify → plan → tasks → implement → converge — with **no competing agent roster**, so it sits on top of the 7 agents below rather than replacing them.
+
+**It supplies the lifecycle and artifacts; it does not replace the pipeline or the gates.** The `planner → researcher ×N → implementer → reviewer ⇄ fix → memory-updater → commit` pipeline and the 10 quality gates in `.github/instructions/quality-gates.instructions.md` remain the sole source of truth for correctness. `.specify/` artifacts are input documents `planner` and `implementer` read, exactly like any other spec — nothing here overrides a gate.
+
+Ten new commands, tracked as `.github/skills/speckit-*/SKILL.md`:
+
+- **Core lifecycle:** `/speckit-constitution` (establish project principles) → `/speckit-specify` (baseline spec) → `/speckit-plan` (implementation plan) → `/speckit-tasks` (actionable tasks) → `/speckit-implement` (execute) → `/speckit-converge` (assess the codebase and append remaining work as tasks).
+- **Optional quality steps:** `/speckit-clarify` (structured de-risking questions — run before `/speckit-plan`) · `/speckit-analyze` (cross-artifact consistency report — after `/speckit-tasks`, before `/speckit-implement`) · `/speckit-checklist` (validate requirements completeness — after `/speckit-plan`) · `/speckit-taskstoissues`.
+
+Artifacts live in `.specify/` — **tracked in git**, unlike `aidlc-docs/` above: `memory/constitution.md`, `templates/*.md`, `scripts/powershell/`, `workflows/speckit/`, `integrations/*.json`. Its own `.specify/.gitignore` correctly excludes only the two genuinely machine-local files: `feature.json` (per-checkout pointer to the current feature) and `extensions/*/local-config.yml` (per-machine overrides).
+
+**Standing rule, general to any future tool: anything that installs into `.claude/` must be relocated into `.github/`, or the next `pnpm agents:sync` destroys it.** `specify init --integration claude` installs its skills into `.claude/skills/`, which is generated and gitignored — `sync-claude.mjs` recursively deletes `.claude/agents`, `.claude/skills` and `.claude/rules` on every non-check run and rewrites only what `.github/` sources claim (see "Running under Claude Code" below). The 10 `speckit-*` skill directories were moved into `.github/skills/` for exactly this reason; they use the same `<name>/SKILL.md` shape as the repo's existing skills, so they now regenerate on every sync like everything else. Forensics — including the Prettier-scope and frontmatter-vocabulary side effects this adoption also produced — are in `.github/CONTROL-PLANE-NOTES.md`.
 
 ### Two upstream skills worth installing (not vendored)
 

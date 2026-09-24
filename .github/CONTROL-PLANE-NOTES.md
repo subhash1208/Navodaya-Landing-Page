@@ -1940,3 +1940,89 @@ still connect. If a future session finds `.claude/settings.local.json` again, th
 local override someone made on purpose (this file is the one generated-directory exception the
 sync must never delete or rewrite) — reconcile by hand as done here, do not assume the sync will
 pick it up.
+
+---
+
+## 16. Spec Kit adoption, and the general rule it produced — 2026-09-24
+
+The owner asked for a free AI-DLC (spec/plan/tasks lifecycle) framework to replace ad-hoc "waves"
+planning. Four candidates were evaluated; **GitHub Spec Kit** (`github/spec-kit`, MIT) was
+installed. This section is the forensics — what nearly broke, and why the fix generalises.
+
+### 16.1 Why Spec Kit, and why not the other three
+
+- **AWS `awslabs/aidlc-workflows`** (MIT-0) was the runner-up and the closest literal name match —
+  its Inception/Construction phase naming is where the term "AI-DLC" comes from most directly.
+  Rejected because its documented integrations enumerate only Codex and Kiro; its Claude Code file
+  footprint could not be confirmed before installing it. That is an unacceptable risk in a repo
+  where `pnpm agents:sync` recursively deletes `.claude/agents`, `.claude/skills` and `.claude/rules`
+  on every run (§16.2) — an unconfirmed footprint could be silently destroyed, or worse, could be
+  the thing silently surviving in a directory the sync doesn't know to manage.
+- **BMAD-METHOD** was rejected outright: its installer is npm-based, which this repo's pnpm-only
+  policy forbids (`npm install` would create a competing `package-lock.json` and break pnpm's
+  linked store — same reasoning as the `npx` ban in §12.23), and it ships its own competing 5-agent
+  roster rather than layering on an existing one.
+- **Agent OS** was rejected because v3 retired its orchestration phases in favour of Claude's Plan
+  Mode, making it a thinner lifecycle layer than a dedicated tool.
+- **Spec Kit won** on two properties, in order of importance: its installer
+  (`uv tool install specify-cli --from git+https://github.com/github/spec-kit.git` then
+  `specify init --here --force --non-interactive --integration claude`) is Python/`uv`-based and
+  touches no Node packages at all; and it is a pure lifecycle/artifact layer — constitution →
+  specify → plan → tasks → implement → converge — with no competing agent roster, so it sits on top
+  of this repo's 7 agents instead of fighting them. Installed via `uv` 0.11.28 (already present via
+  mise): `specify-cli` 1.0.12.dev0, exit 0.
+
+### 16.2 The `.claude/` wipe hazard, and the general rule
+
+`specify init --integration claude` installs its 10 skills into `.claude/skills/`. In this repo
+that directory is **generated and gitignored** (`.gitignore:27`, under the block explaining why
+`.claude/` and `.mcp.json` are never committed): `sync-claude.mjs` does a recursive `rmSync` on
+`.claude/agents`, `.claude/skills` and `.claude/rules` on every non-check run, then rewrites only
+what `.github/` sources claim (§6, and "Running under Claude Code" in `AGENTS.md`). The 10 skills
+Spec Kit installed were untracked and would have been silently destroyed by the next
+`pnpm agents:sync` — indistinguishable, from the sync's point of view, from any other file it
+doesn't manage.
+
+**The fix:** all 10 `speckit-*` directories were moved from `.claude/skills/` into
+`.github/skills/`, the repo's actual source of truth. Spec Kit happens to install the exact
+`<name>/SKILL.md` shape the existing hand-authored skills (`ship-feature`, `parallel-research`,
+etc.) already use, so the move required no reshaping — the skills now regenerate on every sync and
+are tracked in git like everything else. Verified present at `.github/skills/speckit-{analyze,
+clarify, constitution, implement, converge, plan, checklist, specify, tasks, taskstoissues}/SKILL.md`.
+
+**The general rule, worth carrying into the next tool adoption:** any installer that writes into
+`.claude/` — because that is the path its own documentation names, or because it detects Claude Code
+and defaults to it — must have its output relocated to the matching `.github/` source before the
+next sync runs, or the sync will destroy it without comment. This is the same class of hazard as
+the `Write(path)` permission rule in §2 and the stale `settings.local.json` in §15: a file that
+looks configured but sits outside the one system that actually manages persistence here.
+
+### 16.3 The Prettier-scope hazard — would have blocked every future commit
+
+`.specify/` (19 files) plus the 10 vendored `SKILL.md` files added 21 files to Prettier's default
+scope, and `prettier --check .` failed on them out of the box. Because `.husky/pre-commit`
+independently re-runs `prettier --check .` on every commit (per the quality-gates file's "These
+gates mirror a real commit blocker" section), an unresolved failure here would not have been a
+one-time nuisance — it would have blocked **every subsequent commit in the repo**, Spec Kit-related
+or not, until someone diagnosed why `git commit` had started failing for reasons that had nothing
+to do with their change.
+
+**Resolved by exclusion, not reformatting:** `.specify/` and `.github/skills/speckit-*/` were added
+to `.prettierignore`, with the rationale recorded inline there — these are upstream-maintained LLM
+prompt files where list structure, code-fence placement and whitespace can carry meaning, and
+reformatting them would turn every future `specify` refresh into a merge conflict against a
+repo-local formatting pass that adds nothing. Same logic as the existing `pnpm-lock.yaml` entry
+a few lines above it in that file: some files are correctly exempt from this repo's formatting
+because a different tool, not this repo, owns their exact bytes.
+
+### 16.4 The frontmatter-vocabulary gap
+
+Spec Kit's `SKILL.md` frontmatter uses three keys the sync's classifier did not recognise:
+`compatibility`, `user-invocable`, and `disable-model-invocation` (confirmed present in, e.g.,
+`.github/skills/speckit-specify/SKILL.md:5,9-10`). Unclassified keys are treated as `dropped`
+findings by `pnpm agents:sync:check` (§ "Running under Claude Code" in `AGENTS.md` — the emitter
+would silently discard a key it doesn't know how to pass through or drop, which reads as configured
+and does nothing). This produced 30 `dropped` findings across the 10 new skill files. The fix —
+classifying the three keys into the sync's passthrough/silent-drop lists — was in progress alongside
+this section and is not detailed further here; check `sync-claude.mjs` directly for the current
+state rather than trusting this paragraph to have kept up.
