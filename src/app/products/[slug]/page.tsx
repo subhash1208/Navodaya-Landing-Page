@@ -107,7 +107,7 @@ export default async function ProductPage({ params }: PageProps) {
             <p className="text-grey-500 leading-relaxed mb-8 text-base">{product.description}</p>
 
             {/* Specs table */}
-            <div className="bg-grey-100 p-5 mb-8 border border-grey-100">
+            <div className="bg-grey-100 p-5 mb-8 border border-grey-200">
               <h2 className="text-xs font-semibold uppercase tracking-wider text-grey-600 mb-4">
                 Product Specifications
               </h2>

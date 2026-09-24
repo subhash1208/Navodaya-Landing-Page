@@ -293,23 +293,29 @@ export default function HeroSection() {
               </motion.div>
             </motion.div>
           </div>
-
-          {/* Keyboard-accessible alternative for canvas graph products */}
-          <nav aria-label="Product categories" className="sr-only">
-            {PRODUCT_CATEGORIES.map((cat) => (
-              <div key={cat.id}>
-                <h3>{cat.name}</h3>
-                <ul>
-                  {PRODUCTS.filter((p) => p.category.id === cat.id).map((p) => (
-                    <li key={p.id}>
-                      <Link href={ROUTES.PRODUCT(p.slug)}>{p.name}</Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </nav>
         </div>
+
+        {/* Keyboard-accessible alternative for the canvas graph's products.
+            Sibling of the `role="button"` wrapper above, not a child of it. axe flags the
+            nesting as `nested-interactive` (WCAG 2.1 A, 4.1.2): a control with focusable
+            descendants is not reliably announced and traps focus for assistive tech. The
+            `hidden md:block` mirrors the wrapper's own breakpoint, so this stays absent at
+            mobile widths exactly as it was when nested inside it — the canvas graph it
+            substitutes for is not rendered there either. */}
+        <nav aria-label="Product categories" className="sr-only hidden md:block">
+          {PRODUCT_CATEGORIES.map((cat) => (
+            <div key={cat.id}>
+              <h3>{cat.name}</h3>
+              <ul>
+                {PRODUCTS.filter((p) => p.category.id === cat.id).map((p) => (
+                  <li key={p.id}>
+                    <Link href={ROUTES.PRODUCT(p.slug)}>{p.name}</Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </nav>
       </div>
 
       {/* Scroll indicator */}

@@ -11,6 +11,11 @@ export function CounterStat({ value, label }: CounterStatProps) {
   const numRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Reduced motion: the server-rendered markup is already the terminal state — final text,
+    // opacity 1, identity transform — so returning before anything is created leaves exactly
+    // that on screen. Same early-return shape as `AboutSection.tsx:46`.
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
     const el = numRef.current;
     if (!el) return;
 
