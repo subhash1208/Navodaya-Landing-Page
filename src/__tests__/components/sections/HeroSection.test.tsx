@@ -58,14 +58,6 @@ vi.mock('@/components/ui/ProductCategoryGraph', () => ({
   },
 }));
 
-vi.mock('@/components/ui/AuroraBackground', () => ({
-  AuroraBackground: ({ children, className }: any) => (
-    <div data-testid="aurora" className={className}>
-      {children}
-    </div>
-  ),
-}));
-
 describe('HeroSection', () => {
   beforeEach(() => {
     vi.useFakeTimers();
@@ -110,11 +102,6 @@ describe('HeroSection', () => {
     render(<HeroSection />);
     const scrollLink = screen.getByLabelText('Scroll to About section');
     expect(scrollLink).toBeTruthy();
-  });
-
-  it('renders aurora background', () => {
-    render(<HeroSection />);
-    expect(screen.getByTestId('aurora')).toBeTruthy();
   });
 
   it('renders product category graph', () => {

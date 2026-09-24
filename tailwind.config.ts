@@ -21,11 +21,11 @@ export default {
     extend: {
       colors: {
         brand: {
-          primary: '#1E40AF',
-          secondary: '#0EA5E9',
-          accent: '#F59E0B',
-          dark: '#0F172A',
-          light: '#F0F9FF',
+          // Sampled from public/navodaya-logo.png. The surface restriction is load-bearing:
+          // blue is 7.03:1 on paper (AAA) but 2.68:1 on ink, cyan is 8.65:1 on ink but
+          // 2.18:1 on paper. Using either on the wrong ground is an accessibility failure.
+          blue: '#085898', // LIGHT surfaces only
+          cyan: '#08B8F8', // DARK surfaces only
         },
         surface: {
           DEFAULT: '#FFFFFF',

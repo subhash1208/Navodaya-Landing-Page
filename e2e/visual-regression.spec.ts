@@ -10,6 +10,13 @@ import { test, expect, type Page } from '@playwright/test';
  */
 
 /**
+ * Mirrors `HEADLINE_LINE1` in `src/components/sections/HeroSection.tsx:14`, which is not
+ * exported. Used as a web-first wait condition: the headline is typed one character at a
+ * time, so "contains the whole string" is the only honest signal that typing has finished.
+ */
+const HERO_HEADLINE = 'Premium Hygiene & Care';
+
+/**
  * Block until `window.scrollY` has held the same value for 10 consecutive frames.
  *
  * Lenis lerps toward a target rather than jumping, and is dynamically imported inside an
@@ -43,18 +50,38 @@ async function waitForScrollToSettle(page: Page) {
 test.describe('Visual Regression - Desktop (1280px)', () => {
   test.use({ viewport: { width: 1280, height: 800 } });
 
-  test('hero section', async ({ page }) => {
-    test.setTimeout(60000); // Hero has typewriter + canvas init
-    await page.goto('/');
-    // Skip loading screen
-    await page.evaluate(() => sessionStorage.setItem('nv_intro_seen', 'true'));
-    await page.reload();
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(5000); // Wait for typewriter + canvas graph to fully initialize
+  // Nested so `reducedMotion` applies to the hero shot ONLY. The about and products
+  // baselines in this file were captured under the default `no-preference` and must not
+  // move. See the comment on the mobile hero test for why reduced motion is required.
+  //
+  // `reducedMotion` is NOT a top-level test option in Playwright 1.60 — it lives under
+  // `contextOptions`, per `playwright/types/test.d.ts:7486-7508`. The flat form typechecks
+  // as TS2353.
+  test.describe('hero', () => {
+    test.use({ contextOptions: { reducedMotion: 'reduce' } });
 
-    const hero = page.locator('#home, section[aria-label="Hero"]');
-    await expect(hero).toHaveScreenshot('hero-desktop.png', {
-      maxDiffPixelRatio: 0.05,
+    test('hero section', async ({ page }) => {
+      test.setTimeout(60000);
+      await page.goto('/');
+      // Skip loading screen
+      await page.evaluate(() => sessionStorage.setItem('nv_intro_seen', 'true'));
+      await page.reload();
+      await page.waitForLoadState('networkidle');
+
+      const hero = page.locator('#home, section[aria-label="Hero"]');
+      // The determinism argument rests entirely on the emulation being live. Assert it,
+      // so a future options-merge change fails here instead of quietly restoring the race.
+      expect(
+        await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches),
+      ).toBe(true);
+      // Belt and braces. If the reduced-motion short-circuit in `useTypewriter` ever
+      // regresses, this fails loudly on the condition instead of silently screenshotting
+      // a mid-type frame. It replaces a fixed 5s wait.
+      await expect(hero.getByRole('heading', { level: 1 })).toContainText(HERO_HEADLINE);
+
+      await expect(hero).toHaveScreenshot('hero-desktop.png', {
+        maxDiffPixelRatio: 0.05,
+      });
     });
   });
 
@@ -105,16 +132,38 @@ test.describe('Visual Regression - Desktop (1280px)', () => {
 test.describe('Visual Regression - Mobile (375px)', () => {
   test.use({ viewport: { width: 375, height: 812 } });
 
-  test('hero section mobile', async ({ page }) => {
-    await page.goto('/');
-    await page.evaluate(() => sessionStorage.setItem('nv_intro_seen', 'true'));
-    await page.reload();
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(1000);
+  // Nested so `reducedMotion` applies to the hero shot ONLY — the two products baselines
+  // below were captured under the default `no-preference` and must not move.
+  //
+  // `useTypewriter` types `HERO_HEADLINE` at 38ms/char after a 300ms delay, and Playwright's
+  // "disable CSS animations" does not stop a `setTimeout`-driven state update. A fixed
+  // `waitForTimeout(1000)` therefore landed mid-word at 375px, exactly where `Care` wraps —
+  // a one-line vertical shift of the whole page, far beyond `maxDiffPixelRatio`, roughly
+  // half the time. Under `prefers-reduced-motion: reduce` the hook short-circuits to the
+  // complete text with `showCursor=false` (`src/hooks/useTypewriter.ts:42-50`), so the
+  // blinking cursor is out of the frame too, and `HeroSection`'s layout effect returns
+  // early and keeps the server-rendered finished state (`HeroSection.tsx:40-47`).
+  test.describe('hero', () => {
+    test.use({ contextOptions: { reducedMotion: 'reduce' } });
 
-    await expect(page).toHaveScreenshot('hero-mobile.png', {
-      maxDiffPixelRatio: 0.05,
-      fullPage: false,
+    test('hero section mobile', async ({ page }) => {
+      await page.goto('/');
+      await page.evaluate(() => sessionStorage.setItem('nv_intro_seen', 'true'));
+      await page.reload();
+      await page.waitForLoadState('networkidle');
+      // See the desktop hero test — the emulation is the precondition, so assert it.
+      expect(
+        await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches),
+      ).toBe(true);
+      // Wait on the condition, never the clock — see the desktop hero test.
+      await expect(page.locator('#home').getByRole('heading', { level: 1 })).toContainText(
+        HERO_HEADLINE,
+      );
+
+      await expect(page).toHaveScreenshot('hero-mobile.png', {
+        maxDiffPixelRatio: 0.05,
+        fullPage: false,
+      });
     });
   });
 

@@ -92,3 +92,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Client preview screenshots — regenerable artifacts, not product code
+design-preview/

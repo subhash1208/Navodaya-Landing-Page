@@ -14,17 +14,17 @@ const ITEMS = [
 export function MarqueeStrip() {
   return (
     <div
-      className="relative overflow-hidden bg-brand-dark py-4 border-y border-white/5"
+      className="relative overflow-hidden bg-ink py-4 border-y border-white/5"
       aria-hidden="true"
     >
       {/* Fade edges */}
       <div
         className="absolute left-0 top-0 bottom-0 w-20 z-10 pointer-events-none"
-        style={{ background: 'linear-gradient(to right, #0F172A, transparent)' }}
+        style={{ background: 'linear-gradient(to right, #0A0B0D, transparent)' }}
       />
       <div
         className="absolute right-0 top-0 bottom-0 w-20 z-10 pointer-events-none"
-        style={{ background: 'linear-gradient(to left, #0F172A, transparent)' }}
+        style={{ background: 'linear-gradient(to left, #0A0B0D, transparent)' }}
       />
 
       {/* Two tracks side by side, both animating — creates seamless infinite loop */}
@@ -35,7 +35,7 @@ export function MarqueeStrip() {
               <span className="text-sm font-semibold text-white/70 tracking-wide uppercase">
                 {item}
               </span>
-              <span className="w-1 h-1 rounded-full bg-brand-secondary/60 shrink-0" />
+              <span className="w-1 h-1 rounded-full bg-brand-cyan/60 shrink-0" />
             </span>
           ))}
         </div>
@@ -45,7 +45,7 @@ export function MarqueeStrip() {
               <span className="text-sm font-semibold text-white/70 tracking-wide uppercase">
                 {item}
               </span>
-              <span className="w-1 h-1 rounded-full bg-brand-secondary/60 shrink-0" />
+              <span className="w-1 h-1 rounded-full bg-brand-cyan/60 shrink-0" />
             </span>
           ))}
         </div>

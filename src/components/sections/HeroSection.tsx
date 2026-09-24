@@ -10,7 +10,6 @@ import { useTypewriter } from '@/hooks/useTypewriter';
 import { useIsomorphicLayoutEffect } from '@/hooks/useIsomorphicLayoutEffect';
 import { useIntroFinished } from '@/hooks/useIntroFinished';
 import { ProductCategoryGraph } from '@/components/ui/ProductCategoryGraph';
-import { AuroraBackground } from '@/components/ui/AuroraBackground';
 
 const HEADLINE_LINE1 = 'Premium Hygiene & Care';
 const HEADLINE_LINE2 = 'Solutions for Every Industry';
@@ -79,25 +78,9 @@ export default function HeroSection() {
     <section
       id="home"
       aria-label="Hero"
-      className="relative overflow-hidden"
-      style={{
-        minHeight: 'calc(100vh - 4rem)',
-        background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 60%, #0F172A 100%)',
-      }}
+      className="relative overflow-hidden bg-ink"
+      style={{ minHeight: 'calc(100vh - 4rem)' }}
     >
-      {/* Subtle radial glow */}
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background:
-            'radial-gradient(ellipse 80% 60% at 70% 50%, rgba(30,64,175,0.12) 0%, transparent 70%)',
-        }}
-      />
-
-      {/* Aurora background effect */}
-      <AuroraBackground className="absolute inset-0" />
-
       {/* 2-column layout: text left (anchored to left), graph+placeholder right (larger) */}
       <div
         className="relative z-10 w-full flex flex-col md:flex-row items-center px-6 py-12 md:pl-28 md:pr-8 md:py-12"
@@ -113,14 +96,9 @@ export default function HeroSection() {
             initial={false}
             animate={badgeVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="inline-flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-full mb-8 border self-center md:self-start"
-            style={{
-              background: 'rgba(30,64,175,0.15)',
-              borderColor: 'rgba(30,64,175,0.3)',
-              color: '#93C5FD',
-            }}
+            className="inline-flex items-center gap-2 font-mono text-label uppercase px-4 py-2 mb-8 border border-brand-cyan/30 text-brand-cyan self-center md:self-start"
           >
-            <span className="w-1.5 h-1.5 rounded-full animate-pulse bg-brand-secondary" />
+            <span className="w-1.5 h-1.5 rounded-full animate-pulse bg-brand-cyan" />
             Trusted B2B Supplier · Gandhi Nagar, Hyderabad
           </motion.div>
 
@@ -129,11 +107,11 @@ export default function HeroSection() {
             className="font-black leading-[1.05] tracking-tight mb-2 font-display text-display-3"
             aria-label={`${HEADLINE_LINE1} ${HEADLINE_LINE2}`}
           >
-            <span className="block text-white">
+            <span className="block text-paper">
               {displayed}
               {showCursor && (
                 <span
-                  className="inline-block w-[3px] h-[0.85em] bg-brand-secondary ml-1 align-middle animate-pulse"
+                  className="inline-block w-[3px] h-[0.85em] bg-brand-cyan ml-1 align-middle animate-pulse"
                   aria-hidden="true"
                 />
               )}
@@ -149,19 +127,7 @@ export default function HeroSection() {
               transition={{ duration: 0.8, ease: [0.4, 0, 0.2, 1] }}
               style={{ overflow: 'hidden', display: 'block' }}
             >
-              <span
-                className="animate-gradient-shift"
-                style={{
-                  display: 'inline-block',
-                  background: 'linear-gradient(-45deg, #60A5FA, #818CF8, #38BDF8, #60A5FA)',
-                  backgroundSize: '400% 400%',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                }}
-              >
-                {HEADLINE_LINE2}
-              </span>
+              <span className="inline-block text-brand-cyan">{HEADLINE_LINE2}</span>
             </motion.span>
           </h1>
 
@@ -170,8 +136,7 @@ export default function HeroSection() {
             initial={false}
             animate={contentVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ duration: 0.5 }}
-            className="text-base leading-relaxed mb-8 mt-5 max-w-lg"
-            style={{ color: '#94A3B8' }}
+            className="text-base leading-relaxed mb-8 mt-5 max-w-lg text-grey-400"
           >
             {BRAND.MISSION}
           </motion.p>
@@ -189,11 +154,7 @@ export default function HeroSection() {
             >
               <Link
                 href={ROUTES.PRODUCTS}
-                className="group inline-flex items-center gap-2.5 rounded-full font-semibold text-base text-white transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 px-7 py-3.5 min-h-[48px]"
-                style={{
-                  background: 'linear-gradient(135deg, #1E40AF, #1D4ED8)',
-                  boxShadow: '0 4px 24px rgba(30,64,175,0.5)',
-                }}
+                className="group inline-flex items-center gap-2.5 font-mono text-label uppercase bg-paper text-ink hover:bg-paper/90 transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cyan focus-visible:ring-offset-2 focus-visible:ring-offset-ink px-7 py-3.5 min-h-[48px]"
               >
                 Explore Products
                 <ArrowRight
@@ -210,13 +171,7 @@ export default function HeroSection() {
             >
               <Link
                 href={ROUTES.CONTACT}
-                className="inline-flex items-center gap-2 rounded-full font-semibold text-base transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 px-7 py-3.5 min-h-[48px]"
-                style={{
-                  border: '2px solid rgba(255,255,255,0.2)',
-                  color: '#E2E8F0',
-                  background: 'rgba(255,255,255,0.05)',
-                  backdropFilter: 'blur(8px)',
-                }}
+                className="inline-flex items-center gap-2 font-mono text-label uppercase border border-paper/30 text-paper hover:bg-paper/10 transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cyan focus-visible:ring-offset-2 focus-visible:ring-offset-ink px-7 py-3.5 min-h-[48px]"
               >
                 Get a Quote
               </Link>
@@ -228,13 +183,8 @@ export default function HeroSection() {
             initial={false}
             animate={contentVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="inline-flex items-center rounded-2xl self-center md:self-start"
-            style={{
-              background: 'rgba(255,255,255,0.05)',
-              backdropFilter: 'blur(12px)',
-              border: '1px solid rgba(255,255,255,0.08)',
-              padding: '16px 32px',
-            }}
+            className="inline-flex items-center self-center md:self-start border border-paper/15"
+            style={{ padding: '16px 32px' }}
           >
             {[
               { value: '51+', label: 'Products' },
@@ -243,17 +193,10 @@ export default function HeroSection() {
             ].map(({ value, label }, i) => (
               <div key={label} className="flex items-center">
                 <div className="text-center px-6">
-                  <div className="text-xl font-black text-white">{value}</div>
-                  <div className="text-[11px] font-medium mt-0.5" style={{ color: '#64748B' }}>
-                    {label}
-                  </div>
+                  <div className="text-xl font-black text-paper">{value}</div>
+                  <div className="text-[11px] font-medium mt-0.5 text-grey-400">{label}</div>
                 </div>
-                {i < 2 && (
-                  <div
-                    className="w-px h-7 shrink-0"
-                    style={{ background: 'rgba(255,255,255,0.1)' }}
-                  />
-                )}
+                {i < 2 && <div className="w-px h-7 shrink-0 bg-paper/10" />}
               </div>
             ))}
           </motion.div>
@@ -313,7 +256,7 @@ export default function HeroSection() {
                   fontFamily="Inter, sans-serif"
                   fontWeight="500"
                   letterSpacing="2"
-                  fill="rgba(56,189,248,0.7)"
+                  fill="rgba(8,184,248,0.7)"
                 >
                   <textPath href="#orbitPath" startOffset="0%">
                     YOUR TRUSTED PARTNER IN PROGRESS AND CARE ·
@@ -333,14 +276,6 @@ export default function HeroSection() {
                 transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
                 className="relative w-full h-full"
               >
-                <div
-                  className="absolute inset-0 rounded-full"
-                  style={{
-                    background: 'radial-gradient(circle, rgba(30,64,175,0.35) 0%, transparent 70%)',
-                    filter: 'blur(14px)',
-                    transform: 'scale(1.8)',
-                  }}
-                />
                 <div className="absolute inset-0 flex items-center justify-center">
                   <Image
                     src="/navodaya-logo.png"
@@ -352,7 +287,6 @@ export default function HeroSection() {
                       width: '72px',
                       height: '72px',
                       objectFit: 'contain',
-                      filter: 'drop-shadow(0 0 12px rgba(30,64,175,0.6))',
                     }}
                   />
                 </div>
@@ -382,8 +316,7 @@ export default function HeroSection() {
       <a
         href="#about"
         aria-label="Scroll to About section"
-        className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 transition-colors focus-visible:outline-none focus-visible:ring-2 rounded"
-        style={{ color: '#475569' }}
+        className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-grey-400 transition-colors focus-visible:outline-none focus-visible:ring-2 rounded"
       >
         <span className="text-xs font-medium tracking-widest uppercase">Scroll</span>
         <ChevronDown className="w-4 h-4 animate-bounce" aria-hidden="true" />
