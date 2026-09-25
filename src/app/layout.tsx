@@ -26,6 +26,26 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: BRAND.FULL_NAME }],
   metadataBase: new URL(SITE_URL),
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+      'max-video-preview': -1,
+    },
+  },
+  alternates: { canonical: '/' },
+  // Only assets that actually exist: `src/app/favicon.ico` is served at
+  // /favicon.ico by the file convention, and `public/navodaya-logo.png` is the
+  // repo's only PNG icon.
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/navodaya-logo.png',
+  },
   openGraph: {
     title: BRAND.FULL_NAME,
     description: BRAND.TAGLINE,
