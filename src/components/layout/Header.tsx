@@ -40,6 +40,26 @@ export function Header() {
 
   const closeMobile = useCallback(() => setMobileOpen(false), []);
 
+  // Tapping a menu link closes the menu AND starts a route transition in the same click. The
+  // scroll-lock cleanup below re-applies the offset captured on open — correct for Escape and
+  // for the toggle button, wrong here: when the destination is prefetched or static, the restore
+  // commits after the router's own scroll reset and wins, dropping the visitor onto the new route
+  // at the previous page's offset (from `/products` at y=900, `/` opened at 900 with the hero,
+  // headline and primary CTA all above the fold). This ref tells the cleanup the close is a
+  // navigation, so the page is left wherever the router puts it — which is also what the
+  // same-page anchors (`/#about`, `/#contact`) need, their scroll being the router's to perform.
+  //
+  // It cannot stick `true`: the cleanup clears it after reading, and the effect clears it again
+  // on every open, before the next close can consume a stale value. That second clear is what
+  // covers the one path where setting it runs no cleanup at all — a tap on a link that is still
+  // mounted for its exit animation, when `mobileOpen` is already `false` and the state write is
+  // a no-op.
+  const navigatingRef = useRef(false);
+  const closeViaLink = useCallback(() => {
+    navigatingRef.current = true;
+    setMobileOpen(false);
+  }, []);
+
   useFocusTrap('mobile-nav', mobileOpen, closeMobile, toggleButtonRef);
 
   // Lock page scroll while the mobile nav is open. Keyed on `mobileOpen` alone so the
@@ -58,7 +78,8 @@ export function Header() {
   // Taking the body out of flow removes the document's scrollable overflow altogether, which
   // is the only form that holds on iOS. `overflow: hidden` stays on the body as well so the
   // locked state is still legible from a computed style. The offset is captured before the
-  // body is pinned and re-applied on release, so closing the menu does not jump to the top;
+  // body is pinned and re-applied on release — except when the close is a navigation, see
+  // `navigatingRef` above — so closing the menu does not jump to the top;
   // `behavior: 'instant'` overrides the `scroll-behavior: smooth` at globals.css:23, which
   // would otherwise glide the page back over several hundred milliseconds.
   useEffect(() => {
@@ -72,6 +93,7 @@ export function Header() {
       right: body.style.right,
       overflow: body.style.overflow,
     };
+    navigatingRef.current = false;
     scrollLockedRef.current = true;
     body.style.position = 'fixed';
     body.style.top = `-${offset}px`;
@@ -84,7 +106,10 @@ export function Header() {
       body.style.left = previous.left;
       body.style.right = previous.right;
       body.style.overflow = previous.overflow;
-      window.scrollTo({ top: offset, left: 0, behavior: 'instant' });
+      // Skipped when a link caused the close: restoring there would fight the router. See
+      // `navigatingRef` above.
+      if (!navigatingRef.current) window.scrollTo({ top: offset, left: 0, behavior: 'instant' });
+      navigatingRef.current = false;
       scrollLockedRef.current = false;
     };
   }, [mobileOpen]);
@@ -197,7 +222,7 @@ export function Header() {
                     >
                       <Link
                         href={href}
-                        onClick={closeMobile}
+                        onClick={closeViaLink}
                         aria-current={isActive ? 'page' : undefined}
                         className={cn(
                           'block px-2 py-3 text-body-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue',
@@ -223,7 +248,7 @@ export function Header() {
                 >
                   <Link
                     href={ROUTES.CONTACT}
-                    onClick={closeMobile}
+                    onClick={closeViaLink}
                     className="flex w-full items-center justify-center min-h-[48px] px-4 font-mono text-label uppercase bg-ink text-white hover:bg-ink/90 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2"
                   >
                     Get a Quote

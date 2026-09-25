@@ -275,6 +275,8 @@ describe('Header', () => {
   });
 
   it('releases the scroll lock when Escape closes the menu', () => {
+    const scrollTo = vi.mocked(window.scrollTo);
+    Object.defineProperty(window, 'scrollY', { value: 320, writable: true });
     render(<Header />);
     fireEvent.click(screen.getByLabelText('Open menu'));
     expect(document.body.style.position).toBe('fixed');
@@ -283,9 +285,14 @@ describe('Header', () => {
 
     expect(document.body.style.position).toBe('');
     expect(document.body.style.overflow).toBe('');
+    // Escape is not a navigation, so the captured offset must still be re-applied — the link
+    // path below skips this, and nothing else stops that skip leaking onto every close path.
+    expect(scrollTo).toHaveBeenCalledWith({ top: 320, left: 0, behavior: 'instant' });
   });
 
   it('releases the scroll lock when a nav link closes the menu', () => {
+    const scrollTo = vi.mocked(window.scrollTo);
+    Object.defineProperty(window, 'scrollY', { value: 900, writable: true });
     render(<Header />);
     fireEvent.click(screen.getByLabelText('Open menu'));
     expect(document.body.style.position).toBe('fixed');
@@ -295,9 +302,51 @@ describe('Header', () => {
 
     expect(document.body.style.position).toBe('');
     expect(document.body.style.overflow).toBe('');
+    // A link tap closes the menu AND starts a route transition in the same click. Re-applying
+    // the captured offset here races the router's scroll reset and wins on a prefetched or
+    // static destination, landing the visitor on the NEW route at the old page's offset.
+    expect(scrollTo).not.toHaveBeenCalled();
+  });
+
+  it('skips the scroll restore when the mobile CTA closes the menu', () => {
+    const scrollTo = vi.mocked(window.scrollTo);
+    Object.defineProperty(window, 'scrollY', { value: 900, writable: true });
+    render(<Header />);
+    fireEvent.click(screen.getByLabelText('Open menu'));
+
+    // The "Get a Quote" CTA is a link like any other — it navigates to `/#contact`, so the
+    // anchor scroll must be the only thing that moves the page.
+    const mobileNav = screen.getByLabelText('Mobile navigation');
+    const links = mobileNav.querySelectorAll('a');
+    fireEvent.click(links[links.length - 1]);
+
+    expect(document.body.style.position).toBe('');
+    expect(scrollTo).not.toHaveBeenCalled();
+  });
+
+  it('does not let the navigation flag stick across a later Escape close', () => {
+    const scrollTo = vi.mocked(window.scrollTo);
+    Object.defineProperty(window, 'scrollY', { value: 900, writable: true });
+    render(<Header />);
+
+    // Open, close via a link (flag set and consumed) …
+    fireEvent.click(screen.getByLabelText('Open menu'));
+    fireEvent.click(screen.getByLabelText('Mobile navigation').querySelectorAll('a')[0]);
+    expect(scrollTo).not.toHaveBeenCalled();
+
+    // … then open again at a different offset and close with Escape. A flag left `true` would
+    // silently disable the restore for every close from here on.
+    Object.defineProperty(window, 'scrollY', { value: 450, writable: true });
+    fireEvent.click(screen.getByLabelText('Open menu'));
+    fireEvent.keyDown(document, { key: 'Escape' });
+
+    expect(scrollTo).toHaveBeenCalledTimes(1);
+    expect(scrollTo).toHaveBeenCalledWith({ top: 450, left: 0, behavior: 'instant' });
   });
 
   it('releases the body scroll lock on unmount while the mobile menu is open', () => {
+    const scrollTo = vi.mocked(window.scrollTo);
+    Object.defineProperty(window, 'scrollY', { value: 250, writable: true });
     const { unmount } = render(<Header />);
     fireEvent.click(screen.getByLabelText('Open menu'));
     expect(document.body.style.overflow).toBe('hidden');
@@ -306,6 +355,8 @@ describe('Header', () => {
 
     expect(document.body.style.overflow).toBe('');
     expect(document.body.style.position).toBe('');
+    // Not a navigation either — an unmount with the lock engaged must hand the offset back.
+    expect(scrollTo).toHaveBeenCalledWith({ top: 250, left: 0, behavior: 'instant' });
   });
 
   it('ignores the scroll clamp the lock itself causes, keeping the header compact', () => {

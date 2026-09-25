@@ -191,7 +191,11 @@ test.describe('Mobile navigation', () => {
 
   test('body scroll is locked while the menu is open and released on close', async ({ page }) => {
     const bodyOverflow = () => page.evaluate(() => getComputedStyle(document.body).overflow);
+    const scrollY = () => page.evaluate(() => Math.round(window.scrollY));
     expect(await bodyOverflow()).not.toBe('hidden');
+
+    await page.evaluate(() => window.scrollTo(0, 500));
+    await expect.poll(scrollY).toBe(500);
 
     await toggle(page).click();
     await expect(menu(page)).toBeVisible();
@@ -203,6 +207,9 @@ test.describe('Mobile navigation', () => {
     // The cleanup is keyed on `mobileOpen` alone (Header.tsx:42-49) so it runs on every close
     // path, including unmount — `overflow: hidden` must never be stranded on the body.
     await expect.poll(bodyOverflow).not.toBe('hidden');
+    // Pinning the body clamps the document to 0, so a close that is NOT a navigation has to
+    // hand the offset back. Only the link path skips this; Escape must keep restoring.
+    await expect.poll(scrollY).toBe(500);
   });
 
   /**
@@ -230,6 +237,16 @@ test.describe('Mobile navigation', () => {
   });
 
   test('a nav link closes the menu and navigates', async ({ page }) => {
+    // Deep on the page first, which is the whole point: the scroll lock captures the offset on
+    // open and re-applies it on close, and a link tap closes the menu AND starts a route
+    // transition in the same click. When the destination is prefetched or static the restore
+    // commits after the router's scroll reset and wins, so `/` opened at y=900 with the hero,
+    // headline and primary CTA all above the fold. Starting at 0 — as this test used to — is
+    // exactly why it passed with that defect present.
+    const scrollY = () => page.evaluate(() => Math.round(window.scrollY));
+    await page.evaluate(() => window.scrollTo(0, 900));
+    await expect.poll(scrollY).toBe(900);
+
     await toggle(page).click();
     const nav = menu(page);
     await expect(nav).toBeVisible();
@@ -239,6 +256,46 @@ test.describe('Mobile navigation', () => {
     await expect(page).toHaveURL('/');
     await expect(menu(page)).toBeHidden();
     await expect(toggle(page)).toHaveAttribute('aria-expanded', 'false');
+    await expect.poll(scrollY).toBeLessThan(50);
+  });
+
+  /**
+   * Two of the five menu links are same-page anchors (`ROUTES.ABOUT` = `/#about`,
+   * `ROUTES.CONTACT` = `/#contact`). Skipping the scroll restore must not leave them sitting
+   * where they were — the router's anchor scroll is the only thing that should move the page,
+   * and it has to still happen once the body is unpinned.
+   */
+  test('a same-page hash link still scrolls to its section', async ({ page }) => {
+    // The homepage, where `#about` exists. Setting the intro key after `goto` does nothing to
+    // the page already on screen, hence the reload — same shape as visual-regression.spec.ts.
+    await page.goto('/');
+    await page.evaluate(() => sessionStorage.setItem('nv_intro_seen', '1'));
+    await page.reload();
+    await page.waitForLoadState('networkidle');
+
+    const scrollY = () => page.evaluate(() => Math.round(window.scrollY));
+    await page.evaluate(() => window.scrollTo(0, 400));
+    await expect.poll(scrollY).toBe(400);
+
+    await toggle(page).click();
+    const nav = menu(page);
+    await expect(nav).toBeVisible();
+
+    await nav.getByRole('link', { name: 'About', exact: true }).click();
+
+    await expect(page).toHaveURL(/#about$/);
+    const aboutTop = () =>
+      page.evaluate(() => {
+        const el = document.getElementById('about');
+        return el ? Math.round(el.getBoundingClientRect().top) : Number.NaN;
+      });
+    // `scroll-behavior: smooth` (globals.css:23) means the anchor scroll glides, so settle first
+    // rather than reading a mid-flight box.
+    await expect.poll(aboutTop).toBeLessThan(120);
+    await waitForGeometryToSettle(page, '#about');
+    expect(await aboutTop()).toBeGreaterThan(-120);
+    // And it genuinely moved, rather than the 400px restore happening to look close enough.
+    expect(await scrollY()).toBeGreaterThan(400);
   });
 
   /**
