@@ -61,8 +61,9 @@ test.describe('Accessibility (WCAG 2.0/2.1 A + AA)', () => {
     test.setTimeout(60000);
     await page.goto('/');
     // `LoadingScreen` mounts only on this route (`src/app/page.tsx:20`) and still paints an
-    // opaque overlay for 800ms under reduced motion. It reads `nv_intro_seen` once, on mount,
-    // so setting the key without reloading is a no-op on the page already on screen.
+    // opaque overlay for 600ms under reduced motion (`REDUCED_DURATION`). It reads
+    // `nv_intro_seen` once, on mount, so setting the key without reloading is a no-op on the
+    // page already on screen.
     await page.evaluate(() => sessionStorage.setItem('nv_intro_seen', '1'));
     await page.reload();
     await page.waitForLoadState('networkidle');

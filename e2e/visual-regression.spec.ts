@@ -167,8 +167,8 @@ test.describe('Visual Regression - Desktop (1280px)', () => {
     // Set the intro key and RELOAD, exactly as the hero test above does. The old version
     // navigated straight to `/#about` and set the key afterwards without reloading, which
     // does nothing to the page already on screen — the opaque intro overlay stayed up for
-    // its full 4s while the test waited only 2s, so what got captured depended on machine
-    // speed.
+    // its full duration (4s at the time, ~1.4s since the seal rebuild) while the test waited
+    // only 2s, so what got captured depended on machine speed.
     await page.evaluate(() => sessionStorage.setItem('nv_intro_seen', 'true'));
     await page.reload();
     await page.waitForLoadState('networkidle');

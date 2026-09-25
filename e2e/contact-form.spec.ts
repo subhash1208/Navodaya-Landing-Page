@@ -54,15 +54,16 @@ test.describe('Contact Form', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/#contact');
     // Dismiss the intro deterministically. `LoadingScreen` (mounted at src/app/page.tsx:20)
-    // covers the page with a fixed/inset-0/z-9999 overlay for ~4s on a first visit and absorbs
+    // covers the page with a fixed/inset-0/z-9999 overlay for ~1.4s on a first visit and absorbs
     // clicks for its whole run. The key must be set AND the page reloaded — it is read once on
     // mount, so setting it against an intro already running does nothing. Same pattern as
     // e2e/navigation.spec.ts:44-45.
     //
     // Dismissing the intro *alone* previously made this class of flake worse on
     // navigation.spec.ts (2/5 -> 6/10 failing), because `useTypewriter`'s `enabled` gate holds
-    // typing until the intro ends and the 4s overlay had been acting as an accidental settling
-    // delay. The `reducedMotion` above is what makes removing it safe; the two go together.
+    // typing until the intro ends and the overlay — then 4s long, now ~1.4s — had been acting as
+    // an accidental settling delay. The `reducedMotion` above is what makes removing it safe; the
+    // two go together.
     await page.evaluate(() => sessionStorage.setItem('nv_intro_seen', '1'));
     await page.reload();
     await page.waitForSelector('#contact', { state: 'visible' });
