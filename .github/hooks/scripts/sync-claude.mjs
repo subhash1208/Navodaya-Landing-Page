@@ -1145,7 +1145,17 @@ function buildSettings() {
   // an ask floor, and the binary's log line for that path reads "ask rule/safety
   // check requires full permission pipeline (hookAskFloor -- a classifier allow
   // re-surfaces as this ask)". A classifier ALLOW cannot clear it.
-  for (const key of ['disableSkillShellExecution', 'fallbackModel']) {
+  //   includeCoAuthoredBy         verified against the INSTALLED BINARY, not the
+  //     CHANGELOG: `grep -a -c includeCoAuthoredBy claude.exe` returns 5. That is
+  //     the same proof the CHANGELOG line numbers above stand in for, taken one
+  //     step closer to the thing that actually loads the key. `false` suppresses
+  //     the `Co-Authored-By: Claude ...` commit trailer. It is set mechanically
+  //     rather than written into CONTRIBUTING.md as a rule because the trailer
+  //     came from an AGENT DEFAULT, and a default beats an instruction every time
+  //     an agent forgets one -- measured as 15 of 31 commits on feature/subhash
+  //     carrying it and 16 not. Owner decision, 2026-09-25; see the note in
+  //     permissions.json before removing it.
+  for (const key of ['disableSkillShellExecution', 'fallbackModel', 'includeCoAuthoredBy']) {
     if (perms[key] !== undefined) settings[key] = perms[key];
   }
 
