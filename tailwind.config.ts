@@ -86,10 +86,6 @@ export default {
         e5: '8px 16px 32px -12px rgb(10 11 13 / 0.12), 16px 32px 64px -8px rgb(10 11 13 / 0.08)',
       },
       keyframes: {
-        float: {
-          '0%, 100%': { transform: 'translateY(0px)' },
-          '50%': { transform: 'translateY(-12px)' },
-        },
         fadeUp: {
           from: { opacity: '0', transform: 'translateY(32px)' },
           to: { opacity: '1', transform: 'translateY(0)' },
@@ -98,18 +94,10 @@ export default {
           from: { opacity: '0' },
           to: { opacity: '1' },
         },
-        gradientSweep: {
-          '0%': { left: '-100%' },
-          '100%': { left: '200%' },
-        },
       },
       animation: {
-        float: 'float 6s ease-in-out infinite',
-        'float-slow': 'float 8s ease-in-out infinite',
-        'float-slower': 'float 9s ease-in-out infinite',
         'fade-up': 'fadeUp 0.6s ease forwards',
         'fade-in': 'fadeIn 0.5s ease forwards',
-        'gradient-sweep': 'gradientSweep 0.8s ease forwards',
       },
     },
   },

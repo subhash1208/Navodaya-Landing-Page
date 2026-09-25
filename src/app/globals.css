@@ -67,12 +67,6 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
-
-  /* Loading particle */
-  .loading-particle {
-    will-change: transform;
-    backface-visibility: hidden;
-  }
 }
 
 /* ─── Custom cursor ─────────────────────────────────────────────────────────── */
@@ -181,16 +175,6 @@
   .testimonial-row-2 {
     animation: none;
   }
-}
-
-/* ─── Slot machine (preloader) ──────────────────────────────────────────────── */
-@keyframes slotMachine {
-  0% {
-    transform: translateY(0);
-  }
-  100% {
-    transform: translateY(-120px);
-  } /* 6 items × 20px */
 }
 
 /* ─── Marquee strip ─────────────────────────────────────────────────────────── */
