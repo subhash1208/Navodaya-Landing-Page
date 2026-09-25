@@ -13,6 +13,9 @@ export const BRAND = {
   LOCATION: 'Gandhi Nagar, Hyderabad',
 } as const;
 
+// ─── Site ────────────────────────────────────────────────────────────────────
+export const SITE_URL = 'https://www.navodaya.group';
+
 // ─── Animation ───────────────────────────────────────────────────────────────
 export const ANIMATION = {
   DURATION: {

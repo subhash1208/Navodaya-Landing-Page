@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
 import './globals.css';
-import { BRAND } from '@/constants';
+import { BRAND, SITE_URL } from '@/constants';
 import { Header } from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { SkipNav } from '@/components/ui/SkipNav';
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     'care kits',
   ],
   authors: [{ name: BRAND.FULL_NAME }],
-  metadataBase: new URL('https://www.navodaya.group'),
+  metadataBase: new URL(SITE_URL),
   openGraph: {
     title: BRAND.FULL_NAME,
     description: BRAND.TAGLINE,

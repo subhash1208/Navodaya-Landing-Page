@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import RootLayout, { metadata } from '@/app/layout';
+import { SITE_URL } from '@/constants';
 
 vi.mock('geist/font/sans', () => ({
   GeistSans: { variable: '--font-geist-sans', className: 'font-geist-sans' },
@@ -108,5 +109,9 @@ describe('metadata', () => {
 
   it('has keywords', () => {
     expect(metadata.keywords).toBeTruthy();
+  });
+
+  it('derives metadataBase from the shared SITE_URL constant', () => {
+    expect(String(metadata.metadataBase)).toBe(new URL(SITE_URL).toString());
   });
 });
