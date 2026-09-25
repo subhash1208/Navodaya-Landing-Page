@@ -1,5 +1,15 @@
 import AxeBuilder from '@axe-core/playwright';
 import { test, expect, type Page } from '@playwright/test';
+import { PRODUCTS, PRODUCT_CATEGORIES } from '@/constants';
+
+/**
+ * One representative slug per category, derived from the real catalogue rather than
+ * hardcoded — so the scan tracks `PRODUCT_CATEGORIES`/`PRODUCTS` if either changes,
+ * instead of silently auditing the same single slug forever.
+ */
+const REPRESENTATIVE_SLUGS = PRODUCT_CATEGORIES.map(
+  (category) => PRODUCTS.find((product) => product.category.id === category.id)!.slug,
+);
 
 /**
  * Derived, not imported. `axe-core` is a transitive dependency of `@axe-core/playwright`, so
@@ -83,13 +93,15 @@ test.describe('Accessibility (WCAG 2.0/2.1 A + AA)', () => {
     await expectNoViolations(page);
   });
 
-  test('product detail page has no violations', async ({ page }) => {
-    await page.goto('/products/surgeon-cap');
-    await page.waitForLoadState('networkidle');
-    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+  for (const slug of REPRESENTATIVE_SLUGS) {
+    test(`product detail page (${slug}) has no violations`, async ({ page }) => {
+      await page.goto(`/products/${slug}`);
+      await page.waitForLoadState('networkidle');
+      await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
 
-    await expectNoViolations(page);
-  });
+      await expectNoViolations(page);
+    });
+  }
 
   test('not-found page has no violations', async ({ page }) => {
     // There is no `/404` route. `src/app/not-found.tsx` is the root not-found boundary, which

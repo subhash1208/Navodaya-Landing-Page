@@ -148,6 +148,17 @@ describe('Header', () => {
     expect(about.className).toContain('text-grey-600');
   });
 
+  it('gives desktop nav links an expanded touch target without overlapping neighbours', () => {
+    render(<Header />);
+    // Adjacent nav links sit `gap-1` (4px) apart, so the horizontal inset is half the
+    // vertical one — a full -4px each side would make neighbouring invisible hit areas
+    // overlap; -2px each side meets exactly at the middle of the gap instead.
+    const home = screen.getByText('Home');
+    expect(home.className).toContain('relative');
+    expect(home.className).toContain('before:inset-x-[-2px]');
+    expect(home.className).toContain('before:inset-y-[-4px]');
+  });
+
   it('renders the CTA as a filled-ink button, not a gradient', () => {
     render(<Header />);
     const cta = screen.getAllByText('Get a Quote')[0];
@@ -168,5 +179,71 @@ describe('Header', () => {
     // Menu should close (closeMobile callback called)
     // After closing, button should say "Open menu" again
     expect(screen.getByLabelText('Open menu')).toBeTruthy();
+  });
+
+  it('traps Tab focus inside the open mobile nav, wrapping from the last link to the first', () => {
+    render(<Header />);
+    fireEvent.click(screen.getByLabelText('Open menu'));
+
+    const mobileNav = screen.getByLabelText('Mobile navigation');
+    const links = Array.from(mobileNav.querySelectorAll<HTMLAnchorElement>('a'));
+    const first = links[0];
+    const last = links[links.length - 1];
+
+    last.focus();
+    expect(document.activeElement).toBe(last);
+
+    fireEvent.keyDown(document, { key: 'Tab' });
+
+    expect(document.activeElement).toBe(first);
+  });
+
+  it('traps Shift+Tab focus inside the open mobile nav, wrapping from the first link to the last', () => {
+    render(<Header />);
+    fireEvent.click(screen.getByLabelText('Open menu'));
+
+    const mobileNav = screen.getByLabelText('Mobile navigation');
+    const links = Array.from(mobileNav.querySelectorAll<HTMLAnchorElement>('a'));
+    const first = links[0];
+    const last = links[links.length - 1];
+
+    first.focus();
+
+    fireEvent.keyDown(document, { key: 'Tab', shiftKey: true });
+
+    expect(document.activeElement).toBe(last);
+  });
+
+  it('closes the mobile menu on Escape and returns focus to the toggle button', () => {
+    render(<Header />);
+    const toggle = screen.getByLabelText('Open menu');
+    fireEvent.click(toggle);
+    expect(screen.getByLabelText('Mobile navigation')).toBeTruthy();
+
+    fireEvent.keyDown(document, { key: 'Escape' });
+
+    expect(screen.queryByLabelText('Mobile navigation')).toBeNull();
+    expect(document.activeElement).toBe(toggle);
+  });
+
+  it('locks body scroll while the mobile menu is open and releases it on close', () => {
+    render(<Header />);
+    expect(document.body.style.overflow).toBe('');
+
+    fireEvent.click(screen.getByLabelText('Open menu'));
+    expect(document.body.style.overflow).toBe('hidden');
+
+    fireEvent.click(screen.getByLabelText('Close menu'));
+    expect(document.body.style.overflow).toBe('');
+  });
+
+  it('releases the body scroll lock on unmount while the mobile menu is open', () => {
+    const { unmount } = render(<Header />);
+    fireEvent.click(screen.getByLabelText('Open menu'));
+    expect(document.body.style.overflow).toBe('hidden');
+
+    unmount();
+
+    expect(document.body.style.overflow).toBe('');
   });
 });

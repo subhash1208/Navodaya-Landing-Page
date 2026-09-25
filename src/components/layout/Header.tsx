@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
@@ -8,11 +8,13 @@ import { Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { BRAND, NAV_LINKS, ROUTES } from '@/constants';
 import { cn } from '@/utils/cn';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 
 export function Header() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const toggleButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     let rafId: number;
@@ -31,6 +33,20 @@ export function Header() {
   }, []);
 
   const closeMobile = useCallback(() => setMobileOpen(false), []);
+
+  useFocusTrap('mobile-nav', mobileOpen, closeMobile, toggleButtonRef);
+
+  // Lock body scroll while the mobile nav is open. Keyed on `mobileOpen` alone so the
+  // cleanup runs on every close path (link click, Escape) AND on unmount — there is no
+  // way to strand `overflow: hidden` on the body.
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const original = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = original;
+    };
+  }, [mobileOpen]);
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-paper border-b border-grey-200">
@@ -73,7 +89,14 @@ export function Header() {
                 href={href}
                 aria-current={isActive ? 'page' : undefined}
                 className={cn(
-                  'px-3 py-2 text-body-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue',
+                  // `relative` + an absolutely-positioned invisible `::before` grows the
+                  // clickable/tappable area toward 44px tall without touching layout: the
+                  // pseudo-element is out of flow, so the visible text, padding and
+                  // surrounding spacing are pixel-identical to before. Horizontal inset is
+                  // half of vertical: adjacent links sit `gap-1` (4px) apart, and a full
+                  // -4px on each side would make neighbouring invisible hit areas overlap
+                  // by 4px — -2px each side exactly meets in the middle of the gap instead.
+                  "relative px-3 py-2 text-body-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue before:absolute before:inset-x-[-2px] before:inset-y-[-4px] before:content-['']",
                   isActive
                     ? 'text-ink underline decoration-ink decoration-1 underline-offset-8'
                     : 'text-grey-600 hover:text-brand-blue',
@@ -93,6 +116,7 @@ export function Header() {
 
         {/* Mobile hamburger */}
         <button
+          ref={toggleButtonRef}
           className="md:hidden p-2 text-ink hover:text-brand-blue transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink"
           onClick={() => setMobileOpen((v) => !v)}
           aria-label={mobileOpen ? 'Close menu' : 'Open menu'}

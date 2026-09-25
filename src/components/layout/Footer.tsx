@@ -19,7 +19,16 @@ export default function Footer() {
             <p className="text-grey-400 text-xs italic">&ldquo;{BRAND.TAGLINE}&rdquo;</p>
           </div>
 
-          {/* Quick links */}
+          {/*
+            Quick links
+            Every link below grows its tap target via `relative` + an invisible, out-of-flow
+            `::before` — the visible text, colour and spacing are untouched. The vertical inset
+            is capped at half the smallest stacked gap in this footer (`gap-2.5` = 10px, so
+            -5px each side) so that adjacent links' invisible hit areas meet at the midpoint of
+            the gap rather than overlapping into each other's click area. Horizontal inset can
+            stay generous (-14px) because the nearest neighbour in that direction is a whole
+            grid column away (`gap-10`/`gap-12`).
+          */}
           <div>
             <h3 className="text-[11px] font-semibold text-white uppercase tracking-[0.08em] mb-4">
               Quick Links
@@ -29,7 +38,7 @@ export default function Footer() {
                 <li key={href}>
                   <Link
                     href={href}
-                    className="text-grey-400 text-[13px] hover:text-paper transition-colors duration-150 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-cyan rounded"
+                    className="relative text-grey-400 text-[13px] hover:text-paper transition-colors duration-150 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-cyan rounded before:absolute before:inset-x-[-14px] before:inset-y-[-5px] before:content-['']"
                   >
                     {label}
                   </Link>
@@ -48,7 +57,7 @@ export default function Footer() {
                 <li key={cat.id}>
                   <Link
                     href={`${ROUTES.PRODUCTS}?category=${cat.slug}`}
-                    className="text-grey-400 text-[13px] hover:text-paper transition-colors duration-150 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-cyan rounded"
+                    className="relative text-grey-400 text-[13px] hover:text-paper transition-colors duration-150 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-cyan rounded before:absolute before:inset-x-[-14px] before:inset-y-[-5px] before:content-['']"
                   >
                     {cat.name}
                   </Link>
@@ -57,7 +66,7 @@ export default function Footer() {
               <li>
                 <Link
                   href={ROUTES.PRODUCTS}
-                  className="text-brand-cyan text-[13px] font-medium hover:text-paper transition-colors duration-150 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-cyan rounded"
+                  className="relative text-brand-cyan text-[13px] font-medium hover:text-paper transition-colors duration-150 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-cyan rounded before:absolute before:inset-x-[-14px] before:inset-y-[-5px] before:content-['']"
                 >
                   View All Products →
                 </Link>
@@ -74,7 +83,7 @@ export default function Footer() {
               <li>
                 <a
                   href={`mailto:${BRAND.EMAIL}`}
-                  className="flex items-start gap-2.5 text-grey-400 text-[13px] hover:text-paper transition-colors duration-150 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-cyan rounded"
+                  className="relative flex items-start gap-2.5 text-grey-400 text-[13px] hover:text-paper transition-colors duration-150 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-cyan rounded before:absolute before:inset-x-[-14px] before:inset-y-[-5px] before:content-['']"
                 >
                   <Mail className="w-3.5 h-3.5 mt-0.5 shrink-0" aria-hidden="true" />
                   {BRAND.EMAIL}
@@ -83,7 +92,7 @@ export default function Footer() {
               <li>
                 <a
                   href={`tel:${BRAND.PHONE.replace(/\s/g, '')}`}
-                  className="flex items-start gap-2.5 text-grey-400 text-[13px] hover:text-paper transition-colors duration-150 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-cyan rounded"
+                  className="relative flex items-start gap-2.5 text-grey-400 text-[13px] hover:text-paper transition-colors duration-150 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-cyan rounded before:absolute before:inset-x-[-14px] before:inset-y-[-5px] before:content-['']"
                 >
                   <Phone className="w-3.5 h-3.5 mt-0.5 shrink-0" aria-hidden="true" />
                   {BRAND.PHONE}
@@ -106,7 +115,7 @@ export default function Footer() {
             href={`https://${BRAND.WEBSITE}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs text-grey-400 hover:text-paper transition-colors duration-150 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-cyan rounded"
+            className="relative text-xs text-grey-400 hover:text-paper transition-colors duration-150 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-cyan rounded before:absolute before:inset-x-[-14px] before:inset-y-[-5px] before:content-['']"
           >
             {BRAND.WEBSITE}
           </a>

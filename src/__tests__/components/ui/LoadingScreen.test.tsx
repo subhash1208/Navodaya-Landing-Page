@@ -489,3 +489,92 @@ describe('LoadingScreen child stability', () => {
     }
   });
 });
+
+/**
+ * `inert` gates the children wrapper — never the overlay's own skip button, which lives
+ * in slot 0 and stays interactive throughout. jsdom does not implement `inert`'s focus
+ * containment, so these assertions target the rendered attribute directly, exactly as
+ * the SSR spec does for the server branch.
+ */
+describe('LoadingScreen inert gating', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    sessionStorage.clear();
+    vi.mocked(window.matchMedia).mockImplementation((query: string) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    }));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('marks the content wrapper inert while the intro overlay is up', () => {
+    render(
+      <LoadingScreen>
+        <div data-testid="main-content">Main</div>
+      </LoadingScreen>,
+    );
+
+    act(() => {
+      vi.advanceTimersByTime(100);
+    });
+
+    const gate = screen.getByTestId('intro-content-gate');
+    expect(gate.hasAttribute('inert')).toBe(true);
+  });
+
+  it('removes inert from the content wrapper once the intro finishes', () => {
+    render(
+      <LoadingScreen>
+        <div data-testid="main-content">Main</div>
+      </LoadingScreen>,
+    );
+
+    act(() => {
+      vi.advanceTimersByTime(1500);
+    });
+
+    const gate = screen.getByTestId('intro-content-gate');
+    expect(gate.hasAttribute('inert')).toBe(false);
+  });
+
+  it('never marks the content wrapper inert for a returning visitor (show starts false, not null)', () => {
+    sessionStorage.setItem('nv_intro_seen', '1');
+
+    render(
+      <LoadingScreen>
+        <div data-testid="main-content">Main</div>
+      </LoadingScreen>,
+    );
+
+    const gate = screen.getByTestId('intro-content-gate');
+    expect(gate.hasAttribute('inert')).toBe(false);
+  });
+
+  it('keeps the skip button reachable while the content wrapper is inert', () => {
+    render(
+      <LoadingScreen>
+        <div data-testid="main-content">Main</div>
+      </LoadingScreen>,
+    );
+
+    act(() => {
+      vi.advanceTimersByTime(100);
+    });
+
+    // The skip button lives in slot 0 (the overlay), not inside the inert children
+    // wrapper in slot 1 — inerting the content must never make it unreachable.
+    const skip = screen.getByRole('button', { name: /skip intro/i });
+    expect(skip.closest('[data-testid="intro-content-gate"]')).toBeNull();
+    expect(skip.hasAttribute('inert')).toBe(false);
+    expect(skip.closest('[inert]')).toBeNull();
+  });
+});

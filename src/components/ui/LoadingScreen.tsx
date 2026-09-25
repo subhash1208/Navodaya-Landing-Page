@@ -212,7 +212,17 @@ export function LoadingScreen({ children }: LoadingScreenProps) {
         </div>
       ) : null}
       <IntroFinishedContext.Provider value={show === false}>
-        {children}
+        {/*
+          `inert` must be `show === true` ONLY, never a looser check like `show !== false`.
+          `show` is `null` during SSR and pre-hydration — the state a no-JS visitor is
+          permanently stuck in. Inerting on `null` would ship a homepage that no crawler
+          and no no-JS visitor could ever interact with. `display: contents` keeps this
+          wrapper invisible to layout — it adds a DOM node to carry `inert` without
+          affecting any CSS selector or box in the tree beneath it.
+        */}
+        <div inert={show === true} className="contents" data-testid="intro-content-gate">
+          {children}
+        </div>
       </IntroFinishedContext.Provider>
     </>
   );

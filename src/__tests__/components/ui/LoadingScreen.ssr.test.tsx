@@ -51,4 +51,20 @@ describe('LoadingScreen server rendering', () => {
     expect(html).not.toContain('transform:');
     expect(html).toContain('href="https://example.com/catalogue"');
   });
+
+  it('never ships `inert` in the server-rendered markup', () => {
+    // `show` is `null` during SSR — the state a no-JS visitor is permanently stuck in.
+    // Applying `inert` on anything looser than a strict `show === true` check would ship
+    // a homepage that no crawler and no no-JS visitor could ever interact with. This is
+    // the one assertion that can only be made against the true server branch: jsdom runs
+    // effects before any assertion, so `show` is never observably `null` there.
+    const html = renderToStaticMarkup(
+      <LoadingScreen>
+        <h1>Real content</h1>
+        <a href="https://example.com/catalogue">Products</a>
+      </LoadingScreen>,
+    );
+
+    expect(html).not.toContain('inert');
+  });
 });
