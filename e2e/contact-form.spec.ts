@@ -88,7 +88,12 @@ test.describe('Contact Form', () => {
     // waited a flat 500ms, so it passed whether or not the banner ever rendered.
     await page.locator('button[type="submit"]').click();
 
-    const banner = page.getByRole('alert');
+    // Scoped to the form on purpose. Next injects `<div role="alert" aria-live="assertive"
+    // id="__next-route-announcer__">` into every page, so a bare `page.getByRole('alert')`
+    // resolves to two elements and throws a strict-mode violation before any assertion runs.
+    // Scoping also disambiguates the error banner (ContactSection.tsx:271, inside the <form>
+    // opened at :266) from the success panel's own role="alert" at :250, which sits outside it.
+    const banner = page.locator('form').getByRole('alert');
     await expect(banner).toBeVisible();
     await expect(banner).toContainText('Product name is required.');
     await expect(page).toHaveURL(/\/#contact/);

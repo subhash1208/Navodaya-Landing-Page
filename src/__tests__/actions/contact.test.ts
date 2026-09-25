@@ -42,6 +42,9 @@ describe('submitContactForm', () => {
     // Default: no API key (dev mode)
     process.env.RESEND_API_KEY = '';
     delete process.env.RESEND_FROM;
+    // Absent everywhere except a Vercel deployment; deleted here so a stray value in the ambient
+    // environment cannot flip the sentinel carve-out under some other test.
+    delete process.env.VERCEL_ENV;
     clock += 60 * 60 * 1000;
     vi.spyOn(Date, 'now').mockImplementation(() => clock);
   });
@@ -250,6 +253,41 @@ describe('submitContactForm', () => {
       expect(result.error).toBeUndefined();
       expect(mockSend).not.toHaveBeenCalled();
       log.mockRestore();
+    });
+
+    it('keeps the sentinel mock path when VERCEL_ENV is undefined', async () => {
+      // Locally and in CI there is no VERCEL_ENV at all, which is what keeps gate 7 green even
+      // though `next start` runs with NODE_ENV=production.
+      vi.stubEnv('NODE_ENV', 'production');
+      vi.stubEnv('VERCEL_ENV', undefined);
+      process.env.RESEND_API_KEY = SENTINEL;
+      const log = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+      const result = await submitContactForm(validFormData);
+
+      expect(result.success).toBe(true);
+      expect(result.error).toBeUndefined();
+      expect(mockSend).not.toHaveBeenCalled();
+      log.mockRestore();
+    });
+
+    it('never fakes success when the sentinel is pasted into a Vercel production deploy', async () => {
+      // Someone copying the sample .env into Vercel would otherwise re-acquire the exact
+      // silent-discard bug the missing-key branch below was written to fix.
+      vi.stubEnv('NODE_ENV', 'production');
+      vi.stubEnv('VERCEL_ENV', 'production');
+      process.env.RESEND_API_KEY = SENTINEL;
+      const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+      const result = await submitContactForm(validFormData);
+
+      expect(result.success).toBe(false);
+      expect(mockSend).not.toHaveBeenCalled();
+      expect(result.error).toContain(BRAND.EMAIL);
+      expect(result.error).toContain(BRAND.PHONE);
+      expect(consoleError.mock.calls[0][0]).toContain('[contact] FATAL:');
+      expect(consoleError.mock.calls[0][1]).toEqual(validFormData);
+      consoleError.mockRestore();
     });
 
     it('takes the mock path for an absent key outside production', async () => {
