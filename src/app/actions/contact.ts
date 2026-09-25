@@ -23,11 +23,11 @@ export interface ContactSubmission extends ContactFormData {
 }
 
 /**
- * Explicit developer marker for "there is no key here on purpose". Checked in preference to
- * `NODE_ENV` because Playwright's `webServer` runs `next build && next start`, so gate 7 submits
- * this form for real with `NODE_ENV === 'production'` — gating the mock path on the environment
- * alone would make the e2e happy path return an error. Nobody sets this string in real production,
- * and if anybody does, `VERCEL_ENV` is what catches it (see `submitContactForm`).
+ * Explicit developer marker for "there is no key here on purpose". It is not sufficient on its
+ * own: the sentinel only buys the mock path in an environment we can positively identify as
+ * non-deployed (see `isNonDeployed` in `submitContactForm`). Anywhere else it is treated as the
+ * misconfiguration it is, so a copy of the sample `.env` pasted into a real deployment refuses
+ * loudly instead of discarding every lead behind a thank-you panel.
  */
 const SENTINEL_API_KEY = 'your_resend_api_key_here';
 
@@ -181,14 +181,19 @@ export async function submitContactForm(data: ContactSubmission): Promise<Contac
   const apiKey = process.env.RESEND_API_KEY;
   const isSentinel = apiKey === SENTINEL_API_KEY;
 
-  // The sentinel is an explicit "no key on purpose" marker, so it takes the mock path in any
-  // environment where a mock path can possibly be the right answer — which is everywhere except a
-  // real production deployment. Locally and in CI `VERCEL_ENV` is undefined, so the carve-out
-  // still applies and Playwright's `next start` (which runs with `NODE_ENV === 'production'`)
-  // keeps returning a mock success, leaving gate 7 green. On a Vercel production deployment
-  // `VERCEL_ENV === 'production'`, so a sentinel pasted into the dashboard is treated as the
-  // misconfiguration it is instead of silently discarding every lead behind a thank-you panel.
-  if (isSentinel && process.env.VERCEL_ENV !== 'production') {
+  // Fail closed. The mock path applies only where we can positively prove this is NOT a deployed
+  // environment — never merely because a platform signal is missing:
+  //   - local dev and unit tests: NODE_ENV is 'development' or 'test'.
+  //   - Playwright gate 7: runs `next build && next start`, so NODE_ENV === 'production'.
+  //     playwright.config.ts therefore sets E2E=1 in `webServer.env` to opt in explicitly.
+  // The previous shape keyed on `VERCEL_ENV !== 'production'`, which was fail-OPEN twice over:
+  // `VERCEL_ENV` is only populated when a Vercel project has "Enable access to System Environment
+  // Variables" ticked, so an unticked box silently restored the fake-success bug in production —
+  // and a `preview` deployment carrying the sentinel discarded real enquiries the same way.
+  // Anything else holding the sentinel is a misconfiguration and must say so.
+  const isNonDeployed = process.env.NODE_ENV !== 'production' || process.env.E2E === '1';
+
+  if (isSentinel && isNonDeployed) {
     console.log('[contact] RESEND_API_KEY is the sentinel placeholder. Form data:', data);
     return { success: true };
   }

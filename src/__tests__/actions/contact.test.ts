@@ -42,9 +42,9 @@ describe('submitContactForm', () => {
     // Default: no API key (dev mode)
     process.env.RESEND_API_KEY = '';
     delete process.env.RESEND_FROM;
-    // Absent everywhere except a Vercel deployment; deleted here so a stray value in the ambient
-    // environment cannot flip the sentinel carve-out under some other test.
-    delete process.env.VERCEL_ENV;
+    // Set only by playwright.config.ts's `webServer.env`; deleted here so a stray value in the
+    // ambient environment cannot flip the non-deployed carve-out under some other test.
+    delete process.env.E2E;
     clock += 60 * 60 * 1000;
     vi.spyOn(Date, 'now').mockImplementation(() => clock);
   });
@@ -235,15 +235,19 @@ describe('submitContactForm', () => {
   });
 
   /**
-   * The four rows of the key/environment discriminator. The dangerous row is the last one: before
-   * this, an unset key in production returned `{ success: true }` and the visitor was shown a
-   * thank-you panel while the lead was discarded with only an ephemeral `console.error`.
+   * The key/environment discriminator, which is deliberately FAIL-CLOSED: the sentinel buys the
+   * mock path only where the environment positively proves it is not a deployment. The dangerous
+   * rows are the refusals — before this, an unset or placeholder key in production returned
+   * `{ success: true }` and the visitor was shown a thank-you panel while the lead was discarded
+   * with only an ephemeral `console.error`.
    */
   describe('RESEND_API_KEY discriminator', () => {
-    it('takes the mock path for the sentinel key, even in production', async () => {
+    it('takes the mock path for the sentinel when E2E=1 marks a non-deployed run', async () => {
       // Playwright's webServer runs `next build && next start`, so gate 7 submits this form with
-      // NODE_ENV=production and the sentinel present. That combination must not error.
+      // NODE_ENV=production and the sentinel present. playwright.config.ts sets E2E=1 in
+      // `webServer.env` to opt that run into the mock path explicitly.
       vi.stubEnv('NODE_ENV', 'production');
+      vi.stubEnv('E2E', '1');
       process.env.RESEND_API_KEY = SENTINEL;
       const log = vi.spyOn(console, 'log').mockImplementation(() => {});
 
@@ -255,27 +259,28 @@ describe('submitContactForm', () => {
       log.mockRestore();
     });
 
-    it('keeps the sentinel mock path when VERCEL_ENV is undefined', async () => {
-      // Locally and in CI there is no VERCEL_ENV at all, which is what keeps gate 7 green even
-      // though `next start` runs with NODE_ENV=production.
+    it('takes the mock path for the sentinel outside production', async () => {
+      vi.stubEnv('NODE_ENV', 'development');
+      vi.stubEnv('E2E', undefined);
+      process.env.RESEND_API_KEY = SENTINEL;
+      const log = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+      const result = await submitContactForm(validFormData);
+
+      expect(result.success).toBe(true);
+      expect(result.error).toBeUndefined();
+      expect(mockSend).not.toHaveBeenCalled();
+      log.mockRestore();
+    });
+
+    it('never fakes success for the sentinel in production without the E2E marker', async () => {
+      // The load-bearing row. The previous guard read `VERCEL_ENV !== 'production'`, so a Vercel
+      // project with "Enable access to System Environment Variables" unticked — leaving
+      // VERCEL_ENV undefined in a real production deploy — silently took the mock path and
+      // discarded every enquiry behind a thank-you panel.
       vi.stubEnv('NODE_ENV', 'production');
+      vi.stubEnv('E2E', undefined);
       vi.stubEnv('VERCEL_ENV', undefined);
-      process.env.RESEND_API_KEY = SENTINEL;
-      const log = vi.spyOn(console, 'log').mockImplementation(() => {});
-
-      const result = await submitContactForm(validFormData);
-
-      expect(result.success).toBe(true);
-      expect(result.error).toBeUndefined();
-      expect(mockSend).not.toHaveBeenCalled();
-      log.mockRestore();
-    });
-
-    it('never fakes success when the sentinel is pasted into a Vercel production deploy', async () => {
-      // Someone copying the sample .env into Vercel would otherwise re-acquire the exact
-      // silent-discard bug the missing-key branch below was written to fix.
-      vi.stubEnv('NODE_ENV', 'production');
-      vi.stubEnv('VERCEL_ENV', 'production');
       process.env.RESEND_API_KEY = SENTINEL;
       const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
 
@@ -287,6 +292,40 @@ describe('submitContactForm', () => {
       expect(result.error).toContain(BRAND.PHONE);
       expect(consoleError.mock.calls[0][0]).toContain('[contact] FATAL:');
       expect(consoleError.mock.calls[0][1]).toEqual(validFormData);
+      consoleError.mockRestore();
+    });
+
+    it('never fakes success for the sentinel on a preview deployment', async () => {
+      // `VERCEL_ENV === 'preview'` also satisfied the old `!== 'production'` carve-out, so a
+      // preview deploy carrying the sentinel showed a visitor a thank-you panel and binned the
+      // enquiry. VERCEL_ENV is no longer consulted at all; this row proves it cannot come back.
+      vi.stubEnv('NODE_ENV', 'production');
+      vi.stubEnv('E2E', undefined);
+      vi.stubEnv('VERCEL_ENV', 'preview');
+      process.env.RESEND_API_KEY = SENTINEL;
+      const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+      const result = await submitContactForm(validFormData);
+
+      expect(result.success).toBe(false);
+      expect(mockSend).not.toHaveBeenCalled();
+      expect(result.error).toContain(BRAND.EMAIL);
+      expect(consoleError.mock.calls[0][0]).toContain('[contact] FATAL:');
+      consoleError.mockRestore();
+    });
+
+    it('requires E2E to be exactly "1", not merely truthy', async () => {
+      // '0' is a truthy string in JavaScript, so a bare `process.env.E2E` test would hand the
+      // mock path to a deployment that had switched the marker off.
+      vi.stubEnv('NODE_ENV', 'production');
+      vi.stubEnv('E2E', '0');
+      process.env.RESEND_API_KEY = SENTINEL;
+      const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+      const result = await submitContactForm(validFormData);
+
+      expect(result.success).toBe(false);
+      expect(mockSend).not.toHaveBeenCalled();
       consoleError.mockRestore();
     });
 
