@@ -216,11 +216,21 @@ export function LoadingScreen({ children }: LoadingScreenProps) {
           `inert` must be `show === true` ONLY, never a looser check like `show !== false`.
           `show` is `null` during SSR and pre-hydration — the state a no-JS visitor is
           permanently stuck in. Inerting on `null` would ship a homepage that no crawler
-          and no no-JS visitor could ever interact with. `display: contents` keeps this
-          wrapper invisible to layout — it adds a DOM node to carry `inert` without
-          affecting any CSS selector or box in the tree beneath it.
+          and no no-JS visitor could ever interact with.
+
+          This wrapper carries NO `display: contents`, and that is load-bearing rather than
+          an oversight. It is the only element child of `<main>` on the homepage, which makes
+          it the node the App Router measures when it decides where to scroll after a client
+          navigation. `display: contents` generates no box, so `getBoundingClientRect()`
+          returns all zeros; Next reads that as "hidden" in `shouldSkipElement`
+          (`node_modules/next/dist/client/components/layout-router.js:67-83`), walks to
+          `nextElementSibling`, finds `null`, and returns having scrolled nothing at all
+          (`:188-190`). The visitor kept the previous route's offset — arriving at `/` from
+          the bottom of `/products` landed them in the homepage footer. A plain block box is
+          layout-identical here (`<main>` is a block, every section below is a block with
+          padding and no margins) and gives Next something real to measure.
         */}
-        <div inert={show === true} className="contents" data-testid="intro-content-gate">
+        <div inert={show === true} data-testid="intro-content-gate">
           {children}
         </div>
       </IntroFinishedContext.Provider>

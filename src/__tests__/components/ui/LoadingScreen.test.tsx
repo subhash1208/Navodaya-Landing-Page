@@ -577,4 +577,29 @@ describe('LoadingScreen inert gating', () => {
     expect(skip.hasAttribute('inert')).toBe(false);
     expect(skip.closest('[inert]')).toBeNull();
   });
+
+  it('gives the content wrapper a real box — never `display: contents`', () => {
+    sessionStorage.setItem('nv_intro_seen', '1');
+
+    render(
+      <LoadingScreen>
+        <div data-testid="main-content">Main</div>
+      </LoadingScreen>,
+    );
+
+    // This asserts on a class name, which is normally an implementation detail. Here the
+    // class IS the behaviour: `contents` removes the element's box entirely, and this
+    // element is the only element child of `<main>` on the homepage — the node Next's App
+    // Router measures to decide where to scroll after a client navigation. A box-less
+    // element returns an all-zero `getBoundingClientRect()`, which `shouldSkipElement`
+    // (node_modules/next/dist/client/components/layout-router.js:67-83) reads as "hidden";
+    // the walk then hits `nextElementSibling === null` and scrolls nothing at all, leaving
+    // the visitor at the offset they had on the page they came from.
+    //
+    // jsdom computes no layout, so the box cannot be measured here — e2e/scroll-restoration
+    // .spec.ts is what asserts the real behaviour in a real engine. This is the cheap guard
+    // that fails in milliseconds if the class is ever reintroduced.
+    const gate = screen.getByTestId('intro-content-gate');
+    expect(gate.classList.contains('contents')).toBe(false);
+  });
 });
