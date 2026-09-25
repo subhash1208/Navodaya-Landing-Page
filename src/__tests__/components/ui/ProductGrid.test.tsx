@@ -13,21 +13,31 @@ vi.mock('next/link', () => ({
 vi.mock('lucide-react', () => ({
   Search: (props: any) => <svg data-testid="search-icon" {...props} />,
   X: (props: any) => <svg data-testid="x-icon" {...props} />,
-  SlidersHorizontal: (props: any) => <svg data-testid="sliders-icon" {...props} />,
   ArrowRight: (props: any) => <svg data-testid="arrow-right" {...props} />,
 }));
 
-vi.mock('./MagneticWrapper', () => ({
-  MagneticWrapper: ({ children }: any) => <div>{children}</div>,
-}));
-
-vi.mock('./PinContainer', () => ({
-  PinContainer: ({ children }: any) => <div>{children}</div>,
-}));
-
-vi.mock('@/hooks/useMagneticHover', () => ({
-  useMagneticHover: () => ({ current: null }),
-}));
+// `setup.ts` pins `usePathname()` to `/`, but ProductGrid is only ever mounted at `/products` and
+// writes its category filter back through that pathname. This file-scope mock overrides it so the
+// tab-filter path is exercised against the route the component actually runs on. The
+// `useSearchParams()` instance is module-level here for the same reason it is in `setup.ts`: a
+// fresh object per call would change the `[searchParams]` dependency identity on every render and
+// re-fire the effect that syncs `activeCategory`.
+vi.mock('next/navigation', () => {
+  const params = new URLSearchParams();
+  const router = {
+    push: vi.fn(),
+    replace: vi.fn(),
+    back: vi.fn(),
+    forward: vi.fn(),
+    refresh: vi.fn(),
+    prefetch: vi.fn(),
+  };
+  return {
+    useRouter: () => router,
+    usePathname: () => '/products',
+    useSearchParams: () => params,
+  };
+});
 
 describe('ProductGrid', () => {
   beforeEach(() => {
@@ -40,6 +50,19 @@ describe('ProductGrid', () => {
     expect(screen.getByPlaceholderText('Search products…')).toBeTruthy();
   });
 
+  it('renders one catalogue link per result', () => {
+    render(<ProductGrid />);
+    const links = screen.getAllByRole('link');
+    expect(links.length).toBeGreaterThan(0);
+    links.forEach((link) => expect(link.getAttribute('href')).toMatch(/^\/products\//));
+  });
+
+  it('renders no photo placeholder', () => {
+    const { container } = render(<ProductGrid />);
+    expect(screen.queryByText(/photo coming soon/i)).toBeNull();
+    expect(container.querySelector('img')).toBeNull();
+  });
+
   it('renders search input', () => {
     render(<ProductGrid />);
     const input = screen.getByLabelText('Search products');
@@ -49,6 +72,27 @@ describe('ProductGrid', () => {
   it('renders category tabs', () => {
     render(<ProductGrid />);
     expect(screen.getByRole('tab', { name: /All Products/i })).toBeTruthy();
+  });
+
+  it('marks the active tab with a single ink rule', () => {
+    render(<ProductGrid />);
+    const tablist = screen.getByRole('tablist');
+    expect(tablist.querySelectorAll('.bg-ink')).toHaveLength(1);
+    expect(screen.getByRole('tab', { name: /All Products/i }).getAttribute('aria-selected')).toBe(
+      'true',
+    );
+  });
+
+  it('reports the result count in the plural', () => {
+    render(<ProductGrid />);
+    expect(screen.getByText(/^\d+ products$/)).toBeTruthy();
+  });
+
+  it('reports the result count in the singular when one product matches', () => {
+    render(<ProductGrid />);
+    const input = screen.getByLabelText('Search products');
+    fireEvent.change(input, { target: { value: 'langot' } });
+    expect(screen.getByText('1 product')).toBeTruthy();
   });
 
   it('handles search input', () => {
@@ -78,11 +122,23 @@ describe('ProductGrid', () => {
   it('handles category filter change', () => {
     render(<ProductGrid />);
     const tabs = screen.getAllByRole('tab');
+    const initialLinks = screen.getAllByRole('link').length;
+
     // Click second tab (first category)
     fireEvent.click(tabs[1]);
-    // The component updates state internally
-    // Verify the tab was clickable and component didn't crash
-    expect(tabs[1]).toBeTruthy();
+
+    expect(tabs[1].getAttribute('aria-selected')).toBe('true');
+    expect(tabs[0].getAttribute('aria-selected')).toBe('false');
+    expect(screen.getAllByRole('link').length).toBeLessThan(initialLinks);
+  });
+
+  it('marks the active category tab with its own colour rule', () => {
+    render(<ProductGrid />);
+    const tablist = screen.getByRole('tablist');
+    fireEvent.click(screen.getAllByRole('tab')[1]);
+
+    expect(tablist.querySelectorAll('.bg-category-hygiene')).toHaveLength(1);
+    expect(tablist.querySelectorAll('.bg-ink')).toHaveLength(0);
   });
 
   it('shows no results message when search has no matches', () => {

@@ -16,9 +16,10 @@ import {
 } from 'lucide-react';
 import { BRAND, PRODUCT_CATEGORIES, PRODUCTS } from '@/constants';
 import { submitContactForm } from '@/app/actions/contact';
+import { cn } from '@/utils/cn';
 
 const inputClass =
-  'w-full px-4 py-3 rounded-[10px] bg-surface-muted border border-slate-200 text-sm text-brand-dark outline-none transition-[border-color,box-shadow] duration-150 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 min-h-[44px]';
+  'w-full px-4 py-3 bg-transparent border border-grey-500 text-body-sm text-paper placeholder:text-grey-400 outline-none transition-colors duration-150 focus:border-paper min-h-[44px]';
 
 interface FieldProps {
   label: string;
@@ -28,10 +29,10 @@ interface FieldProps {
 }
 function Field({ label, id, icon, children }: FieldProps) {
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className="flex flex-col gap-2">
       <label
         htmlFor={id}
-        className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-500 uppercase tracking-[0.06em]"
+        className="flex items-center gap-1.5 font-mono text-label uppercase text-grey-400"
       >
         {icon && <span aria-hidden="true">{icon}</span>}
         {label}
@@ -80,7 +81,7 @@ export default function ContactSection() {
       ref={sectionRef}
       id="contact"
       aria-labelledby="contact-heading"
-      className="py-24 bg-gradient-to-br from-brand-dark to-slate-800 cursor-spotlight"
+      className="py-24 bg-ink cursor-spotlight"
       onMouseMove={handleMouseMove}
     >
       <div className="container mx-auto">
@@ -91,18 +92,18 @@ export default function ContactSection() {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: '-60px' }}
             transition={{ duration: 0.6, ease: [0.34, 1.06, 0.64, 1] }}
-            className="text-white"
+            className="text-paper"
           >
-            <span className="inline-block text-[11px] font-semibold tracking-[0.1em] uppercase text-brand-secondary mb-3">
-              Get in Touch
-            </span>
-            <h2
-              id="contact-heading"
-              className="text-[clamp(1.75rem,3vw,2.5rem)] font-bold mb-4 leading-snug"
-            >
+            <div className="flex items-baseline gap-5 border-t border-grey-700 pt-8">
+              <span aria-hidden="true" className="font-mono text-label text-grey-400">
+                05
+              </span>
+              <span className="font-mono text-label uppercase text-grey-400">Get in Touch</span>
+            </div>
+            <h2 id="contact-heading" className="mt-6 font-display text-heading-1 text-paper">
               Request a Quote
             </h2>
-            <p className="text-slate-400 text-[17px] leading-[1.7] mb-10">
+            <p className="mt-4 mb-10 max-w-lg text-body-lg text-grey-300">
               Tell us what you need and we&apos;ll get back to you with pricing and availability. We
               work with hotels, hospitals, spas, salons, and industries across India.
             </p>
@@ -120,63 +121,60 @@ export default function ContactSection() {
                 <a
                   key={label}
                   href={href}
-                  className="flex items-center gap-3 text-slate-400 hover:text-white transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-secondary rounded-lg"
+                  className="flex items-center gap-4 text-grey-300 hover:text-paper transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-paper"
                 >
-                  <div className="w-11 h-11 rounded-[12px] bg-white/10 flex items-center justify-center shrink-0">
+                  <div className="w-11 h-11 border border-grey-700 flex items-center justify-center shrink-0">
                     <Icon className="w-[18px] h-[18px]" aria-hidden="true" />
                   </div>
                   <div>
-                    <div className="text-[11px] text-slate-400 font-medium">{label}</div>
-                    <div className="text-sm font-semibold text-slate-200">{value}</div>
+                    <div className="font-mono text-label uppercase text-grey-400">{label}</div>
+                    <div className="mt-1 font-mono text-data text-grey-300">{value}</div>
                   </div>
                 </a>
               ))}
             </div>
 
-            <div className="mt-12 p-5 rounded-[16px] bg-white/5 border border-white/10">
-              <p className="text-[13px] text-slate-500 leading-[1.6]">
+            <div className="mt-12 p-5 border border-grey-700">
+              <p className="font-mono text-data text-grey-400">
                 📍 Gandhi Nagar, Hyderabad · Serving hotels, hospitals, spas &amp; industries across
                 India
               </p>
             </div>
           </motion.div>
 
-          {/* Right — form */}
+          {/* Right — specification form */}
           <motion.div
             initial={{ opacity: 0, x: 40 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: '-60px' }}
             transition={{ duration: 0.6, delay: 0.1, ease: [0.34, 1.06, 0.64, 1] }}
-            className="bg-white rounded-[20px] p-8 shadow-[0_24px_64px_rgba(0,0,0,0.35)]"
+            className="p-8 border border-grey-700"
           >
             {state?.success ? (
-              <div className="text-center py-8" role="alert" aria-live="polite">
-                <CheckCircle
-                  className="w-14 h-14 text-emerald-500 mx-auto mb-4"
-                  aria-hidden="true"
-                />
-                <h3 className="text-xl font-bold text-brand-dark mb-2">Thank You!</h3>
-                <p className="text-sm text-slate-500 mb-6">
+              <div className="py-8" role="alert" aria-live="polite">
+                <CheckCircle className="w-10 h-10 text-paper mb-4" aria-hidden="true" />
+                <h3 className="text-heading-2 text-paper mb-2">Thank You!</h3>
+                <p className="text-body-sm text-grey-300 mb-6">
                   Your enquiry has been sent to{' '}
-                  <strong className="text-brand-primary">{BRAND.EMAIL}</strong>. We&apos;ll be in
-                  touch shortly.
+                  <strong className="text-paper">{BRAND.EMAIL}</strong>. We&apos;ll be in touch
+                  shortly.
                 </p>
                 <button
                   onClick={() => setFormKey((k) => k + 1)}
-                  className="text-sm font-medium text-brand-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary rounded"
+                  className="font-mono text-label uppercase text-paper underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-paper"
                 >
                   Send another enquiry
                 </button>
               </div>
             ) : (
-              <form key={formKey} action={formAction} noValidate className="flex flex-col gap-5">
-                <h3 className="text-lg font-bold text-brand-dark">Send an Enquiry</h3>
+              <form key={formKey} action={formAction} noValidate className="flex flex-col gap-6">
+                <h3 className="font-mono text-label uppercase text-grey-400">Send an Enquiry</h3>
 
                 {state?.error && (
                   <div
                     role="alert"
                     aria-live="assertive"
-                    className="flex items-start gap-2.5 bg-red-50 border border-red-200 text-red-600 text-[13px] rounded-[10px] p-3"
+                    className="flex items-start gap-2.5 border border-red-400 bg-red-950 text-body-sm text-red-200 p-3"
                   >
                     <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" aria-hidden="true" />
                     {state.error}
@@ -289,19 +287,14 @@ export default function ContactSection() {
                     name="message"
                     rows={3}
                     placeholder="Tell us more about your requirements..."
-                    className={`${inputClass} resize-none min-h-[88px]`}
+                    className={cn(inputClass, 'resize-none min-h-[88px]')}
                   />
                 </Field>
 
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="w-full flex items-center justify-center gap-2 py-3.5 rounded-[12px] font-semibold text-sm text-white transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 min-h-[48px] disabled:opacity-60 disabled:cursor-not-allowed"
-                  style={{
-                    background: isPending ? undefined : 'linear-gradient(135deg, #1E40AF, #1D4ED8)',
-                    backgroundColor: isPending ? '#94A3B8' : undefined,
-                    boxShadow: isPending ? 'none' : '0 4px 16px rgba(30,64,175,0.35)',
-                  }}
+                  className="w-full flex items-center justify-center gap-2 py-3.5 bg-paper text-ink font-mono text-label uppercase transition-colors duration-200 hover:bg-grey-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-paper focus-visible:ring-offset-2 focus-visible:ring-offset-ink min-h-[48px] disabled:bg-grey-600 disabled:text-grey-200 disabled:cursor-not-allowed"
                 >
                   <span>{isPending ? 'Sending…' : 'Send Enquiry'}</span>
                   <Send className="w-4 h-4" aria-hidden="true" />

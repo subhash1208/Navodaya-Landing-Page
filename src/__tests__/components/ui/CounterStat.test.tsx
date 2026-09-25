@@ -25,11 +25,25 @@ vi.mock('gsap/ScrollTrigger', () => ({
 }));
 
 describe('CounterStat', () => {
+  function setReducedMotion(matches: boolean) {
+    vi.mocked(window.matchMedia).mockImplementation((query: string) => ({
+      matches: query === '(prefers-reduced-motion: reduce)' ? matches : false,
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    }));
+  }
+
   beforeEach(() => {
     mockFromTo.mockClear();
     mockTo.mockClear();
     mockCreate.mockClear();
     mockGetAll.mockClear().mockReturnValue([]);
+    setReducedMotion(false);
   });
 
   it('renders numeric value', () => {
@@ -174,5 +188,84 @@ describe('CounterStat', () => {
       expect.anything(),
       expect.objectContaining({ duration: 1.5 }),
     );
+  });
+
+  it('kills the ScrollTrigger on unmount', async () => {
+    const kill = vi.fn();
+    mockCreate.mockImplementation(() => ({ kill }));
+
+    let unmount: () => void = () => {};
+    await act(async () => {
+      const result = render(<CounterStat value="51+" label="Products" />);
+      unmount = result.unmount;
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    expect(kill).not.toHaveBeenCalled();
+    act(() => unmount());
+    expect(kill).toHaveBeenCalledTimes(1);
+  });
+
+  describe('prefers-reduced-motion: reduce', () => {
+    it('creates no ScrollTrigger and runs no tween for a numeric value', async () => {
+      setReducedMotion(true);
+      mockCreate.mockImplementation((config: any) => {
+        if (config.onEnter) config.onEnter();
+        return { kill: vi.fn() };
+      });
+
+      await act(async () => {
+        render(<CounterStat value="51+" label="Products" />);
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      });
+
+      expect(mockCreate).not.toHaveBeenCalled();
+      expect(mockTo).not.toHaveBeenCalled();
+    });
+
+    it('creates no ScrollTrigger and runs no fade for a non-numeric value', async () => {
+      setReducedMotion(true);
+      mockCreate.mockImplementation((config: any) => {
+        if (config.onEnter) config.onEnter();
+        return { kill: vi.fn() };
+      });
+
+      await act(async () => {
+        render(<CounterStat value="HYD" label="Based in Hyderabad" />);
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      });
+
+      expect(mockCreate).not.toHaveBeenCalled();
+      expect(mockFromTo).not.toHaveBeenCalled();
+    });
+
+    it('leaves the terminal state on screen — final text, no inline opacity or transform', async () => {
+      setReducedMotion(true);
+
+      let container: HTMLElement = document.createElement('div');
+      await act(async () => {
+        const result = render(<CounterStat value="100%" label="B2B focused" />);
+        container = result.container;
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      });
+
+      const numEl = container.querySelector('[aria-label="100%"]') as HTMLElement;
+      expect(numEl.textContent).toBe('100%');
+      expect(numEl.style.opacity).toBe('');
+      expect(numEl.style.transform).toBe('');
+    });
+
+    it('unmounts cleanly when the guard returned early', async () => {
+      setReducedMotion(true);
+
+      let unmount: () => void = () => {};
+      await act(async () => {
+        const result = render(<CounterStat value="3" label="Categories" />);
+        unmount = result.unmount;
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      });
+
+      expect(() => act(() => unmount())).not.toThrow();
+    });
   });
 });

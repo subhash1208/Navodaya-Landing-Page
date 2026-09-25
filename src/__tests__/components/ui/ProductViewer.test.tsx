@@ -20,9 +20,10 @@ describe('ProductViewer', () => {
     expect(screen.getByRole('img', { name: 'Surgeon Cap' })).toBeTruthy();
   });
 
-  it('renders 360° Ready badge', () => {
+  it('does not claim 360° readiness while the viewer is a placeholder', () => {
     render(<ProductViewer productName="Test Product" />);
-    expect(screen.getByText('360° Ready')).toBeTruthy();
+    expect(screen.queryByText('360° Ready')).toBeNull();
+    expect(screen.getByText('360° View Coming Soon')).toBeTruthy();
   });
 
   it('handles mouse enter hover state', () => {

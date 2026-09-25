@@ -16,6 +16,11 @@ describe('NotFound', () => {
     expect(screen.getByText('404')).toBeTruthy();
   });
 
+  it('hides the decorative 404 numeral from the accessibility tree', () => {
+    render(<NotFound />);
+    expect(screen.getByText('404').getAttribute('aria-hidden')).toBe('true');
+  });
+
   it('renders Page Not Found heading', () => {
     render(<NotFound />);
     expect(screen.getByText('Page Not Found')).toBeTruthy();

@@ -7,6 +7,7 @@ import { usePathname } from 'next/navigation';
 import { Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { BRAND, NAV_LINKS, ROUTES } from '@/constants';
+import { cn } from '@/utils/cn';
 
 export function Header() {
   const pathname = usePathname();
@@ -32,32 +33,18 @@ export function Header() {
   const closeMobile = useCallback(() => setMobileOpen(false), []);
 
   return (
-    <header
-      className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center transition-all duration-300 pt-4"
-      style={{ pointerEvents: 'none' }}
-    >
-      {/* Centered glassmorphism pill */}
+    <header className="fixed top-0 left-0 right-0 z-50 bg-paper border-b border-grey-200">
       <div
-        className="flex items-center justify-between rounded-2xl transition-all duration-300"
-        style={{
-          width: scrolled ? '65%' : '70%',
-          maxWidth: '900px',
-          minWidth: '320px',
-          height: scrolled ? '52px' : '60px',
-          background: scrolled ? 'rgba(26,10,46,0.95)' : 'rgba(26,10,46,0.80)',
-          backdropFilter: 'blur(24px)',
-          WebkitBackdropFilter: 'blur(24px)',
-          border: '1px solid rgba(139,92,246,0.15)',
-          boxShadow: scrolled ? '0 4px 32px rgba(0,0,0,0.3)' : '0 2px 16px rgba(0,0,0,0.2)',
-          padding: '0 20px',
-          pointerEvents: 'all',
-        }}
+        data-testid="header-bar"
+        className={cn(
+          'container mx-auto flex items-center justify-between transition-[height] duration-300',
+          scrolled ? 'h-16' : 'h-20',
+        )}
       >
         {/* Logo */}
         <Link
           href={ROUTES.HOME}
-          className="flex items-center gap-3 focus-visible:outline-none focus-visible:ring-2 rounded-lg"
-          style={{ ['--tw-ring-color' as string]: '#1E40AF' }}
+          className="flex items-center gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2"
           aria-label="Navodaya home"
         >
           <Image
@@ -68,15 +55,12 @@ export function Header() {
             priority
             style={{ width: '36px', height: '36px', objectFit: 'contain' }}
           />
-          <div className="flex flex-col leading-tight">
-            <span className="font-bold text-base text-white">{BRAND.NAME}</span>
-            <span
-              className="text-[10px] tracking-wide hidden sm:block"
-              style={{ color: '#CBD5E1' }}
-            >
+          <span className="flex flex-col leading-tight">
+            <span className="font-display text-base font-semibold text-ink">{BRAND.NAME}</span>
+            <span className="hidden sm:block font-mono text-label uppercase text-grey-500">
               Industries &amp; Care Kits
             </span>
-          </div>
+          </span>
         </Link>
 
         {/* Desktop nav */}
@@ -87,12 +71,13 @@ export function Header() {
               <Link
                 key={href}
                 href={href}
-                className="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2"
-                style={{
-                  color: isActive ? '#60A5FA' : '#CBD5E1',
-                  background: isActive ? 'rgba(96,165,250,0.1)' : 'transparent',
-                  textDecoration: 'none',
-                }}
+                aria-current={isActive ? 'page' : undefined}
+                className={cn(
+                  'px-3 py-2 text-body-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue',
+                  isActive
+                    ? 'text-ink underline decoration-ink decoration-1 underline-offset-8'
+                    : 'text-grey-600 hover:text-brand-blue',
+                )}
               >
                 {label}
               </Link>
@@ -100,16 +85,7 @@ export function Header() {
           })}
           <Link
             href={ROUTES.CONTACT}
-            className="ml-3 rounded-full text-sm font-semibold transition-all duration-150 hover:-translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
-            style={{
-              background: 'linear-gradient(135deg, #1E40AF, #1D4ED8)',
-              boxShadow: '0 2px 12px rgba(30,64,175,0.35)',
-              color: '#FFFFFF',
-              textDecoration: 'none',
-              padding: '10px 22px',
-              display: 'inline-flex',
-              alignItems: 'center',
-            }}
+            className="ml-4 inline-flex items-center min-h-[44px] px-6 font-mono text-label uppercase bg-ink text-white hover:bg-ink/90 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2"
           >
             Get a Quote
           </Link>
@@ -117,8 +93,7 @@ export function Header() {
 
         {/* Mobile hamburger */}
         <button
-          className="md:hidden p-2 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2"
-          style={{ color: '#CBD5E1' }}
+          className="md:hidden p-2 text-ink hover:text-brand-blue transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink"
           onClick={() => setMobileOpen((v) => !v)}
           aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
           aria-expanded={mobileOpen}
@@ -138,39 +113,39 @@ export function Header() {
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.35, ease: [0.76, 0, 0.24, 1] }}
-            className="md:hidden absolute top-full left-0 right-0 overflow-hidden"
-            style={{
-              background: '#FFFFFF',
-              borderBottom: '1px solid #E2E8F0',
-              boxShadow: '0 4px 16px rgba(15,23,42,0.08)',
-              pointerEvents: 'all',
-            }}
+            className="md:hidden absolute top-full left-0 right-0 overflow-hidden bg-paper border-b border-grey-200"
           >
-            <ul className="flex flex-col py-2 px-4 gap-1" style={{ perspective: '1000px' }}>
-              {NAV_LINKS.map(({ label, href }, i) => (
-                <li key={href} style={{ perspective: '120px', perspectiveOrigin: 'bottom' }}>
-                  <motion.div
-                    initial={{ opacity: 0, rotateX: 90, translateY: 40 }}
-                    animate={{ opacity: 1, rotateX: 0, translateY: 0 }}
-                    exit={{ opacity: 0 }}
-                    transition={{
-                      duration: 0.5,
-                      delay: 0.1 + i * 0.08,
-                      ease: [0.215, 0.61, 0.355, 1],
-                    }}
-                  >
-                    <Link
-                      href={href}
-                      onClick={closeMobile}
-                      className="block px-4 py-3 rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2"
-                      style={{ color: '#374151' }}
+            <ul className="flex flex-col py-3 px-6 gap-1" style={{ perspective: '1000px' }}>
+              {NAV_LINKS.map(({ label, href }, i) => {
+                const isActive = href === '/' ? pathname === '/' : pathname.startsWith(href);
+                return (
+                  <li key={href} style={{ perspective: '120px', perspectiveOrigin: 'bottom' }}>
+                    <motion.div
+                      initial={{ opacity: 0, rotateX: 90, translateY: 40 }}
+                      animate={{ opacity: 1, rotateX: 0, translateY: 0 }}
+                      exit={{ opacity: 0 }}
+                      transition={{
+                        duration: 0.5,
+                        delay: 0.1 + i * 0.08,
+                        ease: [0.215, 0.61, 0.355, 1],
+                      }}
                     >
-                      {label}
-                    </Link>
-                  </motion.div>
-                </li>
-              ))}
-              <li className="pt-1 pb-2">
+                      <Link
+                        href={href}
+                        onClick={closeMobile}
+                        aria-current={isActive ? 'page' : undefined}
+                        className={cn(
+                          'block px-2 py-3 text-body-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue',
+                          isActive ? 'text-ink' : 'text-grey-600 hover:text-brand-blue',
+                        )}
+                      >
+                        {label}
+                      </Link>
+                    </motion.div>
+                  </li>
+                );
+              })}
+              <li className="pt-2 pb-2">
                 <motion.div
                   initial={{ opacity: 0, rotateX: 90, translateY: 40 }}
                   animate={{ opacity: 1, rotateX: 0, translateY: 0 }}
@@ -184,8 +159,7 @@ export function Header() {
                   <Link
                     href={ROUTES.CONTACT}
                     onClick={closeMobile}
-                    className="block w-full text-center px-4 py-3 rounded-full text-white text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2"
-                    style={{ background: '#1E40AF' }}
+                    className="flex w-full items-center justify-center min-h-[48px] px-4 font-mono text-label uppercase bg-ink text-white hover:bg-ink/90 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2"
                   >
                     Get a Quote
                   </Link>

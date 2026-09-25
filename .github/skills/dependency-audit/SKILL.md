@@ -3,9 +3,16 @@ name: dependency-audit
 description: >-
   This skill should be used when the user asks to "audit dependencies", "check for
   vulnerabilities", "fix a CVE", "run pnpm audit", "upgrade a vulnerable package", or
-  types /dependency-audit — and before any release or scheduled security sweep. Covers
-  triaging advisories by what actually pins each package and fixing within existing
-  semver ranges before reaching for overrides or a major bump.
+  types /dependency-audit — and before any release or scheduled security sweep. Also use
+  it whenever pnpm refuses to move a package: "pnpm update says already up to date", "the
+  override isn't working", "why is it still on the old version". Those are resolution
+  problems rather than debugging problems, and this skill carries the pnpm 11 behaviour
+  behind them — `pnpm.overrides` in package.json is silently ignored, and
+  minimumReleaseAge quarantines publishes under 24 hours old by falling back quietly
+  instead of failing. Covers triaging advisories by what actually pins each package and
+  fixing within existing semver ranges before reaching for overrides or a major bump. Do
+  NOT use it to add a new dependency, or to bump one for its features rather than its
+  advisories — that is ordinary implementation work.
 argument-hint: 'Optional: a package name to focus on'
 ---
 
@@ -97,6 +104,35 @@ even when a patched version sits well inside that range. It reports `Already up 
 leaves the vulnerable version pinned forever. `vite` 8.0.14 here accepted `^6 || ^7 || ^8` from
 `vitest` and still would not move to 8.0.16 under `pnpm update vite@^8.0.16 --depth Infinity`.
 
+**There is a second cause of "won't move", it looks identical, and it expires on its own.**
+pnpm 11 turned on supply-chain defaults: `minimumReleaseAge` now defaults to **1440 minutes**,
+so pnpm refuses to resolve any version published in the last 24 hours. Worse for diagnosis,
+`minimumReleaseAgeStrict` defaults to **`false`** when you have not set `minimumReleaseAge`
+yourself — so pnpm does not fail. It **silently falls back** to an older version that clears
+the age gate and reports success. Verified against pnpm 11.27.1 and the pnpm 11.0 release
+notes; this repo sets neither key, so the silent-fallback path is the live behaviour right now.
+
+That collides head-on with the work this skill exists for: **the fix for a fresh advisory is a
+fresh publish by definition.** The most urgent patch you will ever apply is the one most likely
+to be under a day old. Read as the range problem above, it sends you to §5's override — a
+permanent forced version — for a condition that clears itself by tomorrow, leaving behind
+exactly the undated override this section warns against, whose removal condition was already
+met before anyone read it.
+
+**Check the publish date before concluding anything:**
+
+```bash
+pnpm view <pkg> time --json     # or: pnpm view <pkg> time.<version>
+```
+
+If the version you want is under 24 hours old, the honest options are to **wait**, or to set
+`minimumReleaseAge` explicitly in `pnpm-workspace.yaml`. Note what the second one does: setting
+the key at all flips `minimumReleaseAgeStrict` to `true`, so pnpm starts **failing** resolution
+instead of silently downgrading. That is a strictly better failure mode for an audit — loud
+beats silent — but it is a tree-wide behaviour change, so make it a deliberate, separately
+reported decision rather than a side effect of chasing one package. Never reach for an override
+on a package whose only problem is that it is new.
+
 **`pnpm.overrides` in `package.json` no longer works.** pnpm 11 prints a warning and then
 `pnpm install` **exits 0** — the override is silently dropped and the audit stays red, which
 reads exactly like "the override didn't help":
@@ -142,14 +178,66 @@ Two traps that have already fired here:
 - **Gate 1 fails on the lockfile** if `pnpm-lock.yaml` ever falls out of `.prettierignore`.
   Restore the ignore entry; never format a generated lockfile.
 - **Gate 7 silently reuses a stale server.** Confirm nothing holds port 3000 first
-  (`netstat -ano | grep -E ':3000\s+.*LISTENING'`). Absent build output at the top of a
-  Playwright run means the run is void.
+  (`netstat -ano | grep -E ':3000\s+.*LISTENING'` — bash only; pwsh has no `grep`, and the
+  measured `Get-NetTCPConnection` form is in `.github/instructions/quality-gates.instructions.md`).
+  Then prove Playwright actually built, and **do not prove it by looking for build output** —
+  Turbopack's compile detail never crosses Playwright's `webServer` pipe, so grepping for
+  `Compiled successfully` returns 0 on a perfectly valid run and will have you voiding a green
+  one. The only marker that crosses is the echoed command:
+
+  ```bash
+  grep -c '\[WebServer\] \$ next build' out.txt   # expect 1; 0 means a server was reused
+  ```
+
+**Gate 9 has a third trap, and it is the one a dependency audit is uniquely placed to spring.**
+The bundle gate compares against a _recorded_ number —
+`.github/instructions/quality-gates.instructions.md` carries it as **310.6 KB gzipped across 24
+files, `next@16.3.5`, 2026-09-18** — and that instruction says to update it "in the same commit
+as any deliberate change". A framework bump is the most deliberate bundle change there is. The
+failure mode is quiet: your bump grows the bundle, you justify the growth correctly, gate 9
+passes, and the baseline is now wrong by that amount for **every future audit**, which measures
+its own growth from a floor that silently moved. Two bumps later nobody can tell which one
+spent the budget.
+
+So if a dependency change moves the emitted bundle, **update the recorded baseline in the same
+commit as the bump**, and say in your report what it moved from and to. If it does not move,
+say that too — an unchanged baseline confirmed is worth more than an unmentioned one.
 
 ## 7. Record the residual
 
 Report: what was critical/high before, what is left, what pins each leftover, and the exact
-condition that would clear it. "No known vulnerabilities found" is the only finish line that
-needs no caveat.
+condition that would clear it.
+
+**"No known vulnerabilities found" is not a finish line — it is the literal meaning of the
+words.** An advisory database answers one question: has someone published a CVE against a
+version you depend on. It cannot answer the one that dominates current npm incidents — whether
+a maintainer account was compromised and a hostile version published under a legitimate name.
+In that case there is no advisory to find, because the package _is_ the real package; the new
+version simply carries code nobody has classified yet. `pnpm audit` returns clean and is not
+malfunctioning. It was never looking.
+
+So write the residual with the scope attached — "no **known** advisories at high or above,
+`--prod` and unfiltered, as of `<date>`" — not "clean". The difference matters the day someone
+reads your report to decide whether a compromise could have entered through this tree.
+
+**pnpm 11 ships two defences for exactly this, and neither is an audit.** Both are resolution
+settings, so they act before a bad version is ever written to the lockfile:
+
+- **`minimumReleaseAge`** (default 1440 min) — quarantines brand-new publishes, which is where
+  a compromised release is caught and pulled. This is the same default that causes the
+  "won't move" symptom in §5; it is a feature, and that section is about diagnosing it, not
+  defeating it.
+- **`trustPolicy: no-downgrade`** — fails the install when a package's trust evidence gets
+  _weaker_ than it was, for example a package that had a trusted publisher arriving with only
+  provenance or with none. A maintainer-account compromise frequently shows up here first,
+  because the attacker cannot reproduce the original publishing identity. `trustPolicyExclude`
+  takes `pkg@version` entries for legitimate CI migrations.
+
+Neither is set in this repo's `pnpm-workspace.yaml` today, so `minimumReleaseAge` runs on its
+non-strict default and `trustPolicy` is off. **Enabling them is a tree-wide change with real
+failure modes — propose it, do not apply it mid-audit.** Note it as a recommendation in the
+residual and let the human decide; an audit that silently changes resolution policy is doing
+something other than what was asked.
 
 ## Constraints
 
@@ -157,5 +245,13 @@ needs no caveat.
   and a flat `node_modules`, breaking pnpm's linked store.
 - Never suppress a finding to make a gate green.
 - Never bump a major version to clear a `low` without asking first.
-- Back up `package.json` and `pnpm-lock.yaml` before a framework bump so a bad upgrade is one
-  `cp` from reverted.
+- **Recover a bad upgrade with `git restore`, not a `cp` backup.** `package.json` and
+  `pnpm-lock.yaml` are both tracked (`git ls-files` confirms it), so the pre-bump state is
+  already saved, already immutable, and already one command away:
+  `git restore package.json pnpm-lock.yaml && pnpm install --frozen-lockfile`. An earlier
+  revision of this line said to `cp` them first. That is strictly worse on a tracked file
+  and it actively costs something: `.bak` is not in `.gitignore` (verified — `git
+check-ignore` exits 1 on it), so the copies land as untracked paths in `git status`,
+  where `/review-loop`'s scoping step has to stop and reason about whether they belong to
+  the change. The same correction was already applied to the control plane when it moved
+  into git; this was the copy that did not get it.

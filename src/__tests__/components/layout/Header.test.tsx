@@ -87,31 +87,48 @@ describe('Header', () => {
   });
 
   it('updates scrolled state when window scrolls past 20px', () => {
-    const { container } = render(<Header />);
+    render(<Header />);
 
     // Simulate scroll past 20px
     Object.defineProperty(window, 'scrollY', { value: 50, writable: true });
     fireEvent.scroll(window);
 
     // requestAnimationFrame is mocked to call synchronously in setup.ts
-    // The header should now have the scrolled style (width: 65%)
-    const pill = container.querySelector('[style*="width"]') as HTMLElement;
-    expect(pill).toBeTruthy();
-    // After scrolling, width should be 65%
-    expect(pill.style.width).toBe('65%');
+    // The bar compacts from h-20 to h-16 once scrolled
+    const bar = screen.getByTestId('header-bar');
+    expect(bar.className).toContain('h-16');
+    expect(bar.className).not.toContain('h-20');
   });
 
   it('does not set scrolled when scroll is below 20px', () => {
-    const { container } = render(<Header />);
+    render(<Header />);
 
     // Simulate scroll below threshold
     Object.defineProperty(window, 'scrollY', { value: 10, writable: true });
     fireEvent.scroll(window);
 
-    const pill = container.querySelector('[style*="width"]') as HTMLElement;
-    expect(pill).toBeTruthy();
-    // Should remain at 70% (not scrolled)
-    expect(pill.style.width).toBe('70%');
+    const bar = screen.getByTestId('header-bar');
+    expect(bar.className).toContain('h-20');
+    expect(bar.className).not.toContain('h-16');
+  });
+
+  it('marks the current route with aria-current and ink styling', () => {
+    render(<Header />);
+    // setup.ts mocks usePathname() to '/', so Home is the active route
+    const home = screen.getByText('Home');
+    expect(home.getAttribute('aria-current')).toBe('page');
+    expect(home.className).toContain('text-ink');
+
+    const about = screen.getByText('About');
+    expect(about.getAttribute('aria-current')).toBeNull();
+    expect(about.className).toContain('text-grey-600');
+  });
+
+  it('renders the CTA as a filled-ink button, not a gradient', () => {
+    render(<Header />);
+    const cta = screen.getAllByText('Get a Quote')[0];
+    expect(cta.className).toContain('bg-ink');
+    expect(cta.getAttribute('style')).toBeNull();
   });
 
   it('closes mobile menu when a nav link is clicked', () => {

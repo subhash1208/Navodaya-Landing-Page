@@ -26,6 +26,23 @@ Gate 7 runs only when routing, forms, navigation, or user-visible flows changed.
 
 Gate 10 runs whenever a component that wraps page content is touched. It exists because gates 1–9 all passed while the homepage server-rendered an empty div — see "Why gate 10 exists" below.
 
+## "Not applicable" is a verdict; "skipped" is not
+
+Gates 7 and 10 carry scope notes above. Gates 6, 8 and 9 do not, which leaves the table reading as though a one-line change to a markdown file must produce a production build, a full Playwright run and a bundle measurement. It must not, and pretending otherwise is corrosive in both directions: it burns minutes on a diff that cannot move any of those numbers, and it quietly trains you to skip gates — which is the one thing the Never list below forbids outright.
+
+Applicability is part of a gate's definition, not a licence to duck it. The test is mechanical: **could this diff change what this gate measures?**
+
+| Diff touches                                                           | Gates that can move                                                         |
+| ---------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| Only `.md` / `.github/` instructions, agents, skills                   | 1, 2. Nothing else has an input.                                            |
+| `package.json` / `pnpm-lock.yaml`                                      | All ten — 8 and 9 especially; see the `/dependency-audit` skill.            |
+| `src/**` or `e2e/**`                                                   | All ten, subject to the gate 7 and 10 scope notes above.                    |
+| Config (`vitest.config.mts`, `playwright.config.ts`, `next.config.ts`) | All ten. A config change can move a gate without touching a line of `src/`. |
+
+**Say which gates you ruled out and why, in the transcript, naming each one.** The evidence requirement below is about not claiming a green you did not observe; it is equally about not silently dropping a gate. "Gates 3–10 N/A: diff is `.github/instructions/*.md` only, no input to typecheck, tests, build or bundle" is a complete and honest report. Listing nothing is not.
+
+When in doubt, run it. The asymmetry is heavily one-sided — a needless `pnpm build` costs a minute, and a wrongly-skipped one is how gates 8 and 9 sat green and unrunnable for their entire existence.
+
 ## Gate 7 used to send real email — a settings key now stops it
 
 `.env.local` exists on this machine and holds a live 36-character Resend key. `e2e/contact-form.spec.ts` submits the contact form for real, and `src/app/actions/contact.ts:31-38` only short-circuits to the mock path when `RESEND_API_KEY` is falsy **or equal to the sentinel `your_resend_api_key_here`**. With the live key loaded, running gate 7 emailed the business inbox in `BRAND.EMAIL`.
@@ -122,7 +139,26 @@ $total += (gzip -c $f.FullName | Measure-Object -Property Length -Sum).Sum
 
 Redirecting to a file and reading `.Length` is what avoids that, which is why the verified form uses `Start-Process -RedirectStandardOutput`.
 
-**Bundle baseline, `next@16.3.5`, 2026-09-18:** 963.0 KB raw across 24 files, **310.6 KB gzipped**. Compare against this, and update it in the same commit as any deliberate change.
+**Bundle baseline, `next@16.3.5`, 2026-09-25:** 960.1 KB raw (983183 B) across 24 files, **309.6 KB gzipped** (316999 B). Compare against this, and update it in the same commit as any deliberate change. (Prior 2026-09-24, before this pass: 960.0 KB raw, 309.6 KB / 316985 B gzipped — the WCAG 1.4.3 contrast pass's eight grey-token usage swaps plus five `PRODUCTS.length` / `PRODUCT_CATEGORIES.length` interpolations replacing hand-typed counts took **+14 B**, +0.004%; the file count held at 24 because the change only swaps class-string tokens and short literals inside existing chunks and adds no runtime. Note the gzipped KB figure is unchanged at 309.6 — only the raw KB moves, 960.0 → 960.1. Prior 2026-09-24, before the product-page border-token swap: 960.0 KB raw, 309.5 KB / 316976 B gzipped — changing `border-grey-100` to `border-grey-200` at `src/app/products/[slug]/page.tsx:110` took **+9 B**, +0.003%; the file count held at 24 because the change only swaps one class-string token in an existing chunk and adds no runtime. Prior 2026-09-24, before the SEALED radius/elevation/surface conformance pass: 960.1 KB raw, 309.6 KB / 317082 B gzipped — deleting 16 border-radius utilities, migrating 5 off-scale shadows onto the `e0`–`e5` scale and replacing one surface gradient with a solid fill took **−106 B**, −0.03%; the file count held at 24 because the change only removes class strings from existing chunks and adds no runtime. Prior 2026-09-24, before the SEALED palette migration: 963.0 KB raw, 310.7 KB / 318180 B gzipped — moving off the dark-navy/gradient/glass system to `ink`/`paper` took **−1098 B**, −0.35%, the first decrease recorded here. `AuroraBackground.tsx` was deleted outright, several inline style objects and gradient/blur CSS rules went with it, and no new runtime import was added; the file count held at 24 because the deletion removed markup from an existing chunk rather than a chunk of its own. Prior 2026-09-24, before the category specimen plates: 962.4 KB raw, 310.4 KB / 317896 B gzipped — swapping the emoji category icons for `next/image` panels moved it **+284 B**, +0.09%, and the file count held at 24 because `next/image` was **already** bundled by `Header.tsx`, `HeroSection.tsx` and `LoadingScreen.tsx`, so no new runtime entered; the delta is the three `PLATE_ALT` string literals, ~335 chars, plus the new JSX props. Prior 2026-09-18: 963.0 KB raw, 310.6 KB / 318067 B gzipped — the SEALED design waves' `geist` fonts and `extendTailwindMerge` moved it **−171 B**, effectively flat, because font assets are not `.js` and never enter this measurement.)
+
+## Gate 6's "no new warnings" has the same hole gate 9 had
+
+Gate 9 was unusable until someone wrote a number down. Gate 6's pass criterion is **"succeeds, no new warnings"** — and **new** is relative to a baseline this document has never recorded. Without one there are only two ways to read a warning, and both are wrong:
+
+- treat everything as new → RED on a warning that predates the diff, costing a review round on nothing;
+- treat everything as pre-existing → GREEN while a warning your change actually introduced scrolls past. That is the dangerous direction, and it is the default, because "it was probably already there" is the comfortable assumption.
+
+Give it the same treatment gate 9 got. **Capture the warning set on the next build that runs for any other reason, record it here with the `next` version and the date, and update it in the same commit as any deliberate change** — identical discipline to the bundle number above, for the identical reason.
+
+```bash
+pnpm build 2>&1 | sed 's/\x1b\[[0-9;]*[A-Za-z]//g' > build.txt
+echo "EXIT=${PIPESTATUS[0]}"
+grep -iE '\bwarn(ing)?\b' build.txt
+```
+
+`PIPESTATUS[0]` rather than `$?` for the reason given below — the `sed` is what `$?` would describe. Strip ANSI before grepping, same as for Playwright and Vitest.
+
+**Warning baseline, `next@16.3.5`, 2026-09-24: zero.** `grep -icE '\bwarn(ing)?\b'` over a stripped `pnpm build` log returns `0`, confirmed on two consecutive builds and re-confirmed 2026-09-24 after the SEALED palette migration. So gate 6's verdict is now mechanical: any non-zero count is a new warning and the diff owns it. Update this number in the same commit as any deliberate change, exactly as for the bundle baseline above.
 
 Gate 8's `--prod` scope is correct for the gate but hides dev-dependency advisories — the wider `pnpm audit --audit-level=high` found 14 more on 2026-09-18. That, the reason `pnpm update` silently refuses to move some transitives, and the fact that **pnpm 11 ignores `pnpm.overrides` in `package.json`** are all in the `/dependency-audit` skill. Read it before touching a dependency; it is not loaded here because it is only relevant during dependency work.
 
@@ -281,9 +317,21 @@ Gates 1, 2 and 5 exist to catch that before commit time rather than after. Never
 
 ## Quick sequence
 
-```powershell
-pnpm format:check; pnpm lint; pnpm exec tsc --noEmit; pnpm test
+```bash
+pnpm format:check && pnpm lint && pnpm exec tsc --noEmit && pnpm test && pnpm test:coverage
 ```
+
+```powershell
+pnpm format:check && pnpm lint && pnpm exec tsc --noEmit && pnpm test && pnpm test:coverage
+```
+
+Identical in both shells — pwsh 7 has the `&&` pipeline chain operator, verified here: `pnpm exec node -e "process.exit(5)" && Write-Host "SHOULD-NOT-PRINT"` printed nothing.
+
+**`&&`, not `;`, and the difference is the whole point of this file.** An earlier revision of this block read `pnpm format:check; pnpm lint; pnpm exec tsc --noEmit; pnpm test` — four gates separated by `;`, which is the exact opposite of the instruction this document opens with ("Run in order. Stop at the first failure … a later gate's output is meaningless if an earlier one failed"). Measured in both shells: after a command exiting 5, the next one ran anyway, and the **final status read 0** — `LASTEXITCODE=0` in pwsh, `EXIT=0` in bash. So a gate-2 failure scrolls off the top while a green `Tests 339 passed` sits at the bottom, which is the false-green shape the evidence requirement above exists to prevent, handed to you pre-assembled by this file's own copy-paste block.
+
+It also stopped at gate 4. Gate 5 is the one `.husky/pre-commit` independently blocks on, and coverage is **project-wide** — a new uncovered `catch` in an existing file moves the global number just as a new file does. A "quick sequence" that omits the gate most likely to reject the commit is quick in the wrong direction.
+
+The five gates above are exactly the implementer's ownership column in the table at the top. Gates 6–10 belong to the reviewer and are not in this block on purpose.
 
 ## What already enforces this, and the `/goal` escalation
 

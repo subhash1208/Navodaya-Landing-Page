@@ -33,8 +33,48 @@ Cover, in this order: happy path → boundaries (empty, zero, one, max) → erro
 - Do not mock the thing under test.
 - Do not assert on implementation details that a valid refactor would break.
 - Do not depend on real network or external services — Playwright specs must be hermetic.
-- Do not pad coverage with assertion-free renders. A meaningful 80% beats a hollow 95%.
+- Do not pad coverage with assertion-free renders — a hollow percentage is worth less than an honest one. **There is deliberately no number in that sentence.** An earlier revision read "a meaningful 80% beats a hollow 95%": a bar that exists nowhere else in this repo, stated in the one file that loads precisely while tests are being written. Read as permission, it stops you at 82%, where `.husky/pre-commit` blocks the commit against the 90% project-wide floor recorded at the bottom of this same file. That is the identical defect already corrected at the end of the Coverage section — same file, same cause, one bullet apart. The floor is 90%; meaningfulness is how you reach it honestly, never a discount on it.
 - Do not use arbitrary `waitForTimeout`. Wait on a condition.
+- **Do not mock a wrapper into a passthrough and then treat its branches as covered.** `src/__tests__/app/page.test.tsx:39` replaces `LoadingScreen` with `({ children }) => <div>{children}</div>`. That is a reasonable way to test the page, but it makes `LoadingScreen`'s own gating branch structurally unreachable from that file — and that branch is the one that shipped an empty homepage. If you mock a wrapper away, the wrapper still needs its own spec that does not.
+
+## Server rendering: jsdom cannot see it, and coverage cannot either
+
+Testing Library flushes effects before you can assert, so **every jsdom test in this repo observes
+post-hydration DOM only**. Coverage does not help: it records which lines executed under jsdom, not
+what the server emitted. A component can render an empty tree on the server, score 97% coverage,
+and pass every unit and e2e spec — that is not hypothetical, it is what happened here twice.
+
+When a component gates, wraps, or conditionally returns page content, write a **separate SSR spec**
+alongside the behavioural one. The convention already exists — copy
+`src/__tests__/components/sections/HeroSection.ssr.test.tsx`:
+
+- Name it `<Component>.ssr.test.tsx`, mirroring the source path as usual.
+- Render with `renderToStaticMarkup` from `react-dom/server`. It **never runs effects**, so it
+  observes the true server branch — the one jsdom can never reach.
+- Assert on the returned HTML string: the real `<h1>` text, the body copy, every link a crawler
+  needs. `expect(html).toContain(...)`.
+
+**The critical part is what you must _not_ mock.** Every behavioural spec in this repo replaces
+`motion/react` with a passthrough that strips `initial` and `animate`. That is correct for
+behaviour and fatal here: `motion` serialises `initial` into inline styles during server render, so
+`initial={{ opacity: 0 }}` ships real copy at `opacity: 0` — and a mock that discards `initial`
+reports it as fine. An SSR spec must use the real `motion/react`. Mock only what is genuinely
+unrenderable on a server, such as `next/image` or a canvas component.
+
+Two bugs found this way, both with gates 1–9 green: `HeroSection` emitted an `<h1>` containing only
+a blinking cursor, no mission copy and neither CTA; `LoadingScreen` wrapped the homepage and
+returned an empty `aria-hidden` overlay for the entire server render. Gate 10
+(`pnpm exec playwright test e2e/loading-screen.spec.ts`) is the end-to-end backstop for the same
+class — the SSR spec is the fast one that tells you which component is at fault.
+
+**A wrapper's other failure mode is invisible to every text assertion.** If it returns
+differently-shaped fragments from different branches, React reconciles by position and remounts
+the whole subtree when a child changes index — destroying anything a visitor had typed. The
+rendered text is identical before and after, so `getByText` cannot see it. Assert on **node
+identity** (`expect(screen.getByTestId('probe')).toBe(before)`), on an uncontrolled input's
+surviving `value`, and on a mount counter having fired once. The full recipe and the defect it
+came from are in `.github/instructions/quality-gates.instructions.md` under "Keep the returned
+fragment's SHAPE fixed".
 
 ## Timers
 

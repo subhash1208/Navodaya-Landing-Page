@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react';
 
 interface CounterStatProps {
-  value: string; // e.g. "51+", "3", "100%", "HYD"
+  value: string; // e.g. "50+", "3", "100%", "HYD"
   label: string;
 }
 
@@ -11,6 +11,11 @@ export function CounterStat({ value, label }: CounterStatProps) {
   const numRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Reduced motion: the server-rendered markup is already the terminal state — final text,
+    // opacity 1, identity transform — so returning before anything is created leaves exactly
+    // that on screen. Same early-return shape as `AboutSection.tsx:46`.
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
     const el = numRef.current;
     if (!el) return;
 
@@ -79,15 +84,11 @@ export function CounterStat({ value, label }: CounterStatProps) {
   }, [value]);
 
   return (
-    <div className="bg-white rounded-[14px] p-5 border border-slate-200 shadow-[0_2px_8px_rgba(15,23,42,0.06)]">
-      <div
-        ref={numRef}
-        className="text-[26px] font-black text-brand-primary mb-1"
-        aria-label={value}
-      >
+    <div className="bg-paper p-5 border border-grey-200 shadow-e1">
+      <div ref={numRef} className="text-[26px] font-black text-brand-blue mb-1" aria-label={value}>
         {value}
       </div>
-      <div className="text-xs font-medium text-slate-500">{label}</div>
+      <div className="text-xs font-medium text-grey-500">{label}</div>
     </div>
   );
 }

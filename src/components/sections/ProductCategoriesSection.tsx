@@ -2,9 +2,26 @@
 
 import { useEffect, useRef, useMemo } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { ArrowRight, BookOpen } from 'lucide-react';
 import { PRODUCT_CATEGORIES, ROUTES } from '@/constants';
+import { CATEGORY_RULE } from '@/constants/categoryRule';
 import { AnimateIn } from '@/components/ui/AnimateIn';
+import { cn } from '@/utils/cn';
+import type { CategorySlug } from '@/types';
+
+/**
+ * Describes what each specimen plate photograph actually shows. Deliberately not the category
+ * name — the adjacent <h3> already announces that, so repeating it here would be noise.
+ */
+const PLATE_ALT: Record<CategorySlug, string> = {
+  'hygiene-safety':
+    'Four sheets of white medical-grade non-woven fabric fanned out in overlapping layers, showing the fibrous surface and clean-cut edges',
+  'hotel-amenities':
+    'A folded white terry cloth towel resting on a second towel over pale card, showing the looped pile and woven border',
+  'spa-salon':
+    'A sheet of soft grey non-woven fabric draped into deep, even waves under raking light',
+};
 
 const CARD_ORIGINS = [
   { x: -100, y: 0 },
@@ -72,50 +89,65 @@ export default function ProductCategoriesSection() {
   }, []);
 
   return (
-    <section id="products" aria-labelledby="products-heading" className="py-24 bg-surface-muted">
+    <section id="products" aria-labelledby="products-heading" className="py-24 bg-grey-50">
       <div className="container mx-auto">
         <AnimateIn direction="up">
-          <div className="text-center mb-16">
-            <span className="inline-block text-[11px] font-semibold tracking-[0.1em] uppercase text-brand-secondary mb-3">
-              What We Supply
-            </span>
-            <h2
-              id="products-heading"
-              className="font-display text-[clamp(1.75rem,3vw,2.5rem)] font-bold text-brand-dark mb-4"
-            >
-              Our Product Categories
-            </h2>
-            <p className="text-[17px] text-slate-500 max-w-lg mx-auto">
+          {/* Specimen-table header — index, title, right-aligned count */}
+          <div className="border-t border-grey-200 pt-8 mb-12">
+            <div className="flex flex-wrap items-baseline justify-between gap-4">
+              <div className="flex items-baseline gap-5">
+                <span aria-hidden="true" className="font-mono text-label text-grey-500">
+                  02
+                </span>
+                <div>
+                  <span className="block font-mono text-label uppercase text-grey-500">
+                    What We Supply
+                  </span>
+                  <h2 id="products-heading" className="mt-3 font-display text-heading-1 text-ink">
+                    Our Product Categories
+                  </h2>
+                </div>
+              </div>
+              <span className="font-mono text-data text-grey-500">
+                {PRODUCT_CATEGORIES.length} categories
+              </span>
+            </div>
+            <p className="mt-6 max-w-xl text-body-lg text-grey-600">
               Three focused ranges covering every hygiene and care need across industries.
             </p>
           </div>
         </AnimateIn>
 
-        <div ref={cardsRef} className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10">
+        <div ref={cardsRef} className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12">
           {PRODUCT_CATEGORIES.map((category, i) => (
             <div key={category.id} ref={cardRefs[i]}>
-              <div className="card-hover-category relative flex flex-col bg-white rounded-[20px] p-8 border border-slate-200 shadow-[0_4px_24px_rgba(15,23,42,0.07)] overflow-hidden h-full">
+              <div className="relative flex h-full flex-col border border-grey-200 bg-paper p-8 shadow-e0 transition-shadow duration-200 hover:shadow-e1">
                 <div
-                  className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-brand-primary to-brand-secondary"
+                  className={cn(
+                    'absolute top-0 left-0 right-0 h-[2px]',
+                    CATEGORY_RULE[category.slug],
+                  )}
                   aria-hidden="true"
                 />
-                <div className="text-5xl mb-6 leading-none" role="img" aria-label={category.name}>
-                  {category.icon}
+                <div className="relative mb-6 aspect-[4/5] overflow-hidden border border-grey-200 bg-grey-50">
+                  <Image
+                    src={`/categories/${category.slug}.webp`}
+                    alt={PLATE_ALT[category.slug]}
+                    fill
+                    sizes="(min-width: 1152px) 288px, (min-width: 640px) 25vw, calc(100vw - 7rem)"
+                    className="object-cover"
+                  />
                 </div>
                 <div className="flex items-start justify-between gap-3 mb-3">
-                  <h3 className="font-bold text-[17px] text-brand-dark leading-snug">
-                    {category.name}
-                  </h3>
-                  <span className="shrink-0 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-brand-light text-brand-primary">
+                  <h3 className="text-heading-2 text-ink">{category.name}</h3>
+                  <span className="shrink-0 pt-1 font-mono text-data text-grey-500">
                     {category.productCount} products
                   </span>
                 </div>
-                <p className="text-[13px] text-slate-500 leading-[1.65] mb-7 flex-1">
-                  {category.description}
-                </p>
+                <p className="text-body text-grey-600 mb-7 flex-1">{category.description}</p>
                 <Link
                   href={`${ROUTES.PRODUCTS}?category=${category.slug}`}
-                  className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-brand-primary hover:gap-2.5 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary rounded"
+                  className="inline-flex items-center gap-2 font-mono text-label uppercase text-ink hover:gap-3 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink"
                 >
                   Browse Products
                   <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
@@ -126,10 +158,10 @@ export default function ProductCategoriesSection() {
         </div>
 
         <AnimateIn direction="up" delay={0.2}>
-          <div className="text-center">
+          <div className="border-t border-grey-200 pt-8">
             <Link
               href={ROUTES.PRODUCTS}
-              className="inline-flex items-center gap-2.5 px-8 py-3.5 rounded-full font-semibold text-sm text-brand-primary border-2 border-brand-primary bg-transparent hover:bg-brand-light transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 min-h-[48px]"
+              className="inline-flex items-center gap-2.5 px-8 py-3.5 font-mono text-label uppercase text-ink border border-ink bg-transparent hover:bg-ink hover:text-paper transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 min-h-[48px]"
             >
               <BookOpen className="w-4 h-4" aria-hidden="true" />
               View Full Product Catalogue

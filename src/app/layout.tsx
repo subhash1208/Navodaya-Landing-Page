@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
-import { Outfit, Plus_Jakarta_Sans } from 'next/font/google';
+import { GeistSans } from 'geist/font/sans';
+import { GeistMono } from 'geist/font/mono';
 import './globals.css';
 import { BRAND } from '@/constants';
 import { Header } from '@/components/layout/Header';
@@ -9,18 +10,6 @@ import { PageTransition } from '@/components/ui/PageTransition';
 import { CustomCursor } from '@/components/ui/CustomCursor';
 import { Analytics } from '@vercel/analytics/react';
 import { LenisProvider } from '@/components/ui/LenisProvider';
-
-const outfit = Outfit({
-  subsets: ['latin'],
-  variable: '--font-display',
-  display: 'swap',
-});
-
-const plusJakarta = Plus_Jakarta_Sans({
-  subsets: ['latin'],
-  variable: '--font-body',
-  display: 'swap',
-});
 
 export const metadata: Metadata = {
   title: {
@@ -53,7 +42,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${outfit.variable} ${plusJakarta.variable}`}>
+    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
       <head />
       <body className="min-h-screen antialiased" suppressHydrationWarning>
         <SkipNav />

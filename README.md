@@ -51,7 +51,7 @@ pnpm test:e2e:ui      # Playwright in UI mode
 ```
 src/app/          routes, layouts, server actions
 src/components/   layout/ · sections/ · ui/
-src/hooks/        useTypewriter, useMagneticHover, ...
+src/hooks/        useTypewriter, useIntroFinished, ...
 src/constants/    design tokens, content
 src/utils/        cn() class merger
 src/types/        shared TypeScript types

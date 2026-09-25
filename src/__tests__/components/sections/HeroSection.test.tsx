@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, act, fireEvent } from '@testing-library/react';
 import HeroSection from '@/components/sections/HeroSection';
+import { PRODUCTS } from '@/constants';
 
 vi.mock('motion/react', () => ({
   motion: new Proxy(
@@ -58,14 +59,6 @@ vi.mock('@/components/ui/ProductCategoryGraph', () => ({
   },
 }));
 
-vi.mock('@/components/ui/AuroraBackground', () => ({
-  AuroraBackground: ({ children, className }: any) => (
-    <div data-testid="aurora" className={className}>
-      {children}
-    </div>
-  ),
-}));
-
 describe('HeroSection', () => {
   beforeEach(() => {
     vi.useFakeTimers();
@@ -102,7 +95,7 @@ describe('HeroSection', () => {
     act(() => {
       vi.advanceTimersByTime(1000);
     });
-    expect(screen.getByText('51+')).toBeTruthy();
+    expect(screen.getByText(`${PRODUCTS.length}+`)).toBeTruthy();
     expect(screen.getByText('Products')).toBeTruthy();
   });
 
@@ -110,11 +103,6 @@ describe('HeroSection', () => {
     render(<HeroSection />);
     const scrollLink = screen.getByLabelText('Scroll to About section');
     expect(scrollLink).toBeTruthy();
-  });
-
-  it('renders aurora background', () => {
-    render(<HeroSection />);
-    expect(screen.getByTestId('aurora')).toBeTruthy();
   });
 
   it('renders product category graph', () => {

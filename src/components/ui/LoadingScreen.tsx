@@ -102,7 +102,7 @@ export function LoadingScreen({ children }: LoadingScreenProps) {
             position: 'fixed',
             inset: 0,
             zIndex: 9999,
-            background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)',
+            background: '#0A0B0D',
           }}
           aria-hidden="true"
         />
@@ -122,7 +122,7 @@ export function LoadingScreen({ children }: LoadingScreenProps) {
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)',
+              background: '#0A0B0D',
               overflow: 'hidden',
             }}
           >
@@ -147,7 +147,7 @@ export function LoadingScreen({ children }: LoadingScreenProps) {
                     width: p.size,
                     height: p.size,
                     borderRadius: '50%',
-                    background: i % 2 === 0 ? '#3B82F6' : '#22D3EE',
+                    background: i % 2 === 0 ? '#08B8F8' : '#8A8A83',
                     opacity: 0.4,
                     animation: `float ${p.dur}s ease-in-out ${p.delay}s infinite`,
                   }}
@@ -166,7 +166,7 @@ export function LoadingScreen({ children }: LoadingScreenProps) {
                 width: '400px',
                 height: '400px',
                 borderRadius: '50%',
-                background: 'radial-gradient(circle, rgba(30,64,175,0.2) 0%, transparent 70%)',
+                background: 'radial-gradient(circle, rgba(8,184,248,0.2) 0%, transparent 70%)',
                 filter: 'blur(40px)',
               }}
             />
@@ -198,7 +198,7 @@ export function LoadingScreen({ children }: LoadingScreenProps) {
                     width: '96px',
                     height: '96px',
                     objectFit: 'contain',
-                    filter: 'drop-shadow(0 0 30px rgba(30,64,175,0.5))',
+                    filter: 'drop-shadow(0 0 30px rgba(8,184,248,0.5))',
                   }}
                 />
               </motion.div>
@@ -220,7 +220,7 @@ export function LoadingScreen({ children }: LoadingScreenProps) {
                       fontSize: 'clamp(2.5rem, 5vw, 4rem)',
                       fontWeight: 900,
                       color: '#FFFFFF',
-                      textShadow: '0 0 40px rgba(30,64,175,0.5)',
+                      textShadow: '0 0 40px rgba(8,184,248,0.5)',
                       display: 'inline-block',
                       willChange: 'transform, opacity, filter',
                     }}
@@ -242,7 +242,7 @@ export function LoadingScreen({ children }: LoadingScreenProps) {
                     width: '100%',
                     height: '60px',
                     background:
-                      'linear-gradient(90deg, transparent, rgba(56,189,248,0.3), transparent)',
+                      'linear-gradient(90deg, transparent, rgba(8,184,248,0.3), transparent)',
                     animation: 'gradientSweep 0.8s ease 1.3s forwards',
                     pointerEvents: 'none',
                   }}
@@ -257,7 +257,7 @@ export function LoadingScreen({ children }: LoadingScreenProps) {
                 style={{
                   fontSize: '16px',
                   fontWeight: 500,
-                  color: '#94A3B8',
+                  color: '#8A8A83',
                   letterSpacing: '0.05em',
                 }}
               >
@@ -299,7 +299,7 @@ export function LoadingScreen({ children }: LoadingScreenProps) {
                         fontSize: '11px',
                         fontWeight: 600,
                         letterSpacing: '0.2em',
-                        color: '#38BDF8',
+                        color: '#08B8F8',
                         lineHeight: '20px',
                         height: '20px',
                         display: 'block',
@@ -320,7 +320,7 @@ export function LoadingScreen({ children }: LoadingScreenProps) {
                   fontSize: '14px',
                   fontWeight: 500,
                   fontStyle: 'italic',
-                  color: '#38BDF8',
+                  color: '#08B8F8',
                 }}
               >
                 &ldquo;{BRAND.TAGLINE}&rdquo;
@@ -344,7 +344,7 @@ export function LoadingScreen({ children }: LoadingScreenProps) {
                   style={{
                     height: '100%',
                     borderRadius: '9999px',
-                    background: 'linear-gradient(90deg, #1E40AF, #0EA5E9)',
+                    background: '#08B8F8',
                   }}
                 />
               </div>

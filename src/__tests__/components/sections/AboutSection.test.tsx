@@ -139,10 +139,10 @@ describe('AboutSection', () => {
     expect(stats.length).toBe(4);
   });
 
-  it('renders main card with gradient background', () => {
+  it('renders main specimen panel with hairline border', () => {
     const { container } = render(<AboutSection />);
-    const card = container.querySelector('.bg-gradient-to-br');
-    expect(card).toBeTruthy();
+    const panel = container.querySelector('.bg-grey-50.border-grey-200');
+    expect(panel).toBeTruthy();
   });
 
   it('renders description paragraphs', () => {
@@ -193,10 +193,15 @@ describe('AboutSection', () => {
     expect(screen.getByText(/Prompt service and a commitment/)).toBeTruthy();
   });
 
-  it('renders sweep line element', () => {
+  it('renders the full-width section rule', () => {
     const { container } = render(<AboutSection />);
-    const line = container.querySelector('.w-16.h-\\[2px\\]');
+    const line = container.querySelector('.h-px.w-full.bg-grey-200');
     expect(line).toBeTruthy();
+  });
+
+  it('renders the section index number', () => {
+    render(<AboutSection />);
+    expect(screen.getByText('01')).toBeTruthy();
   });
 
   it('renders text and stats columns', () => {

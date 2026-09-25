@@ -5,10 +5,14 @@ import { useRouter } from 'next/navigation';
 import { PRODUCT_CATEGORIES, PRODUCTS } from '@/constants';
 
 // ─── Brand colors ─────────────────────────────────────────────────────────────
+// Two brand hexes plus a neutral grey — the palette carries only brand.cyan (dark-surface
+// accent) and brand.blue (light-surface accent, still legible enough at full saturation to
+// serve as a second distinct hue here), with grey.300 as the third, desaturated node so three
+// categories stay visually distinguishable without inventing a third brand color.
 const PLANET_COLORS = [
-  { fill: '#60A5FA', glow: '#3B82F6' },
-  { fill: '#22D3EE', glow: '#06B6D4' },
-  { fill: '#C084FC', glow: '#A855F7' },
+  { fill: '#08B8F8', glow: '#08B8F8' },
+  { fill: '#085898', glow: '#085898' },
+  { fill: '#B0B0AA', glow: '#B0B0AA' },
 ];
 
 // ─── Physics constants ────────────────────────────────────────────────────────
@@ -402,7 +406,7 @@ export function ProductCategoryGraph({
       if (sun) {
         ctx.save();
         ctx.globalAlpha = expanded !== null ? 0.02 : 0.05;
-        ctx.strokeStyle = '#94A3B8';
+        ctx.strokeStyle = '#8A8A83';
         ctx.lineWidth = 0.8;
         ctx.beginPath();
         ctx.arc(sun.x, sun.y, 165, 0, Math.PI * 2);
@@ -707,7 +711,7 @@ function drawMoonPill(ctx: CanvasRenderingContext2D, n: SolarNode, hovered: bool
   ctx.fill();
 
   // Pill background
-  ctx.fillStyle = hovered ? 'rgba(30,64,175,0.75)' : 'rgba(10,18,35,0.88)';
+  ctx.fillStyle = hovered ? 'rgba(8,184,248,0.75)' : 'rgba(10,11,13,0.88)';
   ctx.strokeStyle = hovered ? color : color + '88';
   ctx.lineWidth = hovered ? 1.2 : 0.8;
   ctx.beginPath();
@@ -720,7 +724,7 @@ function drawMoonPill(ctx: CanvasRenderingContext2D, n: SolarNode, hovered: bool
   ctx.stroke();
 
   // Text
-  ctx.fillStyle = hovered ? '#ffffff' : '#CBD5E1';
+  ctx.fillStyle = hovered ? '#0A0B0D' : '#D4D4D0';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText(text, x, y);

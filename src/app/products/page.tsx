@@ -18,7 +18,7 @@ function GridSkeleton() {
       aria-label="Loading products"
     >
       {Array.from({ length: 10 }).map((_, i) => (
-        <div key={i} className="bg-slate-100 rounded-[1.25rem] aspect-[3/4] animate-pulse" />
+        <div key={i} className="bg-grey-100 aspect-[3/4] animate-pulse" />
       ))}
     </div>
   );
@@ -26,29 +26,29 @@ function GridSkeleton() {
 
 export default function ProductsPage() {
   return (
-    <div className="min-h-screen bg-surface-muted">
+    <div className="min-h-screen bg-grey-50">
       {/* Page header */}
-      <div className="bg-white border-b border-slate-100">
+      <div className="bg-paper border-b border-grey-100">
         <div className="container mx-auto py-10">
           {/* Breadcrumb */}
           <nav
             aria-label="Breadcrumb"
-            className="flex items-center gap-1.5 text-xs text-slate-400 mb-4"
+            className="flex items-center gap-1.5 text-xs text-grey-500 mb-4"
           >
             <Link
               href="/"
-              className="hover:text-brand-primary transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-primary rounded"
+              className="hover:text-brand-blue transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-blue rounded"
             >
               Home
             </Link>
             <ChevronRight className="w-3 h-3" aria-hidden="true" />
-            <span className="text-brand-dark font-medium">Products</span>
+            <span className="text-ink font-medium">Products</span>
           </nav>
 
-          <h1 className="text-[clamp(1.75rem,3vw,2.5rem)] font-bold text-brand-dark mb-2">
+          <h1 className="text-[clamp(1.75rem,3vw,2.5rem)] font-bold text-ink mb-2">
             Product Catalogue
           </h1>
-          <p className="text-slate-500 text-lg">
+          <p className="text-grey-500 text-lg">
             {PRODUCTS.length}+ products across {PRODUCT_CATEGORIES.length} categories — hygiene,
             hospitality &amp; wellness.
           </p>
