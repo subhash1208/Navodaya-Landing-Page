@@ -5,19 +5,44 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { LoadingScreen } from '@/components/ui/LoadingScreen';
 import { useIntroFinished } from '@/hooks/useIntroFinished';
 
-vi.mock('motion/react', () => ({
-  motion: new Proxy(
-    {},
-    {
-      get: (_, tag) => (props: any) => {
-        const { initial, animate, exit, transition, whileInView, variants, viewport, ...rest } =
-          props;
-        return <div data-testid={`motion-${String(tag)}`} {...rest} />;
+vi.mock('motion/react', () => {
+  // The component per tag is CACHED. A bare `get` handler returns a fresh function on every
+  // property access, so `motion.div` is a different component type on every render and React
+  // tears down and rebuilds the whole subtree — silently destroying uncontrolled input values
+  // and breaking any `toBe` node-identity assertion. That matters more here than anywhere:
+  // this file's whole subject is a wrapper whose remount behaviour is the defect under test.
+  // Same pattern as ContactSection.test.tsx:17-31.
+  const cache = new Map<string, React.ComponentType<any>>();
+  return {
+    motion: new Proxy(
+      {},
+      {
+        get: (_, tag) => {
+          const key = String(tag);
+          let component = cache.get(key);
+          if (!component) {
+            component = (props: any) => {
+              const {
+                initial,
+                animate,
+                exit,
+                transition,
+                whileInView,
+                variants,
+                viewport,
+                ...rest
+              } = props;
+              return <div data-testid={`motion-${key}`} {...rest} />;
+            };
+            cache.set(key, component);
+          }
+          return component;
+        },
       },
-    },
-  ),
-  AnimatePresence: ({ children }: any) => <>{children}</>,
-}));
+    ),
+    AnimatePresence: ({ children }: any) => <>{children}</>,
+  };
+});
 
 vi.mock('next/image', () => ({
   default: (props: any) => <img {...props} />,

@@ -4,7 +4,7 @@ import { useEffect, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight, BookOpen } from 'lucide-react';
-import { PRODUCT_CATEGORIES, ROUTES } from '@/constants';
+import { PRODUCT_CATEGORIES, PRODUCT_COUNT_BY_CATEGORY, ROUTES } from '@/constants';
 import { CATEGORY_RULE } from '@/constants/categoryRule';
 import { AnimateIn } from '@/components/ui/AnimateIn';
 import { cn } from '@/utils/cn';
@@ -141,7 +141,7 @@ export default function ProductCategoriesSection() {
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <h3 className="text-heading-2 text-ink">{category.name}</h3>
                   <span className="shrink-0 pt-1 font-mono text-data text-grey-500">
-                    {category.productCount} products
+                    {PRODUCT_COUNT_BY_CATEGORY[category.slug]} products
                   </span>
                 </div>
                 <p className="text-body text-grey-600 mb-7 flex-1">{category.description}</p>

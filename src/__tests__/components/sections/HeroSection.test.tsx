@@ -3,22 +3,46 @@ import { render, screen, act, fireEvent } from '@testing-library/react';
 import HeroSection from '@/components/sections/HeroSection';
 import { PRODUCTS } from '@/constants';
 
-vi.mock('motion/react', () => ({
-  motion: new Proxy(
-    {},
-    {
-      get: (_, tag) => (props: any) => {
-        const { initial, animate, exit, transition, whileInView, variants, viewport, ...rest } =
-          props;
-        return <div data-testid={`motion-${String(tag)}`} {...rest} />;
+vi.mock('motion/react', () => {
+  // The component per tag is CACHED. A bare `get` handler returns a fresh function on every
+  // property access, so `motion.div` is a different component type on every render and React
+  // tears down and rebuilds the whole subtree — silently destroying uncontrolled input values
+  // and breaking any `toBe` node-identity assertion. The real `motion.div` is a stable
+  // reference. Same pattern as ContactSection.test.tsx:17-31.
+  const cache = new Map<string, React.ComponentType<any>>();
+  return {
+    motion: new Proxy(
+      {},
+      {
+        get: (_, tag) => {
+          const key = String(tag);
+          let component = cache.get(key);
+          if (!component) {
+            component = (props: any) => {
+              const {
+                initial,
+                animate,
+                exit,
+                transition,
+                whileInView,
+                variants,
+                viewport,
+                ...rest
+              } = props;
+              return <div data-testid={`motion-${key}`} {...rest} />;
+            };
+            cache.set(key, component);
+          }
+          return component;
+        },
       },
-    },
-  ),
-  AnimatePresence: ({ children }: any) => <>{children}</>,
-  useMotionValue: () => ({ get: () => 0, set: vi.fn() }),
-  useSpring: () => ({ get: () => 0, set: vi.fn() }),
-  useTransform: () => ({ get: () => 0 }),
-}));
+    ),
+    AnimatePresence: ({ children }: any) => <>{children}</>,
+    useMotionValue: () => ({ get: () => 0, set: vi.fn() }),
+    useSpring: () => ({ get: () => 0, set: vi.fn() }),
+    useTransform: () => ({ get: () => 0 }),
+  };
+});
 
 vi.mock('next/link', () => ({
   default: ({ children, href, ...props }: any) => (
@@ -211,5 +235,21 @@ describe('HeroSection', () => {
 
     expect(rightPanel.getAttribute('role')).toBe('button');
     expect(rightPanel.getAttribute('tabindex')).toBe('0');
+  });
+
+  it('clears both reveal timers on unmount', () => {
+    const { unmount } = render(<HeroSection />);
+
+    // Fire the typewriter's onComplete, which schedules the 150ms and 600ms reveal timers.
+    // They start inside the callback, outside `useTypewriter`'s own cleanup closure, so
+    // nothing but HeroSection's effect cleanup can cancel them.
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
+    expect(vi.getTimerCount()).toBeGreaterThanOrEqual(2);
+
+    unmount();
+
+    expect(vi.getTimerCount()).toBe(0);
   });
 });

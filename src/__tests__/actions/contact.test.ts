@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
+const { mockSend } = vi.hoisted(() => ({ mockSend: vi.fn() }));
+
 // Mock resend before importing the action
 vi.mock('resend', () => ({
   Resend: class MockResend {
-    emails = {
-      send: vi.fn().mockResolvedValue({ id: 'mock-email-id' }),
-    };
+    emails = { send: mockSend };
   },
 }));
 
@@ -27,6 +27,7 @@ const validFormData = {
 describe('submitContactForm', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockSend.mockResolvedValue({ id: 'mock-email-id' });
     // Default: no API key (dev mode)
     process.env.RESEND_API_KEY = '';
   });
@@ -95,10 +96,63 @@ describe('submitContactForm', () => {
     it('rejects phone number too long', async () => {
       const result = await submitContactForm({
         ...validFormData,
-        contactPersonNumber: '12345678901234567',
+        contactPersonNumber: '+123456789012345678901234',
       });
       expect(result.success).toBe(false);
       expect(result.error).toBe('Invalid phone number.');
+    });
+
+    it('accepts a phone number at the 24-character ceiling', async () => {
+      const number = '+12345678901234567890123';
+      expect(number).toHaveLength(24);
+      const result = await submitContactForm({ ...validFormData, contactPersonNumber: number });
+      expect(result.success).toBe(true);
+    });
+
+    it('accepts a phone number at the 7-character floor', async () => {
+      const result = await submitContactForm({ ...validFormData, contactPersonNumber: '1234567' });
+      expect(result.success).toBe(true);
+    });
+
+    it('rejects a phone number one character below the floor', async () => {
+      const result = await submitContactForm({ ...validFormData, contactPersonNumber: '123456' });
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Invalid phone number.');
+    });
+
+    it('accepts a parenthesised country code', async () => {
+      const result = await submitContactForm({
+        ...validFormData,
+        contactPersonNumber: '(+91) 98765 43210',
+      });
+      expect(result.success).toBe(true);
+    });
+
+    it('accepts a US-style number with an area code in parentheses', async () => {
+      const result = await submitContactForm({
+        ...validFormData,
+        contactPersonNumber: '+1 (555) 123-4567',
+      });
+      expect(result.success).toBe(true);
+    });
+
+    it('rejects a digit-free string of otherwise valid length', async () => {
+      // Every character in the permitted class is optional, so without the `(?=.*\d)` lookahead
+      // a string built entirely out of separators validates as a phone number.
+      const result = await submitContactForm({
+        ...validFormData,
+        contactPersonNumber: '+++++++',
+      });
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Invalid phone number.');
+    });
+
+    it('accepts a single digit padded to valid length with separators', async () => {
+      const result = await submitContactForm({
+        ...validFormData,
+        contactPersonNumber: '--- 1 ---',
+      });
+      expect(result.success).toBe(true);
     });
 
     it('rejects phone number with invalid characters', async () => {
@@ -178,6 +232,64 @@ describe('submitContactForm', () => {
       process.env.RESEND_API_KEY = 'test_not_a_real_key';
       const result = await submitContactForm(validFormData);
       expect(result.success).toBe(true);
+      expect(mockSend).toHaveBeenCalledTimes(1);
+    });
+
+    it('returns a generic failure when Resend rejects', async () => {
+      process.env.RESEND_API_KEY = 'test_not_a_real_key';
+      mockSend.mockRejectedValue(new Error('Resend is down'));
+      const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+      const result = await submitContactForm(validFormData);
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe(
+        'Failed to send your enquiry. Please try again or contact us directly.',
+      );
+      expect(consoleError).toHaveBeenCalled();
+      consoleError.mockRestore();
+    });
+
+    it('flattens CR/LF out of the email subject', async () => {
+      // `productName` carries arbitrary free text via the "Other" option, and a newline in a
+      // subject is the classic header-injection vector.
+      process.env.RESEND_API_KEY = 'test_not_a_real_key';
+      const result = await submitContactForm({
+        ...validFormData,
+        productName: 'Surgeon Cap\r\nBcc: attacker@evil.test',
+        companyName: 'Test\nHospital',
+      });
+
+      expect(result.success).toBe(true);
+      const subject = mockSend.mock.calls[0][0].subject as string;
+      expect(subject).not.toMatch(/[\r\n]/);
+      expect(subject).toBe('New Enquiry: Surgeon Cap Bcc: attacker@evil.test — Test Hospital');
+    });
+
+    it('clamps an overlong subject', async () => {
+      process.env.RESEND_API_KEY = 'test_not_a_real_key';
+      const result = await submitContactForm({
+        ...validFormData,
+        productName: 'A'.repeat(500),
+      });
+
+      expect(result.success).toBe(true);
+      const subject = mockSend.mock.calls[0][0].subject as string;
+      expect(subject).toHaveLength(180);
+    });
+
+    it('omits the designation line from the email body when none was given', async () => {
+      process.env.RESEND_API_KEY = 'test_not_a_real_key';
+      const result = await submitContactForm({
+        ...validFormData,
+        contactPersonDesignation: '',
+        message: '',
+      });
+
+      expect(result.success).toBe(true);
+      const body = mockSend.mock.calls[0][0].text as string;
+      expect(body).not.toContain('Designation:');
+      expect(body).toContain('(No additional message)');
     });
   });
 });

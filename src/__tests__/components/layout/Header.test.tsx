@@ -2,19 +2,43 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { Header } from '@/components/layout/Header';
 
-vi.mock('motion/react', () => ({
-  motion: new Proxy(
-    {},
-    {
-      get: (_, tag) => (props: any) => {
-        const { initial, animate, exit, transition, whileInView, variants, viewport, ...rest } =
-          props;
-        return <div data-testid={`motion-${String(tag)}`} {...rest} />;
+vi.mock('motion/react', () => {
+  // The component per tag is CACHED. A bare `get` handler returns a fresh function on every
+  // property access, so `motion.div` is a different component type on every render and React
+  // tears down and rebuilds the whole subtree — silently destroying uncontrolled input values
+  // and breaking any `toBe` node-identity assertion. The real `motion.div` is a stable
+  // reference. Same pattern as ContactSection.test.tsx:17-31.
+  const cache = new Map<string, React.ComponentType<any>>();
+  return {
+    motion: new Proxy(
+      {},
+      {
+        get: (_, tag) => {
+          const key = String(tag);
+          let component = cache.get(key);
+          if (!component) {
+            component = (props: any) => {
+              const {
+                initial,
+                animate,
+                exit,
+                transition,
+                whileInView,
+                variants,
+                viewport,
+                ...rest
+              } = props;
+              return <div data-testid={`motion-${key}`} {...rest} />;
+            };
+            cache.set(key, component);
+          }
+          return component;
+        },
       },
-    },
-  ),
-  AnimatePresence: ({ children }: any) => <>{children}</>,
-}));
+    ),
+    AnimatePresence: ({ children }: any) => <>{children}</>,
+  };
+});
 
 vi.mock('next/link', () => ({
   default: ({ children, href, ...props }: any) => (

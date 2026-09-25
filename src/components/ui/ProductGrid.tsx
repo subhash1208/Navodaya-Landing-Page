@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { Search, X } from 'lucide-react';
 import { cn } from '@/utils/cn';
-import { PRODUCTS, PRODUCT_CATEGORIES } from '@/constants';
+import { PRODUCTS, PRODUCT_CATEGORIES, PRODUCT_COUNT_BY_CATEGORY } from '@/constants';
 import { CATEGORY_RULE } from '@/constants/categoryRule';
 import type { CategorySlug } from '@/types';
 import { ProductCard } from './ProductCard';
@@ -74,7 +74,11 @@ export function ProductGrid() {
 
   const tabs: { id: TabId; label: string; count: number }[] = [
     { id: ALL_ID, label: 'All Products', count: PRODUCTS.length },
-    ...PRODUCT_CATEGORIES.map((c) => ({ id: c.slug, label: c.name, count: c.productCount })),
+    ...PRODUCT_CATEGORIES.map((c) => ({
+      id: c.slug,
+      label: c.name,
+      count: PRODUCT_COUNT_BY_CATEGORY[c.slug],
+    })),
   ];
 
   return (

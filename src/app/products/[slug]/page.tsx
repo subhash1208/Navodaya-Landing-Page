@@ -10,7 +10,7 @@ interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
-// Generate all 51 product pages at build time (SSG)
+// Generate a page for every product in the catalogue at build time (SSG)
 export async function generateStaticParams() {
   return PRODUCTS.map((p) => ({ slug: p.slug }));
 }

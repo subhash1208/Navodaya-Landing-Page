@@ -30,6 +30,10 @@ export default function HeroSection() {
   const [expandedCategory, setExpandedCategory] = useState<number | null>(null);
   const collapseRef = useRef<(() => void) | null>(null);
   const rightPanelRef = useRef<HTMLDivElement>(null);
+  // The two reveal timers below are started from `useTypewriter`'s `onComplete`, which fires
+  // from inside the hook's own effect — outside that effect's cleanup closure, so the hook
+  // cannot clear them. Unmounting mid-typing used to leave both running.
+  const revealTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   // False while the first-visit intro overlay is covering the page. Without this the whole
   // entrance sequence — typewriter included — runs and finishes in the first ~1.7s, behind
@@ -51,6 +55,14 @@ export default function HeroSection() {
   }, []);
 
   useEffect(() => {
+    const timers = revealTimersRef.current;
+    return () => {
+      timers.forEach(clearTimeout);
+      timers.length = 0;
+    };
+  }, []);
+
+  useEffect(() => {
     // The badge has no upstream trigger the way line 2 and the body copy have the
     // typewriter's onComplete, so it re-reveals itself here once the intro is out of the
     // way. This runs after paint, by which point the layout effect above has already
@@ -69,8 +81,10 @@ export default function HeroSection() {
     startDelay: 300,
     enabled: introFinished,
     onComplete: () => {
-      setTimeout(() => setLine2Visible(true), 150);
-      setTimeout(() => setContentVisible(true), 600);
+      revealTimersRef.current.push(
+        setTimeout(() => setLine2Visible(true), 150),
+        setTimeout(() => setContentVisible(true), 600),
+      );
     },
   });
 

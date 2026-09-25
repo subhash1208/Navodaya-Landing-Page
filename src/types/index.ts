@@ -29,7 +29,6 @@ export interface ProductCategory {
   slug: CategorySlug;
   description: string;
   icon: string;
-  productCount: number;
 }
 
 // Navigation
