@@ -23,11 +23,7 @@ import { IntroFinishedContext } from '@/hooks/useIntroFinished';
  */
 
 vi.mock('next/image', () => ({
-  default: (props: Record<string, unknown>) => <img {...props} />,
-}));
-
-vi.mock('@/components/ui/ProductCategoryGraph', () => ({
-  ProductCategoryGraph: () => <canvas data-testid="product-graph" />,
+  default: ({ fill, ...props }: Record<string, unknown>) => <img {...props} />,
 }));
 
 describe('HeroSection server rendering', () => {
@@ -58,6 +54,16 @@ describe('HeroSection server rendering', () => {
     expect(html).toContain('Get a Quote');
     expect(html).toMatch(/href="\/products"/);
     expect(html).toMatch(/href="\/#contact"/);
+  });
+
+  it('server-renders the specimen plate photograph with its alt text', () => {
+    // `initial={false}` on the plate's motion.figure means the server emits the visible
+    // state. The opacity assertion below is the general guard; this one proves the image
+    // and its alt reach the HTML at all, which the old canvas graph never did — it was
+    // `aria-hidden` and painted nothing until rAF ran.
+    expect(html).toContain('/hero/cup-three-quarter.webp');
+    expect(html).toContain('single-use paper cup');
+    expect(html).toContain('Branded Paper Cup');
   });
 
   it('does not ship hero content at opacity:0', () => {

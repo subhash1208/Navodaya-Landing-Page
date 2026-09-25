@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, act, fireEvent } from '@testing-library/react';
+import { render, screen, act } from '@testing-library/react';
 import HeroSection from '@/components/sections/HeroSection';
 import { PRODUCTS } from '@/constants';
 
@@ -53,7 +53,7 @@ vi.mock('next/link', () => ({
 }));
 
 vi.mock('next/image', () => ({
-  default: (props: any) => <img {...props} />,
+  default: ({ fill, ...props }: any) => <img {...props} />,
 }));
 
 vi.mock('lucide-react', () => ({
@@ -72,14 +72,6 @@ vi.mock('@/hooks/useTypewriter', () => ({
       showCursor: true,
       isDone: true,
     };
-  },
-}));
-
-vi.mock('@/components/ui/ProductCategoryGraph', () => ({
-  ProductCategoryGraph: (props: any) => {
-    // Call onLogoScale to cover the handleLogoScale callback
-    if (props.onLogoScale) props.onLogoScale(1.5);
-    return <canvas data-testid="product-graph" />;
   },
 }));
 
@@ -129,32 +121,39 @@ describe('HeroSection', () => {
     expect(scrollLink).toBeTruthy();
   });
 
-  it('renders product category graph', () => {
+  it('renders the specimen plate photograph with descriptive alt text', () => {
     render(<HeroSection />);
-    expect(screen.getByTestId('product-graph')).toBeTruthy();
+    const plate = screen.getByAltText(/single-use paper cup/i);
+    expect(plate.getAttribute('src')).toBe('/hero/cup-three-quarter.webp');
+    // The panel is `hidden` below 768px, so the first slot must keep mobile browsers from
+    // picking a candidate they will never paint.
+    expect(plate.getAttribute('sizes')).toBe('(max-width: 767px) 0px, 400px');
+  });
+
+  it('renders the specimen plate caption and index numeral', () => {
+    render(<HeroSection />);
+    expect(screen.getByText('Branded Paper Cup')).toBeTruthy();
+    expect(screen.getByText('Hotel Amenities')).toBeTruthy();
+    expect(screen.getByText('Specimen')).toBeTruthy();
+    expect(screen.getByText('01').getAttribute('aria-hidden')).toBe('true');
+  });
+
+  it('exposes no interactive control around the specimen plate', () => {
+    // The canvas graph this replaced was wrapped in a `role="button"` div whose only action
+    // was "collapse", while its 50 product navigation targets stayed mouse-only. A plate is
+    // not a control: the only buttons/links in the hero are the two CTAs and the scroll link.
+    render(<HeroSection />);
+    expect(screen.queryByRole('button')).toBeNull();
+    expect(screen.queryAllByRole('link').map((a) => a.textContent?.trim())).toEqual([
+      'Explore Products',
+      'Get a Quote',
+      'Scroll',
+    ]);
   });
 
   it('renders badge text', () => {
     render(<HeroSection />);
     expect(screen.getByText(/Trusted B2B Supplier/)).toBeTruthy();
-  });
-
-  it('sets isMobile to true when matchMedia matches max-width 768px', () => {
-    vi.mocked(window.matchMedia).mockImplementation((query: string) => ({
-      matches: query === '(max-width: 768px)',
-      media: query,
-      onchange: null,
-      addListener: vi.fn(),
-      removeListener: vi.fn(),
-      addEventListener: vi.fn(),
-      removeEventListener: vi.fn(),
-      dispatchEvent: vi.fn(),
-    }));
-
-    render(<HeroSection />);
-    // The ProductCategoryGraph should receive isMobile=true
-    // Component renders without error in mobile mode
-    expect(screen.getByTestId('product-graph')).toBeTruthy();
   });
 
   it('keeps hero content visible immediately when prefers-reduced-motion is set', () => {
@@ -176,65 +175,10 @@ describe('HeroSection', () => {
     expect(screen.getByText(/Solutions for Every Industry/)).toBeTruthy();
     expect(screen.getByText('Explore Products')).toBeTruthy();
     expect(screen.getByText('Get a Quote')).toBeTruthy();
-  });
 
-  it('calls handleLogoScale callback when ProductCategoryGraph invokes onLogoScale', () => {
-    // The ProductCategoryGraph mock already calls onLogoScale in the module-level mock
-    // We verify the component handles it without error by checking it renders
-    render(<HeroSection />);
-    expect(screen.getByTestId('product-graph')).toBeTruthy();
-  });
-
-  it('handles keyboard Enter key on right panel', () => {
-    render(<HeroSection />);
-    const rightPanel = screen.getByRole('button', { name: /product category graph/i });
-
-    // Simulate Enter key press
-    fireEvent.keyDown(rightPanel, { key: 'Enter' });
-
-    // Component should handle without error
-    expect(rightPanel).toBeTruthy();
-  });
-
-  it('handles keyboard Space key on right panel', () => {
-    render(<HeroSection />);
-    const rightPanel = screen.getByRole('button', { name: /product category graph/i });
-
-    // Simulate Space key press
-    fireEvent.keyDown(rightPanel, { key: ' ' });
-
-    // Component should handle without error
-    expect(rightPanel).toBeTruthy();
-  });
-
-  it('handles keyboard other keys on right panel (no action)', () => {
-    render(<HeroSection />);
-    const rightPanel = screen.getByRole('button', { name: /product category graph/i });
-
-    // Simulate other key press (should not trigger collapse)
-    fireEvent.keyDown(rightPanel, { key: 'Escape' });
-
-    // Component should handle without error
-    expect(rightPanel).toBeTruthy();
-  });
-
-  it('handles click on right panel', () => {
-    render(<HeroSection />);
-    const rightPanel = screen.getByRole('button', { name: /product category graph/i });
-
-    // Simulate click
-    fireEvent.click(rightPanel);
-
-    // Component should handle without error
-    expect(rightPanel).toBeTruthy();
-  });
-
-  it('right panel has correct role and tabIndex', () => {
-    render(<HeroSection />);
-    const rightPanel = screen.getByRole('button', { name: /product category graph/i });
-
-    expect(rightPanel.getAttribute('role')).toBe('button');
-    expect(rightPanel.getAttribute('tabindex')).toBe('0');
+    // The plate keeps its server-rendered visible state too — the layout effect returns
+    // before it can be wound back to hidden.
+    expect(screen.getByAltText(/single-use paper cup/i)).toBeTruthy();
   });
 
   it('clears both reveal timers on unmount', () => {

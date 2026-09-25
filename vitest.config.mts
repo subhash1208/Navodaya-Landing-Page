@@ -15,12 +15,7 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'html', 'lcov'],
       include: ['src/**/*.{ts,tsx}'],
-      exclude: [
-        'src/**/*.test.{ts,tsx}',
-        'src/**/*.spec.{ts,tsx}',
-        'src/__tests__/**',
-        'src/components/ui/ProductCategoryGraph.tsx',
-      ],
+      exclude: ['src/**/*.test.{ts,tsx}', 'src/**/*.spec.{ts,tsx}', 'src/__tests__/**'],
       thresholds: {
         statements: 90,
         branches: 90,
