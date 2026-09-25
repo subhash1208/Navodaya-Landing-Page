@@ -81,35 +81,66 @@ test.describe('Contact Form', () => {
     await expect(page.locator('input[name="companyEmail"], [name="companyEmail"]')).toBeVisible();
   });
 
-  test('form shows validation error on empty submit', async ({ page }) => {
-    // Try to submit empty form
-    const submitButton = page.locator('button[type="submit"]');
-    if (await submitButton.isVisible()) {
-      await submitButton.click();
-      // Should show some error indication (browser native or custom)
-      // The form uses required fields, so browser will block submission
-      await page.waitForTimeout(500);
-      // Page should still be on the same URL (form didn't submit)
-      await expect(page).toHaveURL(/\/#contact/);
-    }
+  test('form shows a validation error on empty submit', async ({ page }) => {
+    // The form carries `noValidate`, so an empty submit really does reach the server action and
+    // really does come back with an error — there is nothing conditional about this. The previous
+    // version of this test wrapped every assertion in `if (await submitButton.isVisible())` and
+    // waited a flat 500ms, so it passed whether or not the banner ever rendered.
+    await page.locator('button[type="submit"]').click();
+
+    const banner = page.getByRole('alert');
+    await expect(banner).toBeVisible();
+    await expect(banner).toContainText('Product name is required.');
+    await expect(page).toHaveURL(/\/#contact/);
+  });
+
+  test('a field-level error marks and describes the offending input', async ({ page }) => {
+    await page.fill('[name="companyName"]', 'Test Hospital');
+    await page.fill('[name="companyEmail"]', 'not-an-email');
+    await page.fill('[name="contactPersonName"]', 'Dr. Smith');
+    await page.fill('[name="contactPersonNumber"]', '+91 98765 43210');
+    await page.fill('[name="quantity"]', '1000 pieces');
+    await page.locator('select[name="productName"]').selectOption({ index: 1 });
+
+    await page.locator('button[type="submit"]').click();
+
+    const email = page.locator('[name="companyEmail"]');
+    await expect(email).toHaveAttribute('aria-invalid', 'true');
+    await expect(email).toHaveAttribute('aria-describedby', 'companyEmail-error');
+    await expect(page.locator('#companyEmail-error')).toHaveText('Invalid email address.');
+    await expect(email).toBeFocused();
+  });
+
+  test('a filled honeypot is answered exactly like a real submission', async ({ page }) => {
+    // The honeypot is positioned off-screen and `aria-hidden`, so it is filled the way a naive
+    // bot would fill it — by writing to the DOM node — rather than through Playwright's
+    // actionability checks. That the server discards it without sending is asserted in
+    // src/__tests__/actions/contact.test.ts; what matters here is that a bot cannot tell.
+    await page
+      .locator('[name="companyWebsite"]')
+      .evaluate((el) => ((el as HTMLInputElement).value = 'https://spam.test'));
+
+    await page.fill('[name="companyName"]', 'Spam Co');
+    await page.fill('[name="companyEmail"]', 'bot@spam.test');
+    await page.fill('[name="contactPersonName"]', 'Bot');
+    await page.fill('[name="contactPersonNumber"]', '+91 98765 43210');
+    await page.fill('[name="quantity"]', '1000 pieces');
+    await page.locator('select[name="productName"]').selectOption({ index: 1 });
+
+    await page.locator('button[type="submit"]').click();
+
+    await expect(page.getByRole('heading', { name: /thank you/i })).toBeVisible({ timeout: 10000 });
   });
 
   test('form submits successfully with valid data', async ({ page }) => {
-    // Fill in all required fields
-    await page.fill('input[name="companyName"], [name="companyName"]', 'Test Hospital');
-    await page.fill('input[name="companyEmail"], [name="companyEmail"]', 'test@hospital.com');
-    await page.fill('input[name="contactPersonName"], [name="contactPersonName"]', 'Dr. Smith');
-    await page.fill(
-      'input[name="contactPersonNumber"], [name="contactPersonNumber"]',
-      '+91 98765 43210',
-    );
-    await page.fill('input[name="quantity"], [name="quantity"]', '1000 pieces');
-
-    // Select a product if there's a select/dropdown
-    const productSelect = page.locator('select[name="productName"], [name="productName"]');
-    if (await productSelect.isVisible()) {
-      await productSelect.selectOption({ index: 1 });
-    }
+    // Unique per run: the server action rate-limits three submissions per email per ten minutes,
+    // and this spec runs once per Playwright project against one shared `next start`.
+    await page.fill('[name="companyName"]', 'Test Hospital');
+    await page.fill('[name="companyEmail"]', `test-${Date.now()}@hospital.com`);
+    await page.fill('[name="contactPersonName"]', 'Dr. Smith');
+    await page.fill('[name="contactPersonNumber"]', '+91 98765 43210');
+    await page.fill('[name="quantity"]', '1000 pieces');
+    await page.locator('select[name="productName"]').selectOption({ index: 1 });
 
     // Submit
     const submitButton = page.locator('button[type="submit"]');

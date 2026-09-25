@@ -352,6 +352,7 @@ describe('ContactSection', () => {
         contactPersonDesignation: 'Buyer',
         contactPersonNumber: '+91 98765 43210',
         message: 'Bulk order',
+        honeypot: '',
       });
     });
 
@@ -369,6 +370,7 @@ describe('ContactSection', () => {
         contactPersonDesignation: '',
         contactPersonNumber: '',
         message: '',
+        honeypot: '',
       });
     });
 
@@ -441,6 +443,165 @@ describe('ContactSection', () => {
 
       resolveAction({ success: true });
       expect(await screen.findByText('Thank You!')).toBeTruthy();
+    });
+  });
+
+  describe('honeypot', () => {
+    it('is reachable by neither keyboard nor assistive technology', () => {
+      const { container } = render(<ContactSection />);
+      const honeypot = container.querySelector(
+        'input[name="companyWebsite"]',
+      ) as HTMLInputElement | null;
+
+      expect(honeypot).toBeTruthy();
+      // Not `type="hidden"` — naive form-fillers skip those.
+      expect(honeypot!.type).toBe('text');
+      expect(honeypot!.tabIndex).toBe(-1);
+      expect(honeypot!.getAttribute('autocomplete')).toBe('off');
+      expect(honeypot!.closest('[aria-hidden="true"]')).toBeTruthy();
+    });
+
+    it('forwards whatever a bot typed into it', async () => {
+      const { container } = render(<ContactSection />);
+      const honeypot = container.querySelector('input[name="companyWebsite"]') as HTMLInputElement;
+      fillForm();
+      fireEvent.change(honeypot, { target: { value: 'https://spam.test' } });
+      submitForm();
+
+      await waitFor(() => expect(mockSubmit).toHaveBeenCalledTimes(1));
+      expect(mockSubmit.mock.calls[0][0].honeypot).toBe('https://spam.test');
+    });
+  });
+
+  describe('length caps', () => {
+    it('caps every free-text input at the server-enforced length', () => {
+      render(<ContactSection />);
+      // These literals must match `FIELD_LIMITS` in src/app/actions/contact.ts, which is asserted
+      // against the same numbers in src/__tests__/actions/contact.test.ts.
+      const expected: Array<[string, number]> = [
+        ['e.g. 1000 pieces', 100],
+        ['Company name', 120],
+        ['company@example.com', 120],
+        ['Full name', 100],
+        ['e.g. Manager', 100],
+        ['+91 XXXXX XXXXX', 24],
+        ['Tell us more about your requirements...', 2000],
+      ];
+      for (const [placeholder, max] of expected) {
+        const input = screen.getByPlaceholderText(placeholder) as HTMLInputElement;
+        expect(input.maxLength, `wrong maxLength on ${placeholder}`).toBe(max);
+      }
+    });
+
+    it('caps the Other detail below the product cap to leave room for its prefix', () => {
+      render(<ContactSection />);
+      fireEvent.change(screen.getByRole('combobox'), { target: { value: 'Other' } });
+      const input = screen.getByPlaceholderText(
+        'Describe the product you need',
+      ) as HTMLInputElement;
+      // 120 (server `productName` cap) minus the 8 characters of the "Other — " prefix.
+      expect(input.maxLength).toBe(112);
+    });
+  });
+
+  describe('per-field errors', () => {
+    it('marks the offending input and points it at a rendered message', async () => {
+      mockSubmit.mockResolvedValue({
+        success: false,
+        error: 'Invalid email address.',
+        field: 'companyEmail',
+      });
+      render(<ContactSection />);
+      fillForm();
+      submitForm();
+
+      const input = (await screen.findByPlaceholderText('company@example.com')) as HTMLInputElement;
+      await waitFor(() => expect(input.getAttribute('aria-invalid')).toBe('true'));
+      expect(input.getAttribute('aria-describedby')).toBe('companyEmail-error');
+
+      const message = document.getElementById('companyEmail-error');
+      expect(message?.textContent).toBe('Invalid email address.');
+      // The global banner stays as well — one is for the field, one announces the failure.
+      expect(screen.getAllByText('Invalid email address.').length).toBe(2);
+    });
+
+    it('leaves every other input unmarked', async () => {
+      mockSubmit.mockResolvedValue({
+        success: false,
+        error: 'Quantity is required.',
+        field: 'quantity',
+      });
+      render(<ContactSection />);
+      fillForm();
+      submitForm();
+
+      await waitFor(() =>
+        expect(
+          (screen.getByPlaceholderText('e.g. 1000 pieces') as HTMLInputElement).getAttribute(
+            'aria-invalid',
+          ),
+        ).toBe('true'),
+      );
+      expect(screen.getByPlaceholderText('Company name').getAttribute('aria-invalid')).toBeNull();
+      expect(document.getElementById('companyName-error')).toBeNull();
+    });
+
+    it('moves focus to the offending field', async () => {
+      mockSubmit.mockResolvedValue({
+        success: false,
+        error: 'Invalid phone number.',
+        field: 'contactPersonNumber',
+      });
+      render(<ContactSection />);
+      fillForm({ phone: '123' });
+      submitForm();
+
+      const phone = screen.getByPlaceholderText('+91 XXXXX XXXXX');
+      await waitFor(() => expect(document.activeElement).toBe(phone));
+    });
+
+    it('focuses the Other detail rather than the select when the product is free text', async () => {
+      mockSubmit.mockResolvedValue({
+        success: false,
+        error: 'Product name is required.',
+        field: 'productName',
+      });
+      render(<ContactSection />);
+      fillForm({ product: 'Other', other: '   ' });
+      submitForm();
+
+      const detail = screen.getByPlaceholderText('Describe the product you need');
+      await waitFor(() => expect(document.activeElement).toBe(detail));
+      expect(detail.getAttribute('aria-describedby')).toBe('productName-error');
+    });
+
+    it('moves no focus when the failure names no field', async () => {
+      mockSubmit.mockResolvedValue({ success: false, error: 'Something broke.' });
+      render(<ContactSection />);
+      const company = screen.getByPlaceholderText('Company name');
+      company.focus();
+      fillForm();
+      submitForm();
+
+      expect(await screen.findByText('Something broke.')).toBeTruthy();
+      expect(document.activeElement).toBe(company);
+    });
+  });
+
+  describe('fallback contact details', () => {
+    it('renders a send failure that still tells the visitor how to reach the business', async () => {
+      mockSubmit.mockResolvedValue({
+        success: false,
+        error:
+          'Failed to send your enquiry. Please try again, or please email us directly at info@navodaya.group or call +91 83286 05812.',
+      });
+      render(<ContactSection />);
+      fillForm();
+      submitForm();
+
+      const banner = await screen.findByRole('alert');
+      expect(banner.textContent).toContain('info@navodaya.group');
+      expect(banner.textContent).toContain('+91 83286 05812');
     });
   });
 

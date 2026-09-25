@@ -1,6 +1,6 @@
 'use client';
 
-import { startTransition, useActionState, useCallback, useRef, useState } from 'react';
+import { startTransition, useActionState, useCallback, useEffect, useRef, useState } from 'react';
 import {
   Send,
   CheckCircle,
@@ -37,6 +37,32 @@ const selectClass =
 const OTHER_VALUE = 'Other';
 
 /**
+ * Hidden name of the honeypot input. Deliberately plausible — a bot that autofills anything
+ * called "website" gets caught. NOT `type="hidden"`: naive form-fillers skip those, while an
+ * off-screen text input looks like every other field in the DOM.
+ */
+const HONEYPOT_FIELD = 'companyWebsite';
+
+/**
+ * Client-side length ceilings. These mirror `FIELD_LIMITS` in `src/app/actions/contact.ts`, which
+ * enforces the same numbers server-side — `maxLength` is a convenience for a human typing, not a
+ * control. Both tables are asserted against these literals in their respective specs, so a drift
+ * in either direction fails a test.
+ */
+const FIELD_MAX_LENGTHS = {
+  quantity: 100,
+  // The detail is folded into `productName` as `Other — <detail>`, an 8-character prefix, so the
+  // ceiling here is the server's 120-char `productName` cap minus that prefix.
+  productOther: 112,
+  companyName: 120,
+  companyEmail: 120,
+  contactPersonName: 100,
+  contactPersonDesignation: 100,
+  contactPersonNumber: 24,
+  message: 2000,
+} as const;
+
+/**
  * `formData.get()` returns `string | File | null`. `as string` is erased at compile time and
  * coerces nothing, so a `File` would reach `.trim()` in `validateForm` the day a field changes.
  */
@@ -49,9 +75,11 @@ interface FieldProps {
   label: string;
   id: string;
   icon?: React.ReactNode;
+  /** Server-reported message for THIS field. Rendered at `${id}-error`, referenced by the input. */
+  error?: string;
   children: React.ReactNode;
 }
-function Field({ label, id, icon, children }: FieldProps) {
+function Field({ label, id, icon, error, children }: FieldProps) {
   return (
     <div className="flex flex-col gap-2">
       <label
@@ -62,11 +90,16 @@ function Field({ label, id, icon, children }: FieldProps) {
         {label}
       </label>
       {children}
+      {error ? (
+        <p id={`${id}-error`} className="font-mono text-label text-red-300">
+          {error}
+        </p>
+      ) : null}
     </div>
   );
 }
 
-type FormState = { success: boolean; error?: string } | null;
+type FormState = { success: boolean; error?: string; field?: string } | null;
 
 async function contactAction(_prev: FormState, formData: FormData): Promise<FormState> {
   const selected = readString(formData, 'productName');
@@ -85,6 +118,7 @@ async function contactAction(_prev: FormState, formData: FormData): Promise<Form
     contactPersonDesignation: readString(formData, 'contactPersonDesignation'),
     contactPersonNumber: readString(formData, 'contactPersonNumber'),
     message: readString(formData, 'message'),
+    honeypot: readString(formData, HONEYPOT_FIELD),
   });
 }
 
@@ -100,6 +134,22 @@ export default function ContactSection() {
 
   const showSuccess = state?.success === true && !dismissed;
   const isOther = productChoice === OTHER_VALUE;
+  // Field names match input ids throughout this form, so the server's `field` doubles as a
+  // DOM id. `productName` is the exception: when "Other" is selected the thing the visitor must
+  // actually retype is the free-text detail beside the select, not the select itself.
+  const invalidField = state?.success === false ? state.field : undefined;
+  const focusTarget = invalidField === 'productName' && isOther ? 'productOther' : invalidField;
+
+  const errorFor = (id: string) => (invalidField === id ? state?.error : undefined);
+  const invalidProps = (id: string) =>
+    invalidField === id ? { 'aria-invalid': true, 'aria-describedby': `${id}-error` } : {};
+
+  useEffect(() => {
+    // A visitor who submitted from the bottom of a long form should not have to hunt for which
+    // field the banner is talking about. `state` is a fresh object on every dispatch, so this
+    // re-fires even when the same field fails twice in a row.
+    if (focusTarget) document.getElementById(focusTarget)?.focus();
+  }, [state, focusTarget]);
 
   const handleAction = useCallback(
     (event: React.FormEvent<HTMLFormElement>) => {
@@ -228,7 +278,12 @@ export default function ContactSection() {
                 )}
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <Field label="Product" id="productName" icon={<Package className="w-3 h-3" />}>
+                  <Field
+                    label="Product"
+                    id="productName"
+                    icon={<Package className="w-3 h-3" />}
+                    error={errorFor('productName')}
+                  >
                     <select
                       id="productName"
                       name="productName"
@@ -236,6 +291,7 @@ export default function ContactSection() {
                       className={cn(inputClass, selectClass)}
                       defaultValue=""
                       onChange={(e) => setProductChoice(e.target.value)}
+                      {...invalidProps('productName')}
                     >
                       <option value="" disabled>
                         Select a product
@@ -255,14 +311,16 @@ export default function ContactSection() {
                       <option value={OTHER_VALUE}>{OTHER_VALUE}</option>
                     </select>
                   </Field>
-                  <Field label="Quantity" id="quantity">
+                  <Field label="Quantity" id="quantity" error={errorFor('quantity')}>
                     <input
                       id="quantity"
                       type="text"
                       name="quantity"
                       required
+                      maxLength={FIELD_MAX_LENGTHS.quantity}
                       placeholder="e.g. 1000 pieces"
                       className={inputClass}
+                      {...invalidProps('quantity')}
                     />
                   </Field>
                   {/* Stable trailing slot — holds `null` rather than shifting its siblings. */}
@@ -273,32 +331,48 @@ export default function ContactSection() {
                         type="text"
                         name="productOther"
                         required
+                        maxLength={FIELD_MAX_LENGTHS.productOther}
                         placeholder="Describe the product you need"
                         className={inputClass}
+                        {...invalidProps('productName')}
                       />
                     </Field>
                   ) : null}
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <Field label="Company" id="companyName" icon={<Users className="w-3 h-3" />}>
+                  <Field
+                    label="Company"
+                    id="companyName"
+                    icon={<Users className="w-3 h-3" />}
+                    error={errorFor('companyName')}
+                  >
                     <input
                       id="companyName"
                       type="text"
                       name="companyName"
                       required
+                      maxLength={FIELD_MAX_LENGTHS.companyName}
                       placeholder="Company name"
                       className={inputClass}
+                      {...invalidProps('companyName')}
                     />
                   </Field>
-                  <Field label="Email" id="companyEmail" icon={<Mail className="w-3 h-3" />}>
+                  <Field
+                    label="Email"
+                    id="companyEmail"
+                    icon={<Mail className="w-3 h-3" />}
+                    error={errorFor('companyEmail')}
+                  >
                     <input
                       id="companyEmail"
                       type="email"
                       name="companyEmail"
                       required
+                      maxLength={FIELD_MAX_LENGTHS.companyEmail}
                       placeholder="company@example.com"
                       className={inputClass}
+                      {...invalidProps('companyEmail')}
                     />
                   </Field>
                 </div>
@@ -308,51 +382,92 @@ export default function ContactSection() {
                     label="Contact Person"
                     id="contactPersonName"
                     icon={<User className="w-3 h-3" />}
+                    error={errorFor('contactPersonName')}
                   >
                     <input
                       id="contactPersonName"
                       type="text"
                       name="contactPersonName"
                       required
+                      maxLength={FIELD_MAX_LENGTHS.contactPersonName}
                       placeholder="Full name"
                       className={inputClass}
+                      {...invalidProps('contactPersonName')}
                     />
                   </Field>
                   <Field
                     label="Designation"
                     id="contactPersonDesignation"
                     icon={<Briefcase className="w-3 h-3" />}
+                    error={errorFor('contactPersonDesignation')}
                   >
                     <input
                       id="contactPersonDesignation"
                       type="text"
                       name="contactPersonDesignation"
+                      maxLength={FIELD_MAX_LENGTHS.contactPersonDesignation}
                       placeholder="e.g. Manager"
                       className={inputClass}
+                      {...invalidProps('contactPersonDesignation')}
                     />
                   </Field>
                 </div>
 
-                <Field label="Phone" id="contactPersonNumber" icon={<Phone className="w-3 h-3" />}>
+                <Field
+                  label="Phone"
+                  id="contactPersonNumber"
+                  icon={<Phone className="w-3 h-3" />}
+                  error={errorFor('contactPersonNumber')}
+                >
                   <input
                     id="contactPersonNumber"
                     type="tel"
                     name="contactPersonNumber"
                     required
+                    maxLength={FIELD_MAX_LENGTHS.contactPersonNumber}
                     placeholder="+91 XXXXX XXXXX"
                     className={inputClass}
+                    {...invalidProps('contactPersonNumber')}
                   />
                 </Field>
 
-                <Field label="Message" id="message" icon={<MessageSquare className="w-3 h-3" />}>
+                <Field
+                  label="Message"
+                  id="message"
+                  icon={<MessageSquare className="w-3 h-3" />}
+                  error={errorFor('message')}
+                >
                   <textarea
                     id="message"
                     name="message"
                     rows={3}
+                    maxLength={FIELD_MAX_LENGTHS.message}
                     placeholder="Tell us more about your requirements..."
                     className={cn(inputClass, 'resize-none min-h-[88px]')}
+                    {...invalidProps('message')}
                   />
                 </Field>
+
+                {/*
+                  Honeypot. Off-screen rather than `display:none` so a bot reading computed styles
+                  still sees a live field, `aria-hidden` + `tabIndex={-1}` so no human or assistive
+                  technology can ever reach it, `autoComplete="off"` so no browser fills it in.
+                  A non-empty value makes the server discard the submission and report success.
+                */}
+                <div
+                  aria-hidden="true"
+                  className="absolute -left-[9999px] h-px w-px overflow-hidden"
+                >
+                  <label htmlFor={HONEYPOT_FIELD}>Website</label>
+                  <input
+                    id={HONEYPOT_FIELD}
+                    type="text"
+                    name={HONEYPOT_FIELD}
+                    tabIndex={-1}
+                    autoComplete="off"
+                    defaultValue=""
+                  />
+                </div>
 
                 <button
                   type="submit"
