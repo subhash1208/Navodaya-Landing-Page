@@ -15,10 +15,16 @@ export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const toggleButtonRef = useRef<HTMLButtonElement>(null);
+  const scrollLockedRef = useRef(false);
 
   useEffect(() => {
     let rafId: number;
     const onScroll = () => {
+      // While the scroll lock below is engaged the page is parked at 0 by `position: fixed`,
+      // and the browser fires a scroll event for that clamp. Reading it as "the visitor is at
+      // the top" would expand the header from h-16 to h-20 under the open menu and shrink it
+      // again on close — a visible wobble caused by the lock rather than by the visitor.
+      if (scrollLockedRef.current) return;
       cancelAnimationFrame(rafId);
       rafId = requestAnimationFrame(() => {
         const isScrolled = window.scrollY > 20;
@@ -36,15 +42,50 @@ export function Header() {
 
   useFocusTrap('mobile-nav', mobileOpen, closeMobile, toggleButtonRef);
 
-  // Lock body scroll while the mobile nav is open. Keyed on `mobileOpen` alone so the
+  // Lock page scroll while the mobile nav is open. Keyed on `mobileOpen` alone so the
   // cleanup runs on every close path (link click, Escape) AND on unmount — there is no
-  // way to strand `overflow: hidden` on the body.
+  // way to strand the lock on the body.
+  //
+  // `body { overflow: hidden }` alone is inert here. Per CSS Overflow 3 §3.1.4 the viewport
+  // takes its overflow from <body> only while the root's own overflow is `visible` in both
+  // axes, and globals.css:25 sets `html { overflow-x: hidden }` to suppress a horizontal
+  // scrollbar — so body's value is never propagated and the page scrolled freely behind the
+  // open menu. Moving the lock onto <html> would propagate, but `hidden` leaves the box a
+  // scroll container: per MDN "the hidden overflow content can be scrolled into view … Content
+  // can also be scrolled to programmatically", and tabbing to an off-screen focusable scrolls
+  // it too. iOS Safari ignores it on <body> outright.
+  //
+  // Taking the body out of flow removes the document's scrollable overflow altogether, which
+  // is the only form that holds on iOS. `overflow: hidden` stays on the body as well so the
+  // locked state is still legible from a computed style. The offset is captured before the
+  // body is pinned and re-applied on release, so closing the menu does not jump to the top;
+  // `behavior: 'instant'` overrides the `scroll-behavior: smooth` at globals.css:23, which
+  // would otherwise glide the page back over several hundred milliseconds.
   useEffect(() => {
     if (!mobileOpen) return;
-    const original = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    const { body } = document;
+    const offset = window.scrollY;
+    const previous = {
+      position: body.style.position,
+      top: body.style.top,
+      left: body.style.left,
+      right: body.style.right,
+      overflow: body.style.overflow,
+    };
+    scrollLockedRef.current = true;
+    body.style.position = 'fixed';
+    body.style.top = `-${offset}px`;
+    body.style.left = '0px';
+    body.style.right = '0px';
+    body.style.overflow = 'hidden';
     return () => {
-      document.body.style.overflow = original;
+      body.style.position = previous.position;
+      body.style.top = previous.top;
+      body.style.left = previous.left;
+      body.style.right = previous.right;
+      body.style.overflow = previous.overflow;
+      window.scrollTo({ top: offset, left: 0, behavior: 'instant' });
+      scrollLockedRef.current = false;
     };
   }, [mobileOpen]);
 

@@ -206,25 +206,18 @@ test.describe('Mobile navigation', () => {
   });
 
   /**
-   * KNOWN DEFECT, deliberately left failing rather than weakened or deleted.
+   * The assertion above proves the style is applied; this one proves it has an effect.
    *
-   * The assertion above proves the style is applied; this one proves it has no effect. Per CSS
-   * Overflow §3.3 the viewport's overflow is taken from `<body>` ONLY when `<html>`'s computed
-   * overflow is `visible` — and `src/app/globals.css:25` sets `html { overflow-x: hidden }`, so
-   * the root is already non-visible and `body { overflow: hidden }` is never propagated. The
-   * scroll lock in `Header.tsx:42-49` is therefore inert: measured here, `window.scrollTo(0, 800)`
-   * with the menu open moved the page to 800 instead of 0.
-   *
-   * The fix belongs on `html` (or on a `position: fixed` body with scroll-position restore), and
-   * both files are outside this change's blast radius. `test.fail()` keeps the assertion at full
-   * strength and keeps the defect visible in every run; when it is fixed this test goes red with
-   * "expected to fail but passed", which forces the annotation off rather than letting it rot.
+   * It was a `test.fail()` until the lock was fixed. Per CSS Overflow 3 §3.1.4 the viewport takes
+   * its overflow from `<body>` ONLY while the root's overflow is `visible` — and
+   * `src/app/globals.css:25` sets `html { overflow-x: hidden }`, so the root is already
+   * non-visible and `body { overflow: hidden }` was never propagated. Measured at the time:
+   * `window.scrollTo(0, 800)` with the menu open moved the page to 800 instead of 0. The lock
+   * now pins the body with `position: fixed`, which removes the document's scrollable overflow
+   * outright rather than relying on a propagated `hidden` — `hidden` is still programmatically
+   * scrollable, so it would have left this assertion failing.
    */
   test('scrolling is actually prevented while the menu is open', async ({ page }) => {
-    test.fail(
-      true,
-      'html{overflow-x:hidden} (globals.css:25) blocks body overflow propagation to the viewport',
-    );
     await toggle(page).click();
     await expect(menu(page)).toBeVisible();
     await expect

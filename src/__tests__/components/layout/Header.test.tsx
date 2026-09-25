@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterAll } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { Header } from '@/components/layout/Header';
 
@@ -58,6 +58,22 @@ vi.mock('lucide-react', () => ({
 }));
 
 describe('Header', () => {
+  // jsdom has no layout engine and leaves `window.scrollTo` unimplemented, so every close of
+  // the mobile menu — including the automatic unmount after each test — would log through the
+  // virtual console. Stubbed for the whole file; the lock test asserts against the call.
+  // Restored in `afterAll`, not `afterEach`: Vitest runs afterEach hooks in reverse order of
+  // registration, so a per-test restore would run BEFORE Testing Library's auto-cleanup and
+  // hand the unmount the unimplemented original.
+  const originalScrollTo = window.scrollTo;
+
+  beforeEach(() => {
+    window.scrollTo = vi.fn();
+  });
+
+  afterAll(() => {
+    window.scrollTo = originalScrollTo;
+  });
+
   it('renders logo', () => {
     render(<Header />);
     expect(screen.getByLabelText('Navodaya home')).toBeTruthy();
@@ -226,14 +242,58 @@ describe('Header', () => {
     expect(document.activeElement).toBe(toggle);
   });
 
-  it('locks body scroll while the mobile menu is open and releases it on close', () => {
+  it('pins the body out of flow while the menu is open and restores every property on close', () => {
+    // `overflow: hidden` on the body alone is inert against `html { overflow-x: hidden }`
+    // (globals.css:25) — the root is non-visible, so per CSS Overflow 3 §3.1.4 the body's
+    // value is never propagated to the viewport. The lock takes the body out of flow instead,
+    // which removes the document's scrollable overflow outright.
+    const scrollTo = vi.mocked(window.scrollTo);
+    Object.defineProperty(window, 'scrollY', { value: 640, writable: true });
     render(<Header />);
-    expect(document.body.style.overflow).toBe('');
+    expect(document.body.style.position).toBe('');
 
     fireEvent.click(screen.getByLabelText('Open menu'));
+
+    expect(document.body.style.position).toBe('fixed');
+    expect(document.body.style.top).toBe('-640px');
+    expect(document.body.style.left).toBe('0px');
+    expect(document.body.style.right).toBe('0px');
     expect(document.body.style.overflow).toBe('hidden');
 
     fireEvent.click(screen.getByLabelText('Close menu'));
+
+    // Restored to the stylesheet value by emptying the inline declaration, never by
+    // hard-coding a reset that would override `globals.css`.
+    expect(document.body.style.position).toBe('');
+    expect(document.body.style.top).toBe('');
+    expect(document.body.style.left).toBe('');
+    expect(document.body.style.right).toBe('');
+    expect(document.body.style.overflow).toBe('');
+    // Without this the page would sit at the top when the menu closes, because pinning the
+    // body clamped the document to 0. `instant` overrides `scroll-behavior: smooth`.
+    expect(scrollTo).toHaveBeenCalledWith({ top: 640, left: 0, behavior: 'instant' });
+  });
+
+  it('releases the scroll lock when Escape closes the menu', () => {
+    render(<Header />);
+    fireEvent.click(screen.getByLabelText('Open menu'));
+    expect(document.body.style.position).toBe('fixed');
+
+    fireEvent.keyDown(document, { key: 'Escape' });
+
+    expect(document.body.style.position).toBe('');
+    expect(document.body.style.overflow).toBe('');
+  });
+
+  it('releases the scroll lock when a nav link closes the menu', () => {
+    render(<Header />);
+    fireEvent.click(screen.getByLabelText('Open menu'));
+    expect(document.body.style.position).toBe('fixed');
+
+    const mobileNav = screen.getByLabelText('Mobile navigation');
+    fireEvent.click(mobileNav.querySelectorAll('a')[0]);
+
+    expect(document.body.style.position).toBe('');
     expect(document.body.style.overflow).toBe('');
   });
 
@@ -245,5 +305,22 @@ describe('Header', () => {
     unmount();
 
     expect(document.body.style.overflow).toBe('');
+    expect(document.body.style.position).toBe('');
+  });
+
+  it('ignores the scroll clamp the lock itself causes, keeping the header compact', () => {
+    render(<Header />);
+    Object.defineProperty(window, 'scrollY', { value: 800, writable: true });
+    fireEvent.scroll(window);
+    expect(screen.getByTestId('header-bar').className).toContain('h-16');
+
+    fireEvent.click(screen.getByLabelText('Open menu'));
+    // Pinning the body parks the document at 0 and the browser fires a scroll event for that
+    // clamp. Acting on it would expand the header under the open menu and shrink it on close.
+    Object.defineProperty(window, 'scrollY', { value: 0, writable: true });
+    fireEvent.scroll(window);
+
+    expect(screen.getByTestId('header-bar').className).toContain('h-16');
+    expect(screen.getByTestId('header-bar').className).not.toContain('h-20');
   });
 });
