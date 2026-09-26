@@ -63,3 +63,61 @@
 
 [build]
   ignore = 'if [ "$CONTEXT" != "production" ]; then exit 1; fi; if [ -z "$CACHED_COMMIT_REF" ]; then exit 1; fi; git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- . ":(exclude)*.md" ":(exclude).github" ":(exclude).specify" ":(exclude).husky" ":(exclude).vscode"'
+
+# ── Why the secrets scanner needs an omit path ─────────────────────────────
+# Netlify scans the build output and repo code for the VALUE of every secret
+# environment variable, and fails the build on a hit. The last production
+# build on master failed this way, verbatim from the log:
+#
+#   Secret env var "RESEND_API_KEY"'s value detected:
+#     found value at line 28478 in .netlify/.next/cache/turbopack/<ver>/00000013.sst
+#     found value at line 30521 in .netlify/.next/cache/turbopack/<ver>/00000013.sst
+#
+# Both hits are in ONE file, and that file is the Turbopack persistent build
+# cache — restored by Netlify from its own cache at the start of the build
+# ("Next.js cache restored" in the same log). The scanner named nothing under
+# .netlify/static/, .netlify/functions-internal/ or .next/server/, and
+# RESEND_API_KEY is read only inside a 'use server' Server Action
+# (src/app/actions/contact.ts), never in client code. So this is not a leak
+# into anything a visitor can fetch; it is the compiler's own cache retaining
+# the value it inlined into the server bundle.
+#
+# ── HONEST CONFIDENCE NOTE ─────────────────────────────────────────────────
+# "The Turbopack cache is not published" is INFERENCE, not a documented
+# Netlify guarantee. Next.js Runtime v5 publishes .netlify/static,
+# .netlify/functions-internal, .netlify/edge-functions and .netlify/blobs;
+# .netlify/.next is the renamed intermediate copy of the raw .next directory
+# that the plugin transforms FROM, and cache/ under it is build-acceleration
+# state. That layout comes from the OpenNext Netlify adapter's documented
+# output plus forum evidence of the .next -> .netlify/.next rename — no
+# official page states it in so many words. Confidence: moderate-to-high.
+# If the runtime's internals change, re-verify before trusting this line.
+#
+# ── Why this control and not the other two ─────────────────────────────────
+# SECRETS_SCAN_OMIT_KEYS was rejected: it excludes a key BY NAME across ALL
+# paths, so it would equally silence a genuine leak of RESEND_API_KEY into a
+# client bundle — the one thing we actually want this scanner to catch.
+# SECRETS_SCAN_ENABLED=false is strictly worse again: it disables every key
+# everywhere. Rescoping the variable to Functions-only was also rejected —
+# env-var scopes are a paid-plan feature, this account is on Free, and the
+# docs never tie scanner behaviour to scope. Omitting one path is the
+# narrowest control that clears the build.
+#
+# ── Why substrings, not globs ──────────────────────────────────────────────
+# The docs describe the value as "a comma separated list of file paths
+# (relative to the repository root) ... Values can be substrings of paths or
+# use a glob pattern format."
+# (https://docs.netlify.com/build/environment-variables/secrets-controller)
+# A mis-written glob fails SILENTLY — the build just keeps failing with no
+# hint that the pattern never matched — so plain substrings are used. Two
+# entries: the first is the path the scanner actually reported, the second
+# covers the pre-rename location should the runtime stop renaming .next.
+# Neither substring can match anything that is deployed.
+#
+# ── This value is DUPLICATED in the Netlify UI on purpose ──────────────────
+# master has no netlify.toml yet, so a UI-set build environment variable is
+# the only thing that can unblock a production build before this branch
+# merges up. The duplication is deliberate; keep the two values IDENTICAL.
+# If you change the list here, change it in the Netlify UI in the same pass.
+[build.environment]
+  SECRETS_SCAN_OMIT_PATHS = ".netlify/.next/cache,.next/cache"
