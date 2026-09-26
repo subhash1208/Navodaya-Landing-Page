@@ -1,0 +1,123 @@
+# Netlify build configuration.
+#
+# This file deliberately sets ONLY `ignore`. Do not add `command`, `publish`,
+# `NODE_VERSION` or a plugin: Netlify already auto-detects this project
+# correctly (Next.js Runtime v5, Corepack + pnpm), and pinning a wrong value
+# here would break a currently-working deploy.
+#
+# ── Why an ignore rule at all ──────────────────────────────────────────────
+# The Free plan charges 15 credits per SUCCESSFUL PRODUCTION DEPLOY out of a
+# hard 300/month allowance shared with bandwidth and requests. At zero credits
+# Netlify pauses the site and serves "Site not available", and Free-plan
+# accounts cannot buy more credits. Deploy Previews and branch deploys cost 0.
+# So: never spend a production deploy on a commit that cannot change the built
+# site.
+#
+# ── READ THIS BEFORE "FIXING" THE EXIT CODES — THEY ARE INVERTED ───────────
+# Netlify's ignore command reverses the usual shell convention. Verbatim from
+# https://docs.netlify.com/build/configure-builds/ignore-builds/ :
+#
+#   "An exit code of `1` indicates the contents have changed and the build
+#    process continues as usual. An exit code of `0` indicates that there are
+#    no changes and the build should stop."
+#
+#   exit 0 => SKIP the build
+#   exit 1 => RUN the build
+#
+# That is why `git diff --quiet` is the right primitive: it exits 0 when there
+# is no diff, which is exactly "nothing to build". Every `exit 1` below is a
+# deliberate "build anyway". When in doubt, build — a wasted deploy costs 15
+# credits, but a wrongly-skipped build means a change silently never reaches
+# production.
+#
+# ── The two guards, and why each exists ────────────────────────────────────
+# 1. `$CONTEXT != production` -> exit 1 (BUILD). Only production deploys cost
+#    credits, so previews and branch deploys must never be skipped. This also
+#    fails safe: if $CONTEXT is ever unset or takes an unexpected value, the
+#    test is true and we build. $CONTEXT is a read-only build-metadata
+#    variable (production | deploy-preview | branch-deploy | dev) and the docs
+#    confirm build environment variables are usable in `ignore`, not just in
+#    `command`.
+#
+# 2. `-z "$CACHED_COMMIT_REF"` -> exit 1 (BUILD). On a first build, or after a
+#    cache clear, $CACHED_COMMIT_REF is EMPTY. Without this guard the diff
+#    degrades to `git diff --quiet $COMMIT_REF -- .`, which on a clean checkout
+#    compares the commit against an identical working tree and exits 0 — i.e.
+#    it would silently skip the very first production build. Verified locally:
+#    that form returns exit 0. The quotes around the variable are load-bearing;
+#    unquoted, an empty value makes the test `[ -z ]`, which is TRUE for the
+#    wrong reason.
+#
+# ── The pathspec ───────────────────────────────────────────────────────────
+# Skip only when the commit range touches nothing but paths that cannot affect
+# the built site. Any change outside that set leaves a diff, so `--quiet` exits
+# 1 and we build. `:(exclude)*.md` matches .md at ANY depth — git's default
+# pathspec matching is wildmatch without pathname mode, so `*` crosses `/`.
+# Verified against this repo's history: commit 7b6e8d9, which touched only
+# .github/instructions/quality-gates.instructions.md (three levels deep),
+# returns exit 0 under `-- . ':(exclude)*.md'` alone.
+#
+# Kept on ONE line on purpose: newlines inside a value Netlify hands to bash
+# are an unnecessary risk. A TOML literal string (single quotes) is used so the
+# embedded shell quoting needs no escaping.
+
+[build]
+  ignore = 'if [ "$CONTEXT" != "production" ]; then exit 1; fi; if [ -z "$CACHED_COMMIT_REF" ]; then exit 1; fi; git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- . ":(exclude)*.md" ":(exclude).github" ":(exclude).specify" ":(exclude).husky" ":(exclude).vscode"'
+
+# ── Why the secrets scanner needs an omit path ─────────────────────────────
+# Netlify scans the build output and repo code for the VALUE of every secret
+# environment variable, and fails the build on a hit. The last production
+# build on master failed this way, verbatim from the log:
+#
+#   Secret env var "RESEND_API_KEY"'s value detected:
+#     found value at line 28478 in .netlify/.next/cache/turbopack/<ver>/00000013.sst
+#     found value at line 30521 in .netlify/.next/cache/turbopack/<ver>/00000013.sst
+#
+# Both hits are in ONE file, and that file is the Turbopack persistent build
+# cache — restored by Netlify from its own cache at the start of the build
+# ("Next.js cache restored" in the same log). The scanner named nothing under
+# .netlify/static/, .netlify/functions-internal/ or .next/server/, and
+# RESEND_API_KEY is read only inside a 'use server' Server Action
+# (src/app/actions/contact.ts), never in client code. So this is not a leak
+# into anything a visitor can fetch; it is the compiler's own cache retaining
+# the value it inlined into the server bundle.
+#
+# ── HONEST CONFIDENCE NOTE ─────────────────────────────────────────────────
+# "The Turbopack cache is not published" is INFERENCE, not a documented
+# Netlify guarantee. Next.js Runtime v5 publishes .netlify/static,
+# .netlify/functions-internal, .netlify/edge-functions and .netlify/blobs;
+# .netlify/.next is the renamed intermediate copy of the raw .next directory
+# that the plugin transforms FROM, and cache/ under it is build-acceleration
+# state. That layout comes from the OpenNext Netlify adapter's documented
+# output plus forum evidence of the .next -> .netlify/.next rename — no
+# official page states it in so many words. Confidence: moderate-to-high.
+# If the runtime's internals change, re-verify before trusting this line.
+#
+# ── Why this control and not the other two ─────────────────────────────────
+# SECRETS_SCAN_OMIT_KEYS was rejected: it excludes a key BY NAME across ALL
+# paths, so it would equally silence a genuine leak of RESEND_API_KEY into a
+# client bundle — the one thing we actually want this scanner to catch.
+# SECRETS_SCAN_ENABLED=false is strictly worse again: it disables every key
+# everywhere. Rescoping the variable to Functions-only was also rejected —
+# env-var scopes are a paid-plan feature, this account is on Free, and the
+# docs never tie scanner behaviour to scope. Omitting one path is the
+# narrowest control that clears the build.
+#
+# ── Why substrings, not globs ──────────────────────────────────────────────
+# The docs describe the value as "a comma separated list of file paths
+# (relative to the repository root) ... Values can be substrings of paths or
+# use a glob pattern format."
+# (https://docs.netlify.com/build/environment-variables/secrets-controller)
+# A mis-written glob fails SILENTLY — the build just keeps failing with no
+# hint that the pattern never matched — so plain substrings are used. Two
+# entries: the first is the path the scanner actually reported, the second
+# covers the pre-rename location should the runtime stop renaming .next.
+# Neither substring can match anything that is deployed.
+#
+# ── This value is DUPLICATED in the Netlify UI on purpose ──────────────────
+# master has no netlify.toml yet, so a UI-set build environment variable is
+# the only thing that can unblock a production build before this branch
+# merges up. The duplication is deliberate; keep the two values IDENTICAL.
+# If you change the list here, change it in the Netlify UI in the same pass.
+[build.environment]
+  SECRETS_SCAN_OMIT_PATHS = ".netlify/.next/cache,.next/cache"

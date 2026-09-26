@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import Footer from '@/components/layout/Footer';
+import { BRAND } from '@/constants';
 
 vi.mock('next/link', () => ({
   default: ({ children, href, ...props }: any) => (
@@ -46,9 +47,9 @@ describe('Footer', () => {
 
   it('renders contact info', () => {
     render(<Footer />);
-    expect(screen.getByText('info@navodaya.group')).toBeTruthy();
-    expect(screen.getByText('+91 83286 05812')).toBeTruthy();
-    expect(screen.getByText('Gandhi Nagar, Hyderabad')).toBeTruthy();
+    expect(screen.getByText(BRAND.EMAIL)).toBeTruthy();
+    expect(screen.getByText(BRAND.PHONE)).toBeTruthy();
+    expect(screen.getByText(BRAND.LOCATION)).toBeTruthy();
   });
 
   it('renders View All Products link', () => {
@@ -63,7 +64,7 @@ describe('Footer', () => {
 
   it('renders website link', () => {
     render(<Footer />);
-    expect(screen.getByText('www.navodaya.group')).toBeTruthy();
+    expect(screen.getByText(BRAND.WEBSITE)).toBeTruthy();
   });
 
   it('renders Quick Links heading', () => {
@@ -85,9 +86,9 @@ describe('Footer', () => {
       screen.getByText('Home'),
       screen.getByText('Disposable Hygiene & Safety'),
       screen.getByText('View All Products →'),
-      screen.getByText('info@navodaya.group'),
-      screen.getByText('+91 83286 05812'),
-      screen.getByText('www.navodaya.group'),
+      screen.getByText(BRAND.EMAIL),
+      screen.getByText(BRAND.PHONE),
+      screen.getByText(BRAND.WEBSITE),
     ];
 
     for (const link of links) {
