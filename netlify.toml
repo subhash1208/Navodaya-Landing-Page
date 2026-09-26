@@ -1,0 +1,65 @@
+# Netlify build configuration.
+#
+# This file deliberately sets ONLY `ignore`. Do not add `command`, `publish`,
+# `NODE_VERSION` or a plugin: Netlify already auto-detects this project
+# correctly (Next.js Runtime v5, Corepack + pnpm), and pinning a wrong value
+# here would break a currently-working deploy.
+#
+# ── Why an ignore rule at all ──────────────────────────────────────────────
+# The Free plan charges 15 credits per SUCCESSFUL PRODUCTION DEPLOY out of a
+# hard 300/month allowance shared with bandwidth and requests. At zero credits
+# Netlify pauses the site and serves "Site not available", and Free-plan
+# accounts cannot buy more credits. Deploy Previews and branch deploys cost 0.
+# So: never spend a production deploy on a commit that cannot change the built
+# site.
+#
+# ── READ THIS BEFORE "FIXING" THE EXIT CODES — THEY ARE INVERTED ───────────
+# Netlify's ignore command reverses the usual shell convention. Verbatim from
+# https://docs.netlify.com/build/configure-builds/ignore-builds/ :
+#
+#   "An exit code of `1` indicates the contents have changed and the build
+#    process continues as usual. An exit code of `0` indicates that there are
+#    no changes and the build should stop."
+#
+#   exit 0 => SKIP the build
+#   exit 1 => RUN the build
+#
+# That is why `git diff --quiet` is the right primitive: it exits 0 when there
+# is no diff, which is exactly "nothing to build". Every `exit 1` below is a
+# deliberate "build anyway". When in doubt, build — a wasted deploy costs 15
+# credits, but a wrongly-skipped build means a change silently never reaches
+# production.
+#
+# ── The two guards, and why each exists ────────────────────────────────────
+# 1. `$CONTEXT != production` -> exit 1 (BUILD). Only production deploys cost
+#    credits, so previews and branch deploys must never be skipped. This also
+#    fails safe: if $CONTEXT is ever unset or takes an unexpected value, the
+#    test is true and we build. $CONTEXT is a read-only build-metadata
+#    variable (production | deploy-preview | branch-deploy | dev) and the docs
+#    confirm build environment variables are usable in `ignore`, not just in
+#    `command`.
+#
+# 2. `-z "$CACHED_COMMIT_REF"` -> exit 1 (BUILD). On a first build, or after a
+#    cache clear, $CACHED_COMMIT_REF is EMPTY. Without this guard the diff
+#    degrades to `git diff --quiet $COMMIT_REF -- .`, which on a clean checkout
+#    compares the commit against an identical working tree and exits 0 — i.e.
+#    it would silently skip the very first production build. Verified locally:
+#    that form returns exit 0. The quotes around the variable are load-bearing;
+#    unquoted, an empty value makes the test `[ -z ]`, which is TRUE for the
+#    wrong reason.
+#
+# ── The pathspec ───────────────────────────────────────────────────────────
+# Skip only when the commit range touches nothing but paths that cannot affect
+# the built site. Any change outside that set leaves a diff, so `--quiet` exits
+# 1 and we build. `:(exclude)*.md` matches .md at ANY depth — git's default
+# pathspec matching is wildmatch without pathname mode, so `*` crosses `/`.
+# Verified against this repo's history: commit 7b6e8d9, which touched only
+# .github/instructions/quality-gates.instructions.md (three levels deep),
+# returns exit 0 under `-- . ':(exclude)*.md'` alone.
+#
+# Kept on ONE line on purpose: newlines inside a value Netlify hands to bash
+# are an unnecessary risk. A TOML literal string (single quotes) is used so the
+# embedded shell quoting needs no escaping.
+
+[build]
+  ignore = 'if [ "$CONTEXT" != "production" ]; then exit 1; fi; if [ -z "$CACHED_COMMIT_REF" ]; then exit 1; fi; git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- . ":(exclude)*.md" ":(exclude).github" ":(exclude).specify" ":(exclude).husky" ":(exclude).vscode"'

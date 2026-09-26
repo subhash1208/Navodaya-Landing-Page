@@ -17,6 +17,17 @@ describe('BRAND constants', () => {
     expect(BRAND.EMAIL).toMatch(/^[^\s@]+@[^\s@]+\.[^\s@]+$/);
   });
 
+  // The exact contact details are pinned here and nowhere else. Every component
+  // and spec reads the identifier rather than the literal, so this is the single
+  // deliberate place to edit when an address or number changes — and the only
+  // thing standing between a typo (`conect@navodaya.group`) and production
+  // enquiries routing silently to a nonexistent mailbox. A shape check alone
+  // would pass on that typo.
+  it('contact details match the published values', () => {
+    expect(BRAND.EMAIL).toBe('connect@navodaya.group');
+    expect(BRAND.PHONE).toBe('+91 83286 05812');
+  });
+
   it('phone starts with +91', () => {
     expect(BRAND.PHONE).toMatch(/^\+91/);
   });
