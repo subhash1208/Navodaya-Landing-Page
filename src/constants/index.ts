@@ -1,4 +1,4 @@
-import type { ProductItem, ProductCategory, NavLink } from '@/types';
+import type { ProductItem, ProductCategory, CategorySlug, NavLink } from '@/types';
 
 // ─── Brand ───────────────────────────────────────────────────────────────────
 export const BRAND = {
@@ -12,6 +12,9 @@ export const BRAND = {
   WEBSITE: 'www.navodaya.group',
   LOCATION: 'Gandhi Nagar, Hyderabad',
 } as const;
+
+// ─── Site ────────────────────────────────────────────────────────────────────
+export const SITE_URL = 'https://www.navodaya.group';
 
 // ─── Animation ───────────────────────────────────────────────────────────────
 export const ANIMATION = {
@@ -52,7 +55,6 @@ export const PRODUCT_CATEGORIES: ProductCategory[] = [
     description:
       'Medical-grade disposable protective wear for hospitals, clinics, food processing, and industrial environments.',
     icon: '🏥',
-    productCount: 17,
   },
   {
     id: 'hotel-amenities',
@@ -61,7 +63,6 @@ export const PRODUCT_CATEGORIES: ProductCategory[] = [
     description:
       'Premium guest amenities and room essentials for hotels, resorts, and hospitality businesses.',
     icon: '🏨',
-    productCount: 16,
   },
   {
     id: 'spa-salon',
@@ -70,7 +71,6 @@ export const PRODUCT_CATEGORIES: ProductCategory[] = [
     description:
       'Hygienic disposable essentials for spas, salons, beauty parlours, and wellness centres.',
     icon: '💆',
-    productCount: 18,
   },
 ];
 
@@ -472,3 +472,27 @@ export const PRODUCTS: ProductItem[] = [
     slug: 'bouffant-spa',
   },
 ];
+
+// ─── Derived catalogue data ───────────────────────────────────────────────────
+// Declared after PRODUCTS: entries above reference PRODUCT_CATEGORIES by object
+// identity at module-evaluation time, so anything derived from PRODUCTS must come
+// last or it reads an empty array.
+
+/** How many products each category holds. Derived, so it can never drift from PRODUCTS. */
+export const PRODUCT_COUNT_BY_CATEGORY = Object.fromEntries(
+  PRODUCT_CATEGORIES.map((c) => [c.slug, PRODUCTS.filter((p) => p.category === c).length]),
+) as Record<CategorySlug, number>;
+
+/**
+ * A unique, human-readable identifier for a product.
+ *
+ * Two pairs of products share a `name` — `bio-shower-cap`/`bio-shower-spa` and
+ * `bouffant-cap`/`bouffant-spa` — so a bare `name` cannot tell the business which
+ * product an enquiry is about. The contact form's product dropdown must submit
+ * this instead of `p.name` as its `<option value>`; the option's visible label can
+ * stay `p.name`, since each option already sits under an `<optgroup>` naming the
+ * category.
+ */
+export function productEnquiryLabel(product: ProductItem): string {
+  return `${product.name} — ${product.category.name}`;
+}

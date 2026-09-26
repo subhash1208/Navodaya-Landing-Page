@@ -24,7 +24,6 @@ const mockProduct: ProductItem = {
     slug: 'hygiene-safety',
     description: 'Medical-grade disposable protective wear.',
     icon: '🏥',
-    productCount: 17,
   },
   material: 'Non-woven',
   description: 'Sterile disposable surgeon cap for operating theatres.',

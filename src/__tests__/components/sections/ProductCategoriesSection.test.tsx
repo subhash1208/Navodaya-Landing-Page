@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, act } from '@testing-library/react';
 import ProductCategoriesSection from '@/components/sections/ProductCategoriesSection';
+import { PRODUCT_CATEGORIES, PRODUCT_COUNT_BY_CATEGORY } from '@/constants';
 
 vi.mock('gsap', () => ({
   gsap: {
@@ -40,18 +41,42 @@ vi.mock('lucide-react', () => ({
   BookOpen: (props: any) => <svg data-testid="book-open" {...props} />,
 }));
 
-vi.mock('motion/react', () => ({
-  motion: new Proxy(
-    {},
-    {
-      get: (_, tag) => (props: any) => {
-        const { initial, animate, exit, transition, whileInView, variants, viewport, ...rest } =
-          props;
-        return <div data-testid={`motion-${String(tag)}`} {...rest} />;
+vi.mock('motion/react', () => {
+  // The component per tag is CACHED. A bare `get` handler returns a fresh function on every
+  // property access, so `motion.div` is a different component type on every render and React
+  // tears down and rebuilds the whole subtree — silently destroying uncontrolled input values
+  // and breaking any `toBe` node-identity assertion. The real `motion.div` is a stable
+  // reference. Same pattern as ContactSection.test.tsx:17-31.
+  const cache = new Map<string, React.ComponentType<any>>();
+  return {
+    motion: new Proxy(
+      {},
+      {
+        get: (_, tag) => {
+          const key = String(tag);
+          let component = cache.get(key);
+          if (!component) {
+            component = (props: any) => {
+              const {
+                initial,
+                animate,
+                exit,
+                transition,
+                whileInView,
+                variants,
+                viewport,
+                ...rest
+              } = props;
+              return <div data-testid={`motion-${key}`} {...rest} />;
+            };
+            cache.set(key, component);
+          }
+          return component;
+        },
       },
-    },
-  ),
-}));
+    ),
+  };
+});
 
 vi.mock('@/components/ui/AnimateIn', () => ({
   AnimateIn: ({ children }: any) => <div>{children}</div>,
@@ -92,9 +117,14 @@ describe('ProductCategoriesSection', () => {
 
   it('renders product counts', () => {
     render(<ProductCategoriesSection />);
-    expect(screen.getByText('17 products')).toBeTruthy();
-    expect(screen.getByText('16 products')).toBeTruthy();
-    expect(screen.getByText('18 products')).toBeTruthy();
+    // Counts are derived from PRODUCTS, so assert the rendered strings against the
+    // derived numbers in category order rather than hand-typed digits. Two categories
+    // can legitimately hold the same count, so getAllByText + order is the only
+    // assertion that stays both unambiguous and exact.
+    const rendered = screen.getAllByText(/^\d+ products$/).map((el) => el.textContent);
+    expect(rendered).toEqual(
+      PRODUCT_CATEGORIES.map((c) => `${PRODUCT_COUNT_BY_CATEGORY[c.slug]} products`),
+    );
   });
 
   it('renders View Full Product Catalogue button', () => {

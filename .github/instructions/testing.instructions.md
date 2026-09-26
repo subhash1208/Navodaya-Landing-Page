@@ -140,6 +140,6 @@ Before regenerating a baseline, prove the test is _deterministic_ — `--repeat-
 
 Coverage on untouched files **is** your problem, because the number is global. Adding one untested file drags it down and blocks the commit even when your own diff is fully covered — so run `pnpm test:coverage` before handing off, not just `pnpm test`.
 
-Never lower a threshold in `vitest.config.mts` to go green, and never add a coverage exclusion to make a number pass. `src/components/ui/ProductCategoryGraph.tsx` is the one sanctioned exclusion and it predates this rule.
+Never lower a threshold in `vitest.config.mts` to go green, and never add a coverage exclusion to make a number pass. There is currently zero sanctioned exclusion. (`src/components/ui/ProductCategoryGraph.tsx` was the one sanctioned exclusion; its entry was removed from `vitest.config.mts` on 2026-09-25, the same pass that deleted the file itself. Do not restore either one.)
 
 (An earlier revision of this line said "≥85% on files changed by the current task." That bar never existed anywhere else in the repo, and it loaded precisely when tests were being written — see `.github/CONTROL-PLANE-NOTES.md` §12.16.)

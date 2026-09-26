@@ -10,7 +10,7 @@ interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
-// Generate all 51 product pages at build time (SSG)
+// Generate a page for every product in the catalogue at build time (SSG)
 export async function generateStaticParams() {
   return PRODUCTS.map((p) => ({ slug: p.slug }));
 }
@@ -23,6 +23,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title: product.name,
     description: `${product.description} — ${product.category.name}. Request a quote from ${BRAND.FULL_NAME}, ${BRAND.LOCATION}.`,
+    alternates: { canonical: ROUTES.PRODUCT(slug) },
     openGraph: {
       title: `${product.name} | ${BRAND.NAME}`,
       description: product.description,

@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
 import './globals.css';
-import { BRAND } from '@/constants';
+import { BRAND, SITE_URL } from '@/constants';
 import { Header } from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { SkipNav } from '@/components/ui/SkipNav';
@@ -25,7 +25,27 @@ export const metadata: Metadata = {
     'care kits',
   ],
   authors: [{ name: BRAND.FULL_NAME }],
-  metadataBase: new URL('https://www.navodaya.group'),
+  metadataBase: new URL(SITE_URL),
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+      'max-video-preview': -1,
+    },
+  },
+  alternates: { canonical: '/' },
+  // Only assets that actually exist: `src/app/favicon.ico` is served at
+  // /favicon.ico by the file convention, and `public/navodaya-logo.png` is the
+  // repo's only PNG icon.
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/navodaya-logo.png',
+  },
   openGraph: {
     title: BRAND.FULL_NAME,
     description: BRAND.TAGLINE,

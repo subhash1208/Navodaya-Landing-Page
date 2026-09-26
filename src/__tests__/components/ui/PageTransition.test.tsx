@@ -5,6 +5,7 @@ import { PageTransition } from '@/components/ui/PageTransition';
 const mockFromTo = vi.fn();
 const mockTo = vi.fn();
 const mockSet = vi.fn();
+const mockRevert = vi.fn();
 
 vi.mock('gsap', () => ({
   gsap: {
@@ -12,6 +13,10 @@ vi.mock('gsap', () => ({
     fromTo: (...args: any[]) => mockFromTo(...args),
     to: (...args: any[]) => mockTo(...args),
     set: (...args: any[]) => mockSet(...args),
+    context: (fn: () => void) => {
+      fn();
+      return { revert: mockRevert };
+    },
   },
 }));
 
@@ -24,9 +29,10 @@ vi.mock('next/navigation', () => ({
 
 describe('PageTransition', () => {
   beforeEach(() => {
-    mockFromTo.mockClear();
-    mockTo.mockClear();
-    mockSet.mockClear();
+    mockFromTo.mockReset();
+    mockTo.mockReset();
+    mockSet.mockReset();
+    mockRevert.mockReset();
     mockPathname = '/';
   });
   it('renders children', () => {
@@ -176,6 +182,129 @@ describe('PageTransition', () => {
     );
 
     expect(mockFromTo).not.toHaveBeenCalled();
+  });
+
+  it('reverts the gsap context when unmounted mid-animation', async () => {
+    mockPathname = '/';
+    const { rerender, unmount } = render(
+      <PageTransition>
+        <div>Content</div>
+      </PageTransition>,
+    );
+
+    mockPathname = '/products';
+    await act(async () => {
+      rerender(
+        <PageTransition>
+          <div>Content</div>
+        </PageTransition>,
+      );
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    // The chain is in flight: `fromTo` has run but its onComplete has not.
+    expect(mockFromTo).toHaveBeenCalled();
+    expect(mockRevert).not.toHaveBeenCalled();
+
+    unmount();
+    expect(mockRevert).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not run the rest of an orphaned chain after cleanup', async () => {
+    mockPathname = '/';
+    const { rerender, unmount } = render(
+      <PageTransition>
+        <div>Content</div>
+      </PageTransition>,
+    );
+
+    mockPathname = '/products';
+    await act(async () => {
+      rerender(
+        <PageTransition>
+          <div>Content</div>
+        </PageTransition>,
+      );
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    // Capture the pending onComplete, then tear the component down before firing it — exactly
+    // what a navigation faster than the 0.8s chain produces. Without the `destroyed` guard it
+    // would carry on and decide the curtain's resting position and pointerEvents.
+    const pendingOnComplete = mockFromTo.mock.calls[0][2].onComplete;
+    unmount();
+
+    mockTo.mockClear();
+    mockSet.mockClear();
+    pendingOnComplete();
+
+    expect(mockTo).not.toHaveBeenCalled();
+    expect(mockSet).not.toHaveBeenCalled();
+  });
+
+  it('does not build a gsap context when unmounted during the dynamic import', async () => {
+    mockPathname = '/';
+    const { rerender, unmount } = render(
+      <PageTransition>
+        <div>Content</div>
+      </PageTransition>,
+    );
+
+    // Rerender WITHOUT awaiting: `import('gsap')` is still pending, so cleanup runs first and
+    // `ctx` is still null. Unguarded, the context would then be built against a dead
+    // component and `ctx?.revert()` would already have no-opped.
+    mockPathname = '/products';
+    act(() => {
+      rerender(
+        <PageTransition>
+          <div>Content</div>
+        </PageTransition>,
+      );
+    });
+    unmount();
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    expect(mockFromTo).not.toHaveBeenCalled();
+  });
+
+  it('releases pointer events when an in-flight transition is interrupted', async () => {
+    mockPathname = '/';
+    const { rerender, container } = render(
+      <PageTransition>
+        <div>Content</div>
+      </PageTransition>,
+    );
+
+    mockPathname = '/products';
+    await act(async () => {
+      rerender(
+        <PageTransition>
+          <div>Content</div>
+        </PageTransition>,
+      );
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    const curtain = container.querySelector('[aria-hidden="true"]') as HTMLElement;
+    expect(curtain.style.pointerEvents).toBe('all');
+
+    // A third navigation that does not itself qualify for the wipe. The interrupted chain's
+    // final `setIsAnimating(false)` never fires, so cleanup has to do it — otherwise the
+    // full-screen curtain keeps swallowing every click on the new page.
+    mockPathname = '/about';
+    await act(async () => {
+      rerender(
+        <PageTransition>
+          <div>Content</div>
+        </PageTransition>,
+      );
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    expect(curtain.style.pointerEvents).toBe('none');
   });
 
   it('respects prefers-reduced-motion', async () => {

@@ -37,7 +37,7 @@ test.describe('Navigation', () => {
   test('navigation links work from homepage', async ({ page }) => {
     await page.goto('/');
     // Dismiss the intro deterministically. `LoadingScreen` (src/app/page.tsx:20) covers the
-    // hero with a fixed/inset-0/z-9999 overlay for ~4s on a first visit, and the trace shows
+    // hero with a fixed/inset-0/z-9999 overlay for ~1.4s on a first visit, and the trace shows
     // it absorbing this click three times before lifting. The key must be set AND the page
     // reloaded — setting it after mount does nothing to an intro already running. Same
     // pattern as e2e/visual-regression.spec.ts.

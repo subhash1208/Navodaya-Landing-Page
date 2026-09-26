@@ -1,18 +1,18 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
-import { useSearchParams, useRouter, usePathname } from 'next/navigation';
+import { useState, useMemo } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import { Search, X } from 'lucide-react';
 import { cn } from '@/utils/cn';
-import { PRODUCTS, PRODUCT_CATEGORIES } from '@/constants';
+import { PRODUCTS, PRODUCT_CATEGORIES, PRODUCT_COUNT_BY_CATEGORY } from '@/constants';
 import { CATEGORY_RULE } from '@/constants/categoryRule';
 import type { CategorySlug } from '@/types';
 import { ProductCard } from './ProductCard';
 
-const ALL_ID = 'all';
+export const ALL_ID = 'all';
 const SEARCH_ID = 'product-search';
 
-type TabId = CategorySlug | typeof ALL_ID;
+export type TabId = CategorySlug | typeof ALL_ID;
 
 /** The catalogue rules, plus the "all" tab's neutral ink rule. */
 const TAB_RULE = {
@@ -28,31 +28,46 @@ const TAB_RULE = {
 const TAB_CLASS =
   'relative flex items-baseline gap-2 px-1 pb-3 pt-2 font-mono text-label uppercase text-grey-500 transition-colors duration-200 hover:text-ink aria-selected:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2';
 
-export function ProductGrid() {
-  const searchParams = useSearchParams();
+interface ProductGridProps {
+  /**
+   * The category the server resolved from `?category=`. Passing it down rather than reading it
+   * here with `useSearchParams()` is what makes `/products` server-render: `useSearchParams` puts
+   * the whole client tree up to the nearest Suspense boundary into client-side rendering
+   * (`node_modules/next/dist/docs/01-app/03-api-reference/04-functions/use-search-params.md:82`),
+   * so the catalogue never reached the server HTML. A client component that merely receives props
+   * is server-rendered like any other.
+   */
+  activeCategory: TabId;
+}
+
+export function ProductGrid({ activeCategory: categoryFromUrl }: ProductGridProps) {
   const router = useRouter();
   const pathname = usePathname();
 
-  const initialCategory = searchParams.get('category') ?? ALL_ID;
-  const [activeCategory, setActiveCategory] = useState(initialCategory);
+  // Seeded from the server-resolved prop, so the very first render — the server's included —
+  // already shows the right tab. Held locally so a tab click repaints immediately instead of
+  // waiting on the navigation round trip the URL update triggers.
+  const [activeCategory, setActiveCategory] = useState<TabId>(categoryFromUrl);
+  const [syncedCategory, setSyncedCategory] = useState<TabId>(categoryFromUrl);
   const [query, setQuery] = useState('');
 
-  // Sync URL → state when navigating from category cards on landing page
-  useEffect(() => {
-    const cat = searchParams.get('category') ?? ALL_ID;
-    setActiveCategory(cat);
-  }, [searchParams]);
+  // Re-sync when the URL changes underneath us — browser back/forward, or a `?category=` link
+  // followed from elsewhere. Done during render rather than in an effect so there is no
+  // intermediate paint showing the stale tab.
+  if (syncedCategory !== categoryFromUrl) {
+    setSyncedCategory(categoryFromUrl);
+    setActiveCategory(categoryFromUrl);
+  }
 
   // Update URL when filter changes
-  const handleCategoryChange = (slug: string) => {
+  const handleCategoryChange = (slug: TabId) => {
     setActiveCategory(slug);
-    const params = new URLSearchParams(searchParams.toString());
-    if (slug === ALL_ID) {
-      params.delete('category');
-    } else {
+    const params = new URLSearchParams();
+    if (slug !== ALL_ID) {
       params.set('category', slug);
     }
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    const queryString = params.toString();
+    router.replace(queryString ? `${pathname}?${queryString}` : pathname, { scroll: false });
   };
 
   const filtered = useMemo(() => {
@@ -74,7 +89,11 @@ export function ProductGrid() {
 
   const tabs: { id: TabId; label: string; count: number }[] = [
     { id: ALL_ID, label: 'All Products', count: PRODUCTS.length },
-    ...PRODUCT_CATEGORIES.map((c) => ({ id: c.slug, label: c.name, count: c.productCount })),
+    ...PRODUCT_CATEGORIES.map((c) => ({
+      id: c.slug,
+      label: c.name,
+      count: PRODUCT_COUNT_BY_CATEGORY[c.slug],
+    })),
   ];
 
   return (

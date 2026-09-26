@@ -1,6 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import { render, screen } from '@testing-library/react';
 import RootLayout, { metadata } from '@/app/layout';
+import { SITE_URL } from '@/constants';
 
 vi.mock('geist/font/sans', () => ({
   GeistSans: { variable: '--font-geist-sans', className: 'font-geist-sans' },
@@ -108,5 +111,44 @@ describe('metadata', () => {
 
   it('has keywords', () => {
     expect(metadata.keywords).toBeTruthy();
+  });
+
+  it('derives metadataBase from the shared SITE_URL constant', () => {
+    expect(String(metadata.metadataBase)).toBe(new URL(SITE_URL).toString());
+  });
+
+  it('opts every crawler into indexing and following', () => {
+    expect(metadata.robots).toMatchObject({ index: true, follow: true });
+  });
+
+  it('gives Googlebot large image previews and unlimited snippets', () => {
+    expect(metadata.robots).toMatchObject({
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+        'max-video-preview': -1,
+      },
+    });
+  });
+
+  it('declares the home page as its own canonical', () => {
+    expect(metadata.alternates?.canonical).toBe('/');
+  });
+
+  it('references only icon assets that exist on disk', () => {
+    const icons = metadata.icons as { icon: string; shortcut: string; apple: string };
+    expect(icons.icon).toBe('/favicon.ico');
+    expect(icons.shortcut).toBe('/favicon.ico');
+    expect(icons.apple).toBe('/navodaya-logo.png');
+    expect(existsSync(join(process.cwd(), 'src/app/favicon.ico'))).toBe(true);
+    expect(existsSync(join(process.cwd(), 'public/navodaya-logo.png'))).toBe(true);
+  });
+
+  it('leaves twitter.images unset so the opengraph-image file convention fills it', () => {
+    // Next only auto-fills twitter images from openGraph when `twitter` has no
+    // own `images` key (next/dist/lib/metadata/resolve-metadata.js:138,627).
+    expect(Object.prototype.hasOwnProperty.call(metadata.twitter ?? {}, 'images')).toBe(false);
   });
 });

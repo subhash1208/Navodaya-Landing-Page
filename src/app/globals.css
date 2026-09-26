@@ -19,8 +19,18 @@
     box-sizing: border-box;
   }
 
+  /* Deliberately NO `scroll-behavior: smooth` here — do not re-add it.
+     It animates every scroll of the root scroller, including the two writes Next's App Router
+     performs on a client navigation (`htmlElement.scrollTop = 0` then `domNode.scrollIntoView()`,
+     node_modules/next/dist/client/components/layout-router.js:221,225). WebKit never commits that
+     animation and settles back at the previous route's clamped offset, so on iOS Safari every
+     navigation into `/` landed mid-page. Measured at 390x664, same build, one declaration toggled:
+     WebKit smooth -> 9336, WebKit auto -> 0, Chromium smooth -> 80, Chromium auto -> 0.
+     CSS cannot distinguish a router reset from a `#hash` jump — both scroll this same element —
+     so the declaration cannot be scoped, only removed. In-page anchors are instant as a result,
+     which is what `prefers-reduced-motion` users already got. Covered by
+     e2e/scroll-restoration.spec.ts. */
   html {
-    scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
     overflow-x: hidden;
   }
@@ -66,12 +76,6 @@
   }
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
-  }
-
-  /* Loading particle */
-  .loading-particle {
-    will-change: transform;
-    backface-visibility: hidden;
   }
 }
 
@@ -181,16 +185,6 @@
   .testimonial-row-2 {
     animation: none;
   }
-}
-
-/* ─── Slot machine (preloader) ──────────────────────────────────────────────── */
-@keyframes slotMachine {
-  0% {
-    transform: translateY(0);
-  }
-  100% {
-    transform: translateY(-120px);
-  } /* 6 items × 20px */
 }
 
 /* ─── Marquee strip ─────────────────────────────────────────────────────────── */

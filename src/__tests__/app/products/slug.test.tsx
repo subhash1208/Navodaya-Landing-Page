@@ -55,6 +55,16 @@ describe('ProductPage [slug]', () => {
       const metadata = await generateMetadata({ params: Promise.resolve({ slug: 'nonexistent' }) });
       expect(metadata.title).toBe('Product Not Found');
     });
+
+    it('sets the canonical URL to the product route', async () => {
+      const metadata = await generateMetadata({ params: Promise.resolve({ slug: 'surgeon-cap' }) });
+      expect(metadata.alternates?.canonical).toBe('/products/surgeon-cap');
+    });
+
+    it('omits a canonical for an unknown slug', async () => {
+      const metadata = await generateMetadata({ params: Promise.resolve({ slug: 'nonexistent' }) });
+      expect(metadata.alternates).toBeUndefined();
+    });
   });
 
   describe('ProductPage render', () => {
