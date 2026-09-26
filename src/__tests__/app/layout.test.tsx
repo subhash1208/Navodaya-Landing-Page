@@ -37,10 +37,6 @@ vi.mock('@/components/ui/LenisProvider', () => ({
   LenisProvider: ({ children }: any) => <div data-testid="lenis-provider">{children}</div>,
 }));
 
-vi.mock('@vercel/analytics/react', () => ({
-  Analytics: () => <div data-testid="analytics" />,
-}));
-
 describe('RootLayout', () => {
   it('renders children in main element', () => {
     render(

@@ -8,7 +8,6 @@ import Footer from '@/components/layout/Footer';
 import { SkipNav } from '@/components/ui/SkipNav';
 import { PageTransition } from '@/components/ui/PageTransition';
 import { CustomCursor } from '@/components/ui/CustomCursor';
-import { Analytics } from '@vercel/analytics/react';
 import { LenisProvider } from '@/components/ui/LenisProvider';
 
 export const metadata: Metadata = {
@@ -76,7 +75,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             <Footer />
           </PageTransition>
         </LenisProvider>
-        <Analytics />
       </body>
     </html>
   );
