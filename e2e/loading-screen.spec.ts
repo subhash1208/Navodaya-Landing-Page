@@ -26,13 +26,31 @@ test.describe('Loading Screen', () => {
   test('sessionStorage key is set after loading completes', async ({ page }) => {
     await page.goto('/');
 
-    // Wait on the condition, not a fixed duration: LoadingScreen writes the key at
-    // the 3.2s stage. `expect.poll` retries until it appears or the timeout trips.
+    // Wait on the condition, not a fixed duration: LoadingScreen writes the key when the
+    // panels start to split, 900ms in (it used to be the 3.2s stage, before the intro was
+    // rebuilt as a single ~1.4s seal gesture). `expect.poll` retries until it appears.
     await expect
       .poll(() => page.evaluate(() => sessionStorage.getItem('nv_intro_seen')), {
-        timeout: 10000,
+        timeout: 5000,
       })
       .toBe('1');
+  });
+
+  test('Escape skips the intro immediately', async ({ page }) => {
+    await page.goto('/');
+    await page.evaluate(() => sessionStorage.removeItem('nv_intro_seen'));
+    await page.reload();
+
+    // WCAG SC 2.2.2 — the intro must be stoppable. Pressing Escape marks it seen and
+    // lifts the overlay without waiting out the timeline.
+    await page.keyboard.press('Escape');
+
+    await expect
+      .poll(() => page.evaluate(() => sessionStorage.getItem('nv_intro_seen')), {
+        timeout: 5000,
+      })
+      .toBe('1');
+    await expect(page.getByRole('status', { name: /loading navodaya/i })).toHaveCount(0);
   });
 
   /**

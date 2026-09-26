@@ -48,11 +48,18 @@ const dropWarnings = [];
 // ---------------------------------------------------------------------------
 // Minimal frontmatter reader.
 //
-// Deliberately not a full YAML parser. It handles exactly the five shapes that
+// Deliberately not a full YAML parser. It handles exactly the six shapes that
 // can appear in this repo's agent and skill files: scalars, flow sequences
-// (`[a, b]`), block sequences (`- a` lines), folded blocks (`>-`), and one level
-// of nested map (`metadata:`). Anything else is preserved verbatim rather than
-// silently mangled.
+// (`[a, b]`), the SAME flow sequence wrapped across lines by prettier, block
+// sequences (`- a` lines), folded blocks (`>-`), and one level of nested map
+// (`metadata:`). Anything else is preserved verbatim rather than silently
+// mangled.
+//
+// The wrapped form is listed second on purpose. It was missing for four days
+// after the block-sequence fix, and because a parse failure here ends in an
+// omitted `tools:` line -- which Claude Code reads as INHERIT EVERYTHING -- it
+// left five of seven agents unrestricted. See CONTROL-PLANE-NOTES.md 12.24.
+// Before adding a shape, ask what `pnpm format` can turn the others into.
 // ---------------------------------------------------------------------------
 
 function splitFrontmatter(raw) {
@@ -105,6 +112,41 @@ function parseFrontmatter(block) {
           seq.push(unquote(lines[++i].replace(/^\s*-\s*/, '')));
         }
         out[key] = seq.filter(Boolean);
+        continue;
+      }
+
+      // ...and the THIRD spelling: a flow sequence WRAPPED onto the following
+      // lines. Not exotic — it is the one `prettier` emits. Any `tools: [...]`
+      // longer than the print width gets reflowed into a bare `tools:` plus an
+      // indented `[ ... ]`, so the repo's own format gate manufactures the form
+      // the parser could not read.
+      //
+      // The failure was total and silent. `[` and `read,` are not `key: value`,
+      // so the map branch below matched nothing, `tools` came back `{}`,
+      // `mapTools` saw a non-Array and returned null, and the emitter's
+      // `if (tools?.length)` dropped the `tools:` line — which in Claude Code
+      // does not mean "no tools", it means INHERIT EVERY TOOL.
+      //
+      // Five of seven agents were unrestricted this way, and the tell is that
+      // the only two that survived (`researcher`, `scribe`) are the only two
+      // whose lists fit on one line. `reviewer` ("DO NOT edit any file. You have
+      // no edit tool"), `memory-updater` ("NEVER call read_graph ... You do not
+      // have the tool") and `implementer` ("you have no delegation tool") each
+      // held the exact tool its own prompt told it it lacked. Worse, the
+      // capability-promise lint below opens with `if (!tools?.length) return`,
+      // so those five were exempt from the one check that would have noticed.
+      if ((lines[i + 1] ?? '').trim().startsWith('[')) {
+        const buf = [];
+        while (i + 1 < lines.length) {
+          buf.push(lines[++i].trim());
+          if (buf[buf.length - 1].endsWith(']')) break;
+        }
+        out[key] = buf
+          .join(' ')
+          .replace(/^\[|\]$/g, '')
+          .split(',')
+          .map((s) => unquote(s.trim()))
+          .filter(Boolean);
         continue;
       }
 
@@ -340,11 +382,27 @@ const PROMISES = [
     cap: 'sequential-thinking/*',
   },
   {
-    re: /\bcontext7\b|\bresolve-library-id\b|\bquery-docs\b/i,
+    re: /\bresolve-library-id\b|\bquery-docs\b/i,
     needs: 'mcp__context7__query-docs',
     cap: 'context7/*',
   },
-  { re: /\btavily\b/i, needs: 'mcp__tavily__tavily_search', cap: 'tavily/*' },
+  // These two match the FUNCTION names only, never the bare brand word. That is
+  // the difference between "use tavily_search to find X" and "you deliberately
+  // do not hold `tavily`" -- a regex on `\btavily\b` fires identically on both,
+  // because it reads mention and cannot read polarity.
+  //
+  // It cost four false positives to learn. Every agent that documents which
+  // tools it lacks -- which is most of them now, deliberately, because an agent
+  // that knows its own limits routes around them instead of guessing -- tripped
+  // a guard whose stated contract (see above) is to fire only on instruction.
+  // The fix restores that contract rather than punching per-file `allow` holes,
+  // which would have switched the rule OFF for the four files most likely to
+  // gain a real promise later.
+  //
+  // Accepted cost: "use tavily to search the web", written without a function
+  // name, is no longer caught. That is the block's own trade -- prefer missing
+  // a case to inventing one.
+  { re: /\btavily_(search|extract)\b/i, needs: 'mcp__tavily__tavily_search', cap: 'tavily/*' },
   { re: /`Skill` tool|\bload the `[a-z0-9-]+` skill\b/i, needs: 'Skill', cap: 'skill' },
 ];
 
@@ -592,15 +650,34 @@ const SKILL_PASSTHROUGH = [
   'argument-hint', // 2.0.0; SKILL.md-specific fixes at 2.1.47 and 2.1.149
   'disallowed-tools', // 2.1.152 "Skills and slash commands can now set..."
   'effort', // 2.1.80 -- but see 2.1.267: ignored on effort-pinned models
+  // Real, parsed skill fields (docs: code.claude.com/docs/en/skills). Spec Kit
+  // ships both at their defaults, so passing them through is a no-op today --
+  // and stops being one the moment upstream flips either. `user-invocable` is
+  // the skill-side half of the correction at AGENT_DROP_SILENT above.
+  'user-invocable', // default true; false = Claude-only, hidden from `/`, but does NOT block the Skill tool
+  'disable-model-invocation', // default false; true = user-only, drops the description from context and (2.1.196+) blocks subagent preload + scheduled tasks
 ];
 
 // No Claude equivalent. Dropping these is correct, so it stays silent.
-const SKILL_DROP_SILENT = ['name', 'description', 'metadata'];
+//
+// `compatibility` and `license` are Agent Skills SPEC fields -- Claude Code
+// accepts both and acts on neither (docs: code.claude.com/docs/en/skills), so
+// there is no behaviour to preserve. `license` is not authored anywhere here
+// yet; it is listed now because it is the same class as `compatibility` and
+// would otherwise fire a `dropped` finding the moment upstream adds it.
+const SKILL_DROP_SILENT = ['name', 'description', 'metadata', 'compatibility', 'license'];
 
 function skillFrontmatter(sourceFile, fm) {
   const lines = [];
   for (const key of SKILL_PASSTHROUGH) {
-    if (fm[key] !== undefined) lines.push(`${key}: ${yamlString(String(fm[key]))}`);
+    const value = fm[key];
+    if (value === undefined) continue;
+    // The two fields added above are BOOLEANS upstream, and `yamlString` is
+    // JSON.stringify -- it would emit `disable-model-invocation: "true"`, a YAML
+    // string, not the boolean the author wrote. Same silent-drop class as the
+    // rest of this file, one layer down: the key survives and its type does not.
+    const raw = String(value);
+    lines.push(`${key}: ${raw === 'true' || raw === 'false' ? raw : yamlString(raw)}`);
   }
 
   const where = relative(ROOT, sourceFile).split(sep).join('/');
@@ -1068,7 +1145,17 @@ function buildSettings() {
   // an ask floor, and the binary's log line for that path reads "ask rule/safety
   // check requires full permission pipeline (hookAskFloor -- a classifier allow
   // re-surfaces as this ask)". A classifier ALLOW cannot clear it.
-  for (const key of ['disableSkillShellExecution', 'fallbackModel']) {
+  //   includeCoAuthoredBy         verified against the INSTALLED BINARY, not the
+  //     CHANGELOG: `grep -a -c includeCoAuthoredBy claude.exe` returns 5. That is
+  //     the same proof the CHANGELOG line numbers above stand in for, taken one
+  //     step closer to the thing that actually loads the key. `false` suppresses
+  //     the `Co-Authored-By: Claude ...` commit trailer. It is set mechanically
+  //     rather than written into CONTRIBUTING.md as a rule because the trailer
+  //     came from an AGENT DEFAULT, and a default beats an instruction every time
+  //     an agent forgets one -- measured as 15 of 31 commits on feature/subhash
+  //     carrying it and 16 not. Owner decision, 2026-09-25; see the note in
+  //     permissions.json before removing it.
+  for (const key of ['disableSkillShellExecution', 'fallbackModel', 'includeCoAuthoredBy']) {
     if (perms[key] !== undefined) settings[key] = perms[key];
   }
 

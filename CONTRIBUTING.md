@@ -52,6 +52,7 @@ chore(hooks): add husky pre-commit with lint+test+coverage
 - Use imperative mood: "add" not "added" or "adds"
 - No period at the end of the subject line
 - Scope is optional but recommended (component/file name)
+- No `Co-Authored-By` trailer — enforced by `includeCoAuthoredBy: false` in the generated settings
 
 ## Package Manager
 

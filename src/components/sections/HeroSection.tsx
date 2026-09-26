@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { ArrowRight, ChevronDown } from 'lucide-react';
 import Image from 'next/image';
@@ -9,11 +9,16 @@ import { BRAND, ROUTES, PRODUCT_CATEGORIES, PRODUCTS } from '@/constants';
 import { useTypewriter } from '@/hooks/useTypewriter';
 import { useIsomorphicLayoutEffect } from '@/hooks/useIsomorphicLayoutEffect';
 import { useIntroFinished } from '@/hooks/useIntroFinished';
-import { ProductCategoryGraph } from '@/components/ui/ProductCategoryGraph';
-import { AuroraBackground } from '@/components/ui/AuroraBackground';
 
 const HEADLINE_LINE1 = 'Premium Hygiene & Care';
 const HEADLINE_LINE2 = 'Solutions for Every Industry';
+
+/**
+ * Describes what the specimen plate photograph actually shows. Deliberately not a repeat of the
+ * caption below it — same convention as `PLATE_ALT` in `ProductCategoriesSection.tsx:17`.
+ */
+const PLATE_ALT =
+  'A white single-use paper cup photographed at a three-quarter angle on a plain pale ground, printed with the Navodaya logo and wordmark, showing the rolled rim and tapered wall';
 
 export default function HeroSection() {
   // Seeded `true` so the server renders the hero in its FINISHED state — headline, mission
@@ -26,11 +31,11 @@ export default function HeroSection() {
   const [line2Visible, setLine2Visible] = useState(true);
   const [contentVisible, setContentVisible] = useState(true);
   const [badgeVisible, setBadgeVisible] = useState(true);
-  const [isMobile, setIsMobile] = useState<boolean | null>(null);
-  const [logoScale, setLogoScale] = useState(1);
-  const [expandedCategory, setExpandedCategory] = useState<number | null>(null);
-  const collapseRef = useRef<(() => void) | null>(null);
-  const rightPanelRef = useRef<HTMLDivElement>(null);
+  const [plateVisible, setPlateVisible] = useState(true);
+  // The two reveal timers below are started from `useTypewriter`'s `onComplete`, which fires
+  // from inside the hook's own effect — outside that effect's cleanup closure, so the hook
+  // cannot clear them. Unmounting mid-typing used to leave both running.
+  const revealTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   // False while the first-visit intro overlay is covering the page. Without this the whole
   // entrance sequence — typewriter included — runs and finishes in the first ~1.7s, behind
@@ -45,24 +50,27 @@ export default function HeroSection() {
     setLine2Visible(false);
     setContentVisible(false);
     setBadgeVisible(false);
+    setPlateVisible(false);
   }, []);
 
   useEffect(() => {
-    setIsMobile(window.matchMedia('(max-width: 768px)').matches);
+    const timers = revealTimersRef.current;
+    return () => {
+      timers.forEach(clearTimeout);
+      timers.length = 0;
+    };
   }, []);
 
   useEffect(() => {
-    // The badge has no upstream trigger the way line 2 and the body copy have the
-    // typewriter's onComplete, so it re-reveals itself here once the intro is out of the
-    // way. This runs after paint, by which point the layout effect above has already
-    // hidden it, so motion animates it in from hidden.
-    if (introFinished) setBadgeVisible(true);
+    // The badge and the specimen plate have no upstream trigger the way line 2 and the body
+    // copy have the typewriter's onComplete, so they re-reveal themselves here once the intro
+    // is out of the way. This runs after paint, by which point the layout effect above has
+    // already hidden them, so motion animates them in from hidden.
+    if (introFinished) {
+      setBadgeVisible(true);
+      setPlateVisible(true);
+    }
   }, [introFinished]);
-
-  const handleLogoScale = useCallback((scale: number) => {
-    setLogoScale(scale);
-    setExpandedCategory(scale < 1 ? 0 : null);
-  }, []);
 
   const { displayed, showCursor } = useTypewriter({
     text: HEADLINE_LINE1,
@@ -70,8 +78,10 @@ export default function HeroSection() {
     startDelay: 300,
     enabled: introFinished,
     onComplete: () => {
-      setTimeout(() => setLine2Visible(true), 150);
-      setTimeout(() => setContentVisible(true), 600);
+      revealTimersRef.current.push(
+        setTimeout(() => setLine2Visible(true), 150),
+        setTimeout(() => setContentVisible(true), 600),
+      );
     },
   });
 
@@ -79,26 +89,10 @@ export default function HeroSection() {
     <section
       id="home"
       aria-label="Hero"
-      className="relative overflow-hidden"
-      style={{
-        minHeight: 'calc(100vh - 4rem)',
-        background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 60%, #0F172A 100%)',
-      }}
+      className="relative overflow-hidden bg-ink"
+      style={{ minHeight: 'calc(100vh - 4rem)' }}
     >
-      {/* Subtle radial glow */}
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background:
-            'radial-gradient(ellipse 80% 60% at 70% 50%, rgba(30,64,175,0.12) 0%, transparent 70%)',
-        }}
-      />
-
-      {/* Aurora background effect */}
-      <AuroraBackground className="absolute inset-0" />
-
-      {/* 2-column layout: text left (anchored to left), graph+placeholder right (larger) */}
+      {/* 2-column layout: text left (anchored to left), specimen plate right (larger) */}
       <div
         className="relative z-10 w-full flex flex-col md:flex-row items-center px-6 py-12 md:pl-28 md:pr-8 md:py-12"
         style={{ minHeight: 'calc(100vh - 4rem)' }}
@@ -113,28 +107,22 @@ export default function HeroSection() {
             initial={false}
             animate={badgeVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="inline-flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-full mb-8 border self-center md:self-start"
-            style={{
-              background: 'rgba(30,64,175,0.15)',
-              borderColor: 'rgba(30,64,175,0.3)',
-              color: '#93C5FD',
-            }}
+            className="inline-flex items-center gap-2 font-mono text-label uppercase px-4 py-2 mb-8 border border-brand-cyan/30 text-brand-cyan self-center md:self-start"
           >
-            <span className="w-1.5 h-1.5 rounded-full animate-pulse bg-brand-secondary" />
+            <span className="w-1.5 h-1.5 rounded-full animate-pulse bg-brand-cyan" />
             Trusted B2B Supplier · Gandhi Nagar, Hyderabad
           </motion.div>
 
           {/* Headline */}
           <h1
-            className="font-black leading-[1.05] tracking-tight mb-2 font-display"
-            style={{ fontSize: 'clamp(2rem, 4vw, 3.75rem)' }}
+            className="font-black leading-[1.05] tracking-tight mb-2 font-display text-display-3"
             aria-label={`${HEADLINE_LINE1} ${HEADLINE_LINE2}`}
           >
-            <span className="block text-white">
+            <span className="block text-paper">
               {displayed}
               {showCursor && (
                 <span
-                  className="inline-block w-[3px] h-[0.85em] bg-brand-secondary ml-1 align-middle animate-pulse"
+                  className="inline-block w-[3px] h-[0.85em] bg-brand-cyan ml-1 align-middle animate-pulse"
                   aria-hidden="true"
                 />
               )}
@@ -150,19 +138,7 @@ export default function HeroSection() {
               transition={{ duration: 0.8, ease: [0.4, 0, 0.2, 1] }}
               style={{ overflow: 'hidden', display: 'block' }}
             >
-              <span
-                className="animate-gradient-shift"
-                style={{
-                  display: 'inline-block',
-                  background: 'linear-gradient(-45deg, #60A5FA, #818CF8, #38BDF8, #60A5FA)',
-                  backgroundSize: '400% 400%',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                }}
-              >
-                {HEADLINE_LINE2}
-              </span>
+              <span className="inline-block text-brand-cyan">{HEADLINE_LINE2}</span>
             </motion.span>
           </h1>
 
@@ -171,8 +147,7 @@ export default function HeroSection() {
             initial={false}
             animate={contentVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ duration: 0.5 }}
-            className="text-base leading-relaxed mb-8 mt-5 max-w-lg"
-            style={{ color: '#94A3B8' }}
+            className="text-base leading-relaxed mb-8 mt-5 max-w-lg text-grey-400"
           >
             {BRAND.MISSION}
           </motion.p>
@@ -190,11 +165,7 @@ export default function HeroSection() {
             >
               <Link
                 href={ROUTES.PRODUCTS}
-                className="group inline-flex items-center gap-2.5 rounded-full font-semibold text-base text-white transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 px-7 py-3.5 min-h-[48px]"
-                style={{
-                  background: 'linear-gradient(135deg, #1E40AF, #1D4ED8)',
-                  boxShadow: '0 4px 24px rgba(30,64,175,0.5)',
-                }}
+                className="group inline-flex items-center gap-2.5 font-mono text-label uppercase bg-paper text-ink hover:bg-paper/90 transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cyan focus-visible:ring-offset-2 focus-visible:ring-offset-ink px-7 py-3.5 min-h-[48px]"
               >
                 Explore Products
                 <ArrowRight
@@ -211,13 +182,7 @@ export default function HeroSection() {
             >
               <Link
                 href={ROUTES.CONTACT}
-                className="inline-flex items-center gap-2 rounded-full font-semibold text-base transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 px-7 py-3.5 min-h-[48px]"
-                style={{
-                  border: '2px solid rgba(255,255,255,0.2)',
-                  color: '#E2E8F0',
-                  background: 'rgba(255,255,255,0.05)',
-                  backdropFilter: 'blur(8px)',
-                }}
+                className="inline-flex items-center gap-2 font-mono text-label uppercase border border-paper/30 text-paper hover:bg-paper/10 transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cyan focus-visible:ring-offset-2 focus-visible:ring-offset-ink px-7 py-3.5 min-h-[48px]"
               >
                 Get a Quote
               </Link>
@@ -229,153 +194,63 @@ export default function HeroSection() {
             initial={false}
             animate={contentVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="inline-flex items-center rounded-2xl self-center md:self-start"
-            style={{
-              background: 'rgba(255,255,255,0.05)',
-              backdropFilter: 'blur(12px)',
-              border: '1px solid rgba(255,255,255,0.08)',
-              padding: '16px 32px',
-            }}
+            className="inline-flex items-center self-center md:self-start border border-paper/15"
+            style={{ padding: '16px 32px' }}
           >
             {[
-              { value: '51+', label: 'Products' },
-              { value: '3', label: 'Categories' },
+              { value: `${PRODUCTS.length}+`, label: 'Products' },
+              { value: `${PRODUCT_CATEGORIES.length}`, label: 'Categories' },
               { value: 'B2B', label: 'Focused' },
             ].map(({ value, label }, i) => (
               <div key={label} className="flex items-center">
                 <div className="text-center px-6">
-                  <div className="text-xl font-black text-white">{value}</div>
-                  <div className="text-[11px] font-medium mt-0.5" style={{ color: '#64748B' }}>
-                    {label}
-                  </div>
+                  <div className="text-xl font-black text-paper">{value}</div>
+                  <div className="text-[11px] font-medium mt-0.5 text-grey-400">{label}</div>
                 </div>
-                {i < 2 && (
-                  <div
-                    className="w-px h-7 shrink-0"
-                    style={{ background: 'rgba(255,255,255,0.1)' }}
-                  />
-                )}
+                {i < 2 && <div className="w-px h-7 shrink-0 bg-paper/10" />}
               </div>
             ))}
           </motion.div>
         </div>
 
-        {/* RIGHT — Graph + 3D Placeholder */}
+        {/* RIGHT — Specimen plate. One photograph, hairline rule, index numeral and caption,
+            echoing the category plates in `ProductCategoriesSection`. Static on purpose: this
+            replaced a 734-line canvas graph whose 50 product nodes were mouse-only. */}
         <div
-          ref={rightPanelRef}
           className="relative hidden md:flex items-center justify-center"
           style={{ flex: 1, minHeight: '520px' }}
-          onClick={() => collapseRef.current?.()}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') collapseRef.current?.();
-          }}
-          role="button"
-          tabIndex={0}
-          aria-label={
-            expandedCategory !== null
-              ? 'Collapse expanded category'
-              : 'Product category graph — click a category to explore products'
-          }
-          aria-expanded={expandedCategory !== null}
         >
-          {/* Canvas graph — pills spiral with nodes, no HTML overlay needed */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            {isMobile !== null && (
-              <ProductCategoryGraph
-                width={520}
-                height={520}
-                isMobile={isMobile}
-                onLogoScale={handleLogoScale}
-                collapseRef={collapseRef}
+          <motion.figure
+            initial={false}
+            animate={plateVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
+            transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
+            className="w-full max-w-[400px] border border-paper/15 bg-grey-900 p-6"
+          >
+            <div className="flex items-baseline justify-between gap-4 mb-6">
+              <span aria-hidden="true" className="font-mono text-label text-grey-400">
+                01
+              </span>
+              <span className="font-mono text-label uppercase text-grey-400">Specimen</span>
+            </div>
+
+            <div className="relative aspect-square overflow-hidden border border-paper/10 bg-ink">
+              {/* The panel is `hidden` below 768px, so the `0px` slot keeps mobile browsers
+                  from picking a candidate they will never paint. No `priority` — the LCP
+                  element here is the <h1>, not this plate. */}
+              <Image
+                src="/hero/cup-three-quarter.webp"
+                alt={PLATE_ALT}
+                fill
+                sizes="(max-width: 767px) 0px, 400px"
+                className="object-cover"
               />
-            )}
-          </div>
+            </div>
 
-          {/* 3D Logo Placeholder — pointer-events-none so clicks pass through to canvas */}
-          <div className="relative z-10 flex items-center justify-center pointer-events-none">
-            <motion.div
-              animate={{ rotate: -360 }}
-              transition={{ duration: 18, repeat: Infinity, ease: 'linear' }}
-              className="absolute rounded-full"
-              style={{ width: '130px', height: '130px' }}
-            >
-              <svg
-                width="130"
-                height="130"
-                viewBox="0 0 130 130"
-                className="absolute inset-0"
-                aria-hidden="true"
-              >
-                <defs>
-                  <path id="orbitPath" d="M 13,65 a 52,52 0 1,1 104,0 a 52,52 0 1,1 -104,0" />
-                </defs>
-                <text
-                  fontSize="7"
-                  fontFamily="Inter, sans-serif"
-                  fontWeight="500"
-                  letterSpacing="2"
-                  fill="rgba(56,189,248,0.7)"
-                >
-                  <textPath href="#orbitPath" startOffset="0%">
-                    YOUR TRUSTED PARTNER IN PROGRESS AND CARE ·
-                  </textPath>
-                </text>
-              </svg>
-            </motion.div>
-
-            <motion.div
-              animate={{ scale: logoScale }}
-              transition={{ type: 'spring', stiffness: 200, damping: 20 }}
-              className="relative"
-              style={{ width: '80px', height: '80px' }}
-            >
-              <motion.div
-                animate={{ scale: [1, 1.04, 1] }}
-                transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-                className="relative w-full h-full"
-              >
-                <div
-                  className="absolute inset-0 rounded-full"
-                  style={{
-                    background: 'radial-gradient(circle, rgba(30,64,175,0.35) 0%, transparent 70%)',
-                    filter: 'blur(14px)',
-                    transform: 'scale(1.8)',
-                  }}
-                />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <Image
-                    src="/navodaya-logo.png"
-                    alt="Navodaya logo"
-                    width={72}
-                    height={72}
-                    priority
-                    style={{
-                      width: '72px',
-                      height: '72px',
-                      objectFit: 'contain',
-                      filter: 'drop-shadow(0 0 12px rgba(30,64,175,0.6))',
-                    }}
-                  />
-                </div>
-              </motion.div>
-            </motion.div>
-          </div>
-
-          {/* Keyboard-accessible alternative for canvas graph products */}
-          <nav aria-label="Product categories" className="sr-only">
-            {PRODUCT_CATEGORIES.map((cat) => (
-              <div key={cat.id}>
-                <h3>{cat.name}</h3>
-                <ul>
-                  {PRODUCTS.filter((p) => p.category.id === cat.id).map((p) => (
-                    <li key={p.id}>
-                      <Link href={ROUTES.PRODUCT(p.slug)}>{p.name}</Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </nav>
+            <figcaption className="mt-6 flex items-baseline justify-between gap-4 border-t border-paper/15 pt-5">
+              <span className="font-mono text-label uppercase text-paper">Branded Paper Cup</span>
+              <span className="font-mono text-data text-grey-400">Hotel Amenities</span>
+            </figcaption>
+          </motion.figure>
         </div>
       </div>
 
@@ -383,8 +258,7 @@ export default function HeroSection() {
       <a
         href="#about"
         aria-label="Scroll to About section"
-        className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 transition-colors focus-visible:outline-none focus-visible:ring-2 rounded"
-        style={{ color: '#475569' }}
+        className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-grey-400 transition-colors focus-visible:outline-none focus-visible:ring-2 rounded"
       >
         <span className="text-xs font-medium tracking-widest uppercase">Scroll</span>
         <ChevronDown className="w-4 h-4 animate-bounce" aria-hidden="true" />

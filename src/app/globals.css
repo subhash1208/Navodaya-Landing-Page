@@ -4,15 +4,11 @@
 
 /* ─── CSS Variables ─────────────────────────────────────────────────────────── */
 :root {
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-display: 'Outfit', 'Plus Jakarta Sans', sans-serif;
-  --font-body: 'Plus Jakarta Sans', 'Inter', sans-serif;
-
-  /* HSL tokens for opacity variants */
-  --primary: 217 91% 60%;
-  --secondary: 199 89% 48%;
-  --accent: 38 92% 50%;
-  --dark: 222 47% 11%;
+  /* Geist Sans / Geist Mono are supplied by the `geist` package via next/font/local
+     on the <html> element in src/app/layout.tsx as --font-geist-sans / --font-geist-mono. */
+  --font-display: var(--font-geist-sans), system-ui, sans-serif;
+  --font-body: var(--font-geist-sans), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, 'SFMono-Regular', Menlo, monospace;
 }
 
 /* ─── Base layer ────────────────────────────────────────────────────────────── */
@@ -23,15 +19,25 @@
     box-sizing: border-box;
   }
 
+  /* Deliberately NO `scroll-behavior: smooth` here — do not re-add it.
+     It animates every scroll of the root scroller, including the two writes Next's App Router
+     performs on a client navigation (`htmlElement.scrollTop = 0` then `domNode.scrollIntoView()`,
+     node_modules/next/dist/client/components/layout-router.js:221,225). WebKit never commits that
+     animation and settles back at the previous route's clamped offset, so on iOS Safari every
+     navigation into `/` landed mid-page. Measured at 390x664, same build, one declaration toggled:
+     WebKit smooth -> 9336, WebKit auto -> 0, Chromium smooth -> 80, Chromium auto -> 0.
+     CSS cannot distinguish a router reset from a `#hash` jump — both scroll this same element —
+     so the declaration cannot be scoped, only removed. In-page anchors are instant as a result,
+     which is what `prefers-reduced-motion` users already got. Covered by
+     e2e/scroll-restoration.spec.ts. */
   html {
-    scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
     overflow-x: hidden;
   }
 
   body {
     font-family: var(--font-body);
-    @apply antialiased text-brand-dark bg-white;
+    @apply antialiased text-ink bg-paper;
     overflow-x: hidden;
   }
 
@@ -52,56 +58,12 @@
   }
 
   :focus-visible {
-    @apply outline-none ring-2 ring-brand-primary ring-offset-2;
-  }
-}
-
-/* ─── Component layer ───────────────────────────────────────────────────────── */
-@layer components {
-  /* Glass panel — frosted glass effect */
-  .glass-panel {
-    @apply bg-white/60 backdrop-blur-md border border-white/20;
-  }
-
-  .glass-panel-dark {
-    @apply bg-brand-dark/60 backdrop-blur-md border border-white/5;
-  }
-
-  /* Card hover states */
-  .card-hover {
-    @apply transition-all duration-300 ease-out;
-  }
-  .card-hover:hover {
-    will-change: transform;
-    @apply -translate-y-1.5 shadow-xl;
-  }
-
-  .card-hover-category {
-    @apply transition-all duration-300 ease-out;
-  }
-  .card-hover-category:hover {
-    will-change: transform;
-    @apply -translate-y-2 shadow-2xl;
-  }
-
-  .card-hover-feature {
-    @apply transition-all duration-200 ease-out;
-  }
-  .card-hover-feature:hover {
-    will-change: transform;
-    @apply -translate-y-1 bg-white shadow-lg;
+    @apply outline-none ring-2 ring-ink ring-offset-2;
   }
 }
 
 /* ─── Utility layer ─────────────────────────────────────────────────────────── */
 @layer utilities {
-  /* Text glow */
-  .text-glow {
-    text-shadow:
-      0 0 20px hsl(var(--primary) / 0.4),
-      0 0 40px hsl(var(--primary) / 0.2);
-  }
-
   /* Display font */
   .font-display {
     font-family: var(--font-display);
@@ -115,12 +77,6 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
-
-  /* Loading particle */
-  .loading-particle {
-    will-change: transform;
-    backface-visibility: hidden;
-  }
 }
 
 /* ─── Custom cursor ─────────────────────────────────────────────────────────── */
@@ -131,7 +87,7 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  border: 2px solid rgba(30, 64, 175, 0.6);
+  border: 2px solid rgba(8, 88, 152, 0.6);
   pointer-events: none;
   z-index: 99999;
   transition:
@@ -151,15 +107,15 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #1e40af;
+  background: #085898;
   transition: all 0.2s ease;
 }
 
 .custom-cursor--hover {
   width: 56px;
   height: 56px;
-  border-color: rgba(14, 165, 233, 0.8);
-  background: rgba(30, 64, 175, 0.08);
+  border-color: rgba(8, 184, 248, 0.8);
+  background: rgba(8, 88, 152, 0.08);
 }
 
 @media (hover: none) {
@@ -181,7 +137,7 @@
   inset: 0;
   background: radial-gradient(
     200px circle at var(--cursor-x) var(--cursor-y),
-    rgba(30, 64, 175, 0.12),
+    rgba(8, 88, 152, 0.12),
     transparent 70%
   );
   pointer-events: none;
@@ -231,16 +187,6 @@
   }
 }
 
-/* ─── Slot machine (preloader) ──────────────────────────────────────────────── */
-@keyframes slotMachine {
-  0% {
-    transform: translateY(0);
-  }
-  100% {
-    transform: translateY(-120px);
-  } /* 6 items × 20px */
-}
-
 /* ─── Marquee strip ─────────────────────────────────────────────────────────── */
 @keyframes marquee {
   from {
@@ -271,11 +217,11 @@
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(30, 64, 175, 0.25);
+  background: rgba(8, 88, 152, 0.25);
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(30, 64, 175, 0.45);
+  background: rgba(8, 88, 152, 0.45);
 }
 
 /* ─── Reduced motion ────────────────────────────────────────────────────────── */

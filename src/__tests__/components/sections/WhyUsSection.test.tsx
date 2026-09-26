@@ -195,7 +195,20 @@ describe('WhyUsSection', () => {
 
   it('renders section with correct background', () => {
     const { container } = render(<WhyUsSection />);
-    const section = container.querySelector('.bg-white');
+    const section = container.querySelector('.bg-paper');
     expect(section).toBeTruthy();
+  });
+
+  it('renders a mono index for the section and for every row', () => {
+    render(<WhyUsSection />);
+    ['01', '02', '03', '04'].forEach((index) => {
+      expect(screen.getAllByText(index).length).toBeGreaterThan(0);
+    });
+  });
+
+  it('separates rows with hairline rules rather than boxed cards', () => {
+    const { container } = render(<WhyUsSection />);
+    const rows = container.querySelectorAll('.why-card.border-t.border-grey-100');
+    expect(rows.length).toBe(4);
   });
 });

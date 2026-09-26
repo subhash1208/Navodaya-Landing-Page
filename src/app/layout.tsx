@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
-import { Outfit, Plus_Jakarta_Sans } from 'next/font/google';
+import { GeistSans } from 'geist/font/sans';
+import { GeistMono } from 'geist/font/mono';
 import './globals.css';
-import { BRAND } from '@/constants';
+import { BRAND, SITE_URL } from '@/constants';
 import { Header } from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { SkipNav } from '@/components/ui/SkipNav';
@@ -9,18 +10,6 @@ import { PageTransition } from '@/components/ui/PageTransition';
 import { CustomCursor } from '@/components/ui/CustomCursor';
 import { Analytics } from '@vercel/analytics/react';
 import { LenisProvider } from '@/components/ui/LenisProvider';
-
-const outfit = Outfit({
-  subsets: ['latin'],
-  variable: '--font-display',
-  display: 'swap',
-});
-
-const plusJakarta = Plus_Jakarta_Sans({
-  subsets: ['latin'],
-  variable: '--font-body',
-  display: 'swap',
-});
 
 export const metadata: Metadata = {
   title: {
@@ -36,7 +25,27 @@ export const metadata: Metadata = {
     'care kits',
   ],
   authors: [{ name: BRAND.FULL_NAME }],
-  metadataBase: new URL('https://www.navodaya.group'),
+  metadataBase: new URL(SITE_URL),
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+      'max-video-preview': -1,
+    },
+  },
+  alternates: { canonical: '/' },
+  // Only assets that actually exist: `src/app/favicon.ico` is served at
+  // /favicon.ico by the file convention, and `public/navodaya-logo.png` is the
+  // repo's only PNG icon.
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/navodaya-logo.png',
+  },
   openGraph: {
     title: BRAND.FULL_NAME,
     description: BRAND.TAGLINE,
@@ -53,7 +62,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${outfit.variable} ${plusJakarta.variable}`}>
+    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
       <head />
       <body className="min-h-screen antialiased" suppressHydrationWarning>
         <SkipNav />

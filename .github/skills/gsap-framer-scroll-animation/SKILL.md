@@ -10,6 +10,11 @@ description: >-
   "animate on scroll", "fade in as I scroll", "make it scroll like Apple",
   "parallax effect", "sticky section", "scroll progress bar", or "entrance animation".
   Also triggers for Copilot prompt patterns for GSAP or Framer Motion code generation.
+  Do NOT use it for motion that is not tied to scroll position — a hover state, a modal
+  or page transition, a loading spinner, or a typewriter effect. "text animations" and
+  "entrance animation" appear above only in their scroll-triggered sense; arrived at any
+  other way they are ordinary component work, and this repo already has
+  src/hooks/useTypewriter.ts and useIntroFinished.ts for two of them.
 metadata:
   author: 'Utkarsh Patrikar'
   author_url: 'https://github.com/utkarsh232005'
@@ -22,10 +27,38 @@ Production-grade scroll animations with GitHub Copilot prompts, ready-to-use cod
 ## Repo overrides — these win over anything below, including `references/*.md`
 
 - **Never run `npm install` or `npx`.** This repo is pnpm-only; `npm install` would create a competing lockfile and break the linked store. `gsap@^3.15.0`, `motion@^12.38.0`, and `lenis@^1.3.23` are **already installed** — no install step is needed for any recipe here. If a new plugin is genuinely required, use `pnpm add`.
-- **`@gsap/react` is NOT installed, and must not be added.** Every `useGSAP` recipe below and in `references/gsap.md` is dead in this repo — the import fails gate 3 with TS2307, and `pnpm add @gsap/react` is scope creep the reviewer will flag. The repo pattern is `gsap.context()` inside `useEffect` with `ctx.revert()` in cleanup: see `src/components/sections/AboutSection.tsx:69` and `src/components/ui/CounterStat.tsx:32`. Wherever the text below says "never plain `useEffect`", it is wrong here.
-- **Always kill timelines and ScrollTrigger instances in effect cleanup.** Leaked timelines are this repo's most common bug. Prefer `gsap.context()` / `ctx.revert()`.
+- **`@gsap/react` is NOT installed, and must not be added.** Every `useGSAP` recipe below and in `references/gsap.md` is dead in this repo — the import fails gate 3 with TS2307, and `pnpm add @gsap/react` is scope creep the reviewer will flag. The repo pattern is `gsap.context()` inside `useEffect` with `ctx.revert()` in cleanup: see `src/components/sections/AboutSection.tsx:69` and `src/components/sections/WhyUsSection.tsx:70`. Wherever the text below says "never plain `useEffect`", it is wrong here.
+
+  There is a **second** repo pattern, and it is not a variant of the first: `src/components/ui/CounterStat.tsx:32` holds a `ScrollTrigger.create(...)` handle directly and kills that handle in cleanup, with no context involved. An earlier revision of this line cited that file as an example of the `gsap.context()` pattern — so anyone opening it to copy the pattern found a different one. Reach for the context form when a subtree has several animations to own together; reach for the bare handle when there is exactly one trigger.
+
+- **Always kill timelines and ScrollTrigger instances in effect cleanup — and know that cleanup alone does not stop the leak.** Leaked timelines are this repo's most common bug, and the reason they survive a correct-looking cleanup is that every GSAP import here is dynamic. `await import('gsap')` puts an `await` between the effect starting and `gsap.context()` existing; unmount inside that window and React runs your cleanup **first**, while `ctx` is still `null`. `ctx?.revert()` no-ops, the context is then built against a dead component, and nothing reports it.
+
+  Set a `destroyed` flag in cleanup and check it immediately after the last `await`:
+
+  ```tsx
+  let destroyed = false;
+  let ctx: gsap.Context | null = null;
+  async function init() {
+    const { gsap } = await import('gsap');
+    if (destroyed) return; // ← without this, the context outlives the component
+    ctx = gsap.context(() => {
+      /* animations, targeting refs */
+    });
+  }
+  void init();
+  return () => {
+    destroyed = true;
+    ctx?.revert();
+  };
+  ```
+
+  Six components already carry the flag — `AboutSection`, `WhyUsSection`, `ProductCategoriesSection`, `CounterStat`, `LenisProvider`, `LoadingScreen`. Match it rather than inventing a variant, and type the handle `gsap.Context`, never `any` — GSAP's types are an ambient global that resolve with no import. **This override states the guard instead of linking it on purpose:** the full rule lives in `.github/instructions/react-components.instructions.md`, which is `applyTo`-scoped and so loads only once a matching file is open, whereas this skill fires on intent ("animate on scroll") — frequently before any component file is in context at all.
+
 - **Respect `prefers-reduced-motion` on every animation** — non-negotiable, even when a recipe below omits it.
 - **Import from `motion/react`**, not `framer-motion`.
+- **Never let a `motion.*` element SSR an `initial` prop when it holds page content.** `motion` serialises `initial` into inline styles during server render, so `initial={{ opacity: 0 }}` ships literal `style="opacity:0"` in the HTML — invisible before hydration, and invisible permanently if JS never runs. That is precisely the defect gate 10 exists to catch. **Recipe 2 below is written the forbidden way upstream and has been corrected here.** The primitive is `initial={false}` with a state-driven `animate`, wound back to hidden in a layout effect before first paint; the full pattern is in `.github/instructions/quality-gates.instructions.md` under "Never let `motion` SSR an `initial` prop".
+- **Never gate content behind a `mounted` flag.** `const [mounted, setMounted] = useState(false); … if (!mounted) return null` guarantees the server sends an empty tree. This repo has already shipped that bug once — `LoadingScreen` server-rendered a homepage with no `<h1>` and no links while all nine gates were green. `references/framer.md` offers exactly this snippet under the words **"SSR-safe"**, which is the opposite of what it is; that section has been corrected, and if it returns from an upstream merge, delete it.
+- **The GSAP recipes below target document-global string selectors — this repo does not.** Every animation in `src/` passes a ref (`AboutSection.tsx:69`, `WhyUsSection.tsx:70`). `gsap.from('.card', …)` matches every `.card` in the document, so a component rendered twice has each mount animate both instances, and the second mount re-runs the first one's entrance. Pass refs, or give the context a scope — `gsap.context(fn, scopeRef)`, where the **second argument** is what confines selector lookups to that subtree. The recipes below omit it because they are written for vanilla JS pages with one of each element.
 - Animation code is client-side: `'use client'`, pushed as low in the tree as possible.
 - Compose classes with `cn()` from `src/utils/cn.ts`.
 - The `premium-frontend-ui` skill is **not installed** and is not available. Every cross-reference to it below has been removed; if one reappears from an upstream merge, delete it rather than acting on it.
@@ -92,14 +125,20 @@ gsap.from('.card', {
 
 ### 2. Fade-in on enter (Framer Motion)
 
+**Upstream writes this as `initial={{ opacity: 0, y: 40 }}`. Do not copy that form for anything a visitor needs to read** — see the repo overrides above. `initial` is serialised into the server HTML, so the element ships at `opacity:0` and stays there if hydration never happens.
+
+For content, animate **transform only** and leave opacity alone. The element is legible in the server HTML, merely offset, and the motion still reads as an entrance:
+
 ```jsx
 <motion.div
-  initial={{ opacity: 0, y: 40 }}
-  whileInView={{ opacity: 1, y: 0 }}
+  initial={{ y: 40 }}
+  whileInView={{ y: 0 }}
   viewport={{ once: true, margin: '-80px' }}
   transition={{ duration: 0.6 }}
 />
 ```
+
+The opacity form is fine for genuinely decorative elements — a glow, a divider, a background flourish — where an invisible no-JS render costs the visitor nothing. Decide which one you have before choosing; "it's below the fold" is not the test, because a crawler has no fold.
 
 ### 3. Scrub / scroll-linked (GSAP)
 

@@ -46,21 +46,11 @@ const TESTIMONIALS = [
 
 function TestimonialCard({ quote, name, role, location }: (typeof TESTIMONIALS)[0]) {
   return (
-    <div
-      className="shrink-0 w-80 mx-3 rounded-2xl p-6 border"
-      style={{
-        background: '#171E2F',
-        borderColor: '#20222E',
-      }}
-    >
-      <p className="text-sm leading-relaxed mb-4" style={{ color: '#E2E8F0', fontWeight: 300 }}>
-        &ldquo;{quote}&rdquo;
-      </p>
+    <div className="shrink-0 w-80 mx-3 p-6 border border-grey-800 bg-grey-900">
+      <p className="text-body-sm text-grey-300 mb-4">&ldquo;{quote}&rdquo;</p>
       <div>
-        <p className="text-sm font-semibold" style={{ color: '#FFFFFF' }}>
-          {name}
-        </p>
-        <p className="text-xs mt-0.5" style={{ color: '#585E6E' }}>
+        <p className="text-body-sm font-medium text-paper">{name}</p>
+        <p className="mt-1 font-mono text-data text-grey-400">
           {role} · {location}
         </p>
       </div>
@@ -70,18 +60,20 @@ function TestimonialCard({ quote, name, role, location }: (typeof TESTIMONIALS)[
 
 export function TestimonialMarquee() {
   return (
-    <section
-      className="py-16 overflow-hidden"
-      style={{ background: '#050810' }}
-      aria-label="Client testimonials"
-    >
-      <div className="container mx-auto mb-10">
-        <h2 className="font-display text-2xl font-bold text-white text-center mb-2">
-          What Our Clients Say
-        </h2>
-        <p className="text-center text-sm" style={{ color: '#8B8B8B' }}>
-          Trusted by hotels, hospitals, spas and industries across India
-        </p>
+    <section className="py-24 overflow-hidden bg-ink" aria-label="Client testimonials">
+      <div className="container mx-auto mb-12">
+        {/* Quiet mono header line — the marquee is the content, not the heading */}
+        <div className="flex flex-col gap-2 border-t border-grey-800 pt-6 md:flex-row md:items-baseline md:justify-between">
+          <div className="flex items-baseline gap-5">
+            <span aria-hidden="true" className="font-mono text-label text-grey-400">
+              04
+            </span>
+            <h2 className="font-mono text-label uppercase text-grey-300">What Our Clients Say</h2>
+          </div>
+          <p className="font-mono text-data text-grey-400">
+            Trusted by hotels, hospitals, spas and industries across India
+          </p>
+        </div>
       </div>
 
       {/* Row 1 — scrolls left */}

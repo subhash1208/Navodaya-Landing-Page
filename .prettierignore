@@ -16,3 +16,12 @@ package-lock.json
 
 # Scratch files from verification runs (red-phase proofs, audit JSON dumps).
 .tmp-*
+
+# Vendored from github/spec-kit (MIT), installed by `specify init --here`.
+# Upstream-maintained: reformatting them turns every future `specify` refresh
+# into a merge conflict, and the SKILL.md files are LLM prompts where list
+# structure, code-fence placement and whitespace can carry meaning. Excluded
+# rather than rewritten — gate 1 and .husky/pre-commit both run `prettier
+# --check .`, so without this every commit in the repo would be blocked.
+.specify/
+.github/skills/speckit-*/

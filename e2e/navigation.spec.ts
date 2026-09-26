@@ -1,6 +1,18 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Navigation', () => {
+  // The homepage animates its own layout for the first few seconds: `useTypewriter`
+  // (src/hooks/useTypewriter.ts) types the <h1> at 40ms/char, and at the 393px mobile
+  // viewport the headline re-wraps as it types — each wrap adds a line and pushes the hero
+  // CTA block down. Playwright's "stable" check is two consecutive rAF, which passes
+  // between 40ms characters, and its hit-target check is a single point-in-time probe, so
+  // the click can be dispatched moments before the next reflow moves the target.
+  //
+  // Reduced motion short-circuits the typewriter to its complete text
+  // (useTypewriter.ts:41-48) and turns off the GSAP/motion reveals, so the hero is static
+  // before anything is clicked. Same lever, same reason as e2e/visual-regression.spec.ts:61.
+  test.use({ contextOptions: { reducedMotion: 'reduce' } });
+
   test('homepage loads with hero section', async ({ page }) => {
     await page.goto('/');
     await expect(page).toHaveTitle(/Navodaya/i);
@@ -24,6 +36,13 @@ test.describe('Navigation', () => {
 
   test('navigation links work from homepage', async ({ page }) => {
     await page.goto('/');
+    // Dismiss the intro deterministically. `LoadingScreen` (src/app/page.tsx:20) covers the
+    // hero with a fixed/inset-0/z-9999 overlay for ~1.4s on a first visit, and the trace shows
+    // it absorbing this click three times before lifting. The key must be set AND the page
+    // reloaded — setting it after mount does nothing to an intro already running. Same
+    // pattern as e2e/visual-regression.spec.ts.
+    await page.evaluate(() => sessionStorage.setItem('nv_intro_seen', '1'));
+    await page.reload();
     // Target the hero CTA by its accessible name, not by href. `a[href="/products"]`
     // matches five links on this page and Playwright takes the first — the desktop header
     // nav item, which is display:none at the mobile viewport. The click then waited the

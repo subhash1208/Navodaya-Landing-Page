@@ -1,14 +1,28 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'motion/react';
 import Image from 'next/image';
-import { BRAND } from '@/constants';
+import { cn } from '@/utils/cn';
 import { IntroFinishedContext } from '@/hooks/useIntroFinished';
 
 const SESSION_KEY = 'nv_intro_seen';
 const LETTERS = 'NAVODAYA'.split('');
-const TOTAL_DURATION = 4000;
+
+/** When the overlay unmounts on a first visit. One gesture, not a six-effect montage. */
+const TOTAL_DURATION = 1400;
+/** Reduced motion: a static brand frame, held just long enough to register, then gone. */
+const REDUCED_DURATION = 600;
+
+/** Material Design 3 standard easing. No overshoot — this is a seal, not a bounce. */
+const EASE: [number, number, number, number] = [0.2, 0, 0, 1];
+
+const SEAL_DRAW = 0.45; // stage 1 → seal line scales out from the centre
+const LETTER_RISE = 0.27; // stage 2 → per letter; + 7 × 40ms stagger = 550ms total
+const LETTER_STAGGER = 0.04;
+const PANEL_SPLIT = 0.4; // stage 3 → panels part along the seam
+/** Never a literal 0 — a zero-length transition can skip its completion event. */
+const INSTANT = 0.01;
 
 // sessionStorage throws instead of returning null in some locked-down contexts (Safari
 // private mode historically, storage-blocking extensions, `Partitioned` cookie policies).
@@ -37,11 +51,18 @@ interface LoadingScreenProps {
 export function LoadingScreen({ children }: LoadingScreenProps) {
   const [show, setShow] = useState<boolean | null>(null);
   const [stage, setStage] = useState(0);
+  const [reduced, setReduced] = useState(false);
+
+  // WCAG SC 2.2.2 (Pause, Stop, Hide): auto-starting content needs a mechanism to stop it.
+  // Wired to both Escape and a full-viewport button, so pointer and keyboard both work.
+  const skipIntro = useCallback(() => {
+    markIntroSeen();
+    setShow(false);
+  }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    // Check reduced motion preference
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     if (hasSeenIntro()) {
@@ -51,32 +72,42 @@ export function LoadingScreen({ children }: LoadingScreenProps) {
 
     setShow(true);
 
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') skipIntro();
+    };
+    window.addEventListener('keydown', onKeyDown);
+
     if (prefersReduced) {
-      // Reduced motion: show static brand briefly then dismiss
-      setStage(5);
-      const t = setTimeout(() => {
+      // Static brand frame: seal already drawn, wordmark already up, no split.
+      setReduced(true);
+      setStage(2);
+      const timer = setTimeout(() => {
         markIntroSeen();
         setShow(false);
-      }, 800);
-      return () => clearTimeout(t);
+      }, REDUCED_DURATION);
+      return () => {
+        clearTimeout(timer);
+        window.removeEventListener('keydown', onKeyDown);
+      };
     }
 
-    // Animation stages
     const timers = [
-      setTimeout(() => setStage(1), 100), // Logo
-      setTimeout(() => setStage(2), 600), // Letters
-      setTimeout(() => setStage(3), 1700), // Tagline
-      setTimeout(() => setStage(4), 2200), // Motto
-      setTimeout(() => setStage(5), 2700), // Progress bar
+      // One frame's grace: the overlay's first render has to seed at the stage-0 target
+      // (seal at scaleX 0) before the flip to stage 1 can animate away from it.
+      setTimeout(() => setStage(1), 20), //    20 →  470  seal line draws
+      setTimeout(() => setStage(2), 350), //  350 →  900  wordmark rises from under the seam
       setTimeout(() => {
-        setStage(6); // Exit
+        setStage(3); //                       900 → 1300  panels split, page revealed beneath
         markIntroSeen();
-      }, 3200),
+      }, 900),
       setTimeout(() => setShow(false), TOTAL_DURATION),
     ];
 
-    return () => timers.forEach(clearTimeout);
-  }, []);
+    return () => {
+      timers.forEach(clearTimeout);
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [skipIntro]);
 
   // ONE return, with a fixed shape: slot 0 is the overlay, slot 1 is always `children`.
   //
@@ -86,274 +117,122 @@ export function LoadingScreen({ children }: LoadingScreenProps) {
   // `children` moved from index 1 to index 0, hit a type mismatch against the overlay
   // that used to live there, and React destroyed and rebuilt the entire page.
   //
-  // On a first visit that happened at TOTAL_DURATION, four seconds in: measured at
-  // +3920ms, the <form> and <h1> nodes were both replaced and anything the visitor had
-  // already typed into the contact form was silently erased. Keeping `children` pinned to
-  // one position is the whole fix.
+  // On a first visit that happened at TOTAL_DURATION — measured at +3920ms back when the
+  // intro ran for four seconds, and it would now fire at ~1400ms instead, no less fatal:
+  // the <form> and <h1> nodes were both replaced and anything the visitor had already
+  // typed into the contact form was silently erased. Keeping `children` pinned to one
+  // position is the whole fix.
   return (
     <>
       {show === null ? (
         // Undecided (SSR / pre-hydration) — cover the page so the intro never flashes
         // before we know whether to play it, but still RENDER children underneath so the
-        // server HTML is complete for crawlers and no-JS visitors. The overlay is
-        // fixed/inset-0/z-9999, so this looks identical to emitting the overlay alone.
+        // server HTML is complete for crawlers and no-JS visitors. No `motion` element is
+        // reachable on this branch, so nothing can serialise a content-hiding `initial`.
+        <div aria-hidden="true" className="fixed inset-0 z-[9999] bg-ink" />
+      ) : show ? (
         <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 9999,
-            background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)',
-          }}
-          aria-hidden="true"
-        />
-      ) : (
-        show &&
-        stage < 7 && (
+          role="status"
+          aria-label="Loading Navodaya"
+          className={cn(
+            'fixed inset-0 z-[9999] overflow-hidden',
+            // Once the panels are parting, the page beneath is already visible — stop the
+            // overlay swallowing clicks meant for it.
+            stage >= 3 && 'pointer-events-none',
+          )}
+        >
+          {/* Top panel — carries the logo, the wordmark and the seal line itself, so all
+              three leave together as one gesture when it lifts. */}
           <motion.div
-            key="loading-screen"
-            initial={{ opacity: 1 }}
-            role="status"
-            aria-label="Loading Navodaya"
-            style={{
-              position: 'fixed',
-              inset: 0,
-              zIndex: 9999,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)',
-              overflow: 'hidden',
-            }}
+            aria-hidden="true"
+            initial={false}
+            animate={{ y: stage >= 3 ? '-100%' : '0%' }}
+            transition={{ duration: reduced ? INSTANT : PANEL_SPLIT, ease: EASE }}
+            className="absolute inset-x-0 top-0 flex h-1/2 flex-col items-center justify-end overflow-hidden bg-ink"
           >
-            {/* Floating particles */}
-            <div
-              aria-hidden="true"
-              style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}
-            >
-              {[
-                { top: '20%', left: '15%', size: 6, delay: 0, dur: 7 },
-                { top: '60%', left: '75%', size: 4, delay: 1, dur: 9 },
-                { top: '35%', left: '85%', size: 5, delay: 2, dur: 8 },
-                { top: '75%', left: '25%', size: 3, delay: 0.5, dur: 10 },
-              ].map((p, i) => (
-                <div
-                  key={i}
-                  className="loading-particle"
-                  style={{
-                    position: 'absolute',
-                    top: p.top,
-                    left: p.left,
-                    width: p.size,
-                    height: p.size,
-                    borderRadius: '50%',
-                    background: i % 2 === 0 ? '#3B82F6' : '#22D3EE',
-                    opacity: 0.4,
-                    animation: `float ${p.dur}s ease-in-out ${p.delay}s infinite`,
-                  }}
-                />
-              ))}
-            </div>
-
-            {/* Radial glow behind logo */}
-            <div
-              aria-hidden="true"
-              style={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -60%)',
-                width: '400px',
-                height: '400px',
-                borderRadius: '50%',
-                background: 'radial-gradient(circle, rgba(30,64,175,0.2) 0%, transparent 70%)',
-                filter: 'blur(40px)',
-              }}
+            <Image
+              src="/navodaya-logo.png"
+              alt="Navodaya logo"
+              width={96}
+              height={96}
+              priority
+              className="mb-6 h-24 w-24 object-contain"
             />
 
-            {/* Content */}
-            <div
-              style={{
-                position: 'relative',
-                zIndex: 1,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: '24px',
-              }}
-            >
-              {/* Stage 1: Logo */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.5 }}
-                animate={stage >= 1 ? { opacity: 1, scale: 1 } : {}}
-                transition={{ duration: 0.6, ease: [0.34, 1.56, 0.64, 1] }}
-              >
-                <Image
-                  src="/navodaya-logo.png"
-                  alt="Navodaya logo"
-                  width={96}
-                  height={96}
-                  priority
-                  style={{
-                    width: '96px',
-                    height: '96px',
-                    objectFit: 'contain',
-                    filter: 'drop-shadow(0 0 30px rgba(30,64,175,0.5))',
-                  }}
-                />
-              </motion.div>
-
-              {/* Stage 2: NAVODAYA letters */}
-              <div style={{ display: 'flex', gap: '4px', overflow: 'hidden' }}>
+            {/* The mask. Its bottom edge IS the seam, so letters sitting at translateY(100%)
+                are clipped underneath the seal line and appear to emerge from beneath it. */}
+            <div className="overflow-hidden">
+              <div className="flex gap-1">
                 {LETTERS.map((letter, i) => (
                   <motion.span
                     key={i}
-                    initial={{ opacity: 0, y: 30, filter: 'blur(8px)' }}
-                    animate={stage >= 2 ? { opacity: 1, y: 0, filter: 'blur(0px)' } : {}}
+                    initial={false}
+                    animate={{ y: stage >= 2 ? '0%' : '100%' }}
                     transition={{
-                      duration: 0.5,
-                      delay: i * 0.07,
-                      ease: [0.34, 1.56, 0.64, 1],
+                      duration: reduced ? INSTANT : LETTER_RISE,
+                      delay: reduced ? 0 : i * LETTER_STAGGER,
+                      ease: EASE,
                     }}
-                    className="font-display"
-                    style={{
-                      fontSize: 'clamp(2.5rem, 5vw, 4rem)',
-                      fontWeight: 900,
-                      color: '#FFFFFF',
-                      textShadow: '0 0 40px rgba(30,64,175,0.5)',
-                      display: 'inline-block',
-                      willChange: 'transform, opacity, filter',
-                    }}
+                    className="font-display block text-display-2 font-black text-paper"
                   >
                     {letter}
                   </motion.span>
                 ))}
               </div>
-
-              {/* Gradient sweep overlay on text */}
-              {stage >= 2 && (
-                <div
-                  className="loading-gradient-sweep"
-                  aria-hidden="true"
-                  style={{
-                    position: 'absolute',
-                    top: '120px',
-                    left: '-100%',
-                    width: '100%',
-                    height: '60px',
-                    background:
-                      'linear-gradient(90deg, transparent, rgba(56,189,248,0.3), transparent)',
-                    animation: 'gradientSweep 0.8s ease 1.3s forwards',
-                    pointerEvents: 'none',
-                  }}
-                />
-              )}
-
-              {/* Stage 3: Tagline */}
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={stage >= 3 ? { opacity: 1 } : {}}
-                transition={{ duration: 0.5, ease: 'easeOut' }}
-                style={{
-                  fontSize: '16px',
-                  fontWeight: 500,
-                  color: '#94A3B8',
-                  letterSpacing: '0.05em',
-                }}
-              >
-                Industries &amp; Care Kits
-              </motion.p>
-
-              {/* Slot machine — industry keywords */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={stage >= 3 ? { opacity: 1 } : {}}
-                transition={{ duration: 0.3, ease: 'easeOut' }}
-                style={{
-                  height: '20px',
-                  overflow: 'hidden',
-                  position: 'relative',
-                  width: '200px',
-                }}
-              >
-                <div
-                  style={{
-                    animation: stage >= 3 ? 'slotMachine 8s linear forwards' : 'none',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                  }}
-                >
-                  {[
-                    'HOTELS',
-                    'HOSPITALS',
-                    'SPAS',
-                    'SALONS',
-                    'INDUSTRIES',
-                    'CORPORATE',
-                    'WELLNESS',
-                  ].map((word) => (
-                    <span
-                      key={word}
-                      style={{
-                        fontSize: '11px',
-                        fontWeight: 600,
-                        letterSpacing: '0.2em',
-                        color: '#38BDF8',
-                        lineHeight: '20px',
-                        height: '20px',
-                        display: 'block',
-                      }}
-                    >
-                      {word}
-                    </span>
-                  ))}
-                </div>
-              </motion.div>
-
-              {/* Stage 4: Motto */}
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={stage >= 4 ? { opacity: 1 } : {}}
-                transition={{ duration: 0.5, ease: 'easeOut' }}
-                style={{
-                  fontSize: '14px',
-                  fontWeight: 500,
-                  fontStyle: 'italic',
-                  color: '#38BDF8',
-                }}
-              >
-                &ldquo;{BRAND.TAGLINE}&rdquo;
-              </motion.p>
-
-              {/* Stage 5: Progress bar */}
-              <div
-                style={{
-                  width: '200px',
-                  height: '2px',
-                  background: 'rgba(255,255,255,0.1)',
-                  borderRadius: '9999px',
-                  overflow: 'hidden',
-                  marginTop: '16px',
-                }}
-              >
-                <motion.div
-                  initial={{ width: '0%' }}
-                  animate={stage >= 5 ? { width: '100%' } : {}}
-                  transition={{ duration: 0.8, ease: 'easeInOut' }}
-                  style={{
-                    height: '100%',
-                    borderRadius: '9999px',
-                    background: 'linear-gradient(90deg, #1E40AF, #0EA5E9)',
-                  }}
-                />
-              </div>
             </div>
+
+            {/* The seal line. Draws from the centre outward. */}
+            <motion.div
+              initial={false}
+              animate={{ scaleX: stage >= 1 ? 1 : 0 }}
+              transition={{ duration: reduced ? INSTANT : SEAL_DRAW, ease: EASE }}
+              className="absolute inset-x-0 bottom-0 h-px origin-center bg-brand-cyan"
+            />
           </motion.div>
-        )
-      )}
+
+          {/* Bottom panel — nothing but ground, parting downward. */}
+          <motion.div
+            aria-hidden="true"
+            initial={false}
+            animate={{ y: stage >= 3 ? '100%' : '0%' }}
+            transition={{ duration: reduced ? INSTANT : PANEL_SPLIT, ease: EASE }}
+            className="absolute inset-x-0 bottom-0 h-1/2 bg-ink"
+          />
+
+          {/* Skip affordance. A real full-viewport button rather than a click handler on a
+              div: it gives pointer-anywhere skip, native Enter/Space, a focus ring and a
+              screen-reader-reachable label from one element. */}
+          <button
+            type="button"
+            onClick={skipIntro}
+            className="absolute inset-0 z-10 h-full w-full cursor-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-cyan"
+          >
+            <span className="sr-only">Skip intro animation</span>
+          </button>
+        </div>
+      ) : null}
       <IntroFinishedContext.Provider value={show === false}>
-        {children}
+        {/*
+          `inert` must be `show === true` ONLY, never a looser check like `show !== false`.
+          `show` is `null` during SSR and pre-hydration — the state a no-JS visitor is
+          permanently stuck in. Inerting on `null` would ship a homepage that no crawler
+          and no no-JS visitor could ever interact with.
+
+          This wrapper carries NO `display: contents`, and that is load-bearing rather than
+          an oversight. It is the only element child of `<main>` on the homepage, which makes
+          it the node the App Router measures when it decides where to scroll after a client
+          navigation. `display: contents` generates no box, so `getBoundingClientRect()`
+          returns all zeros; Next reads that as "hidden" in `shouldSkipElement`
+          (`node_modules/next/dist/client/components/layout-router.js:67-83`), walks to
+          `nextElementSibling`, finds `null`, and returns having scrolled nothing at all
+          (`:188-190`). The visitor kept the previous route's offset — arriving at `/` from
+          the bottom of `/products` landed them in the homepage footer. A plain block box is
+          layout-identical here (`<main>` is a block, every section below is a block with
+          padding and no margins) and gives Next something real to measure.
+        */}
+        <div inert={show === true} data-testid="intro-content-gate">
+          {children}
+        </div>
       </IntroFinishedContext.Provider>
     </>
   );

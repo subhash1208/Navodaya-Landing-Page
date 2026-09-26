@@ -1,6 +1,15 @@
 import '@testing-library/dom';
+import React from 'react';
 
 // Mock next/navigation
+//
+// `useSearchParams` returns a MODULE-LEVEL instance, never a fresh one per call. A new object on
+// every call changes the identity of a `[searchParams]` dependency array on every render, so any
+// effect keyed on it re-fires forever and resets whatever state it syncs. That is a mock artifact
+// masquerading as component behaviour — `ProductGrid` had to carry its own file-scope mock to work
+// around it. Keep this stable.
+const mockSearchParams = new URLSearchParams();
+
 vi.mock('next/navigation', () => ({
   useRouter: () => ({
     push: vi.fn(),
@@ -11,13 +20,13 @@ vi.mock('next/navigation', () => ({
     prefetch: vi.fn(),
   }),
   usePathname: () => '/',
-  useSearchParams: () => new URLSearchParams(),
+  useSearchParams: () => mockSearchParams,
 }));
 
 // Mock next/image
 vi.mock('next/image', () => ({
   default: (props: Record<string, unknown>) => {
-    return props;
+    return React.createElement('img', props);
   },
 }));
 
