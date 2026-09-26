@@ -7,7 +7,7 @@ export const BRAND = {
   TAGLINE: 'Your Trusted Partner in Progress and Care',
   MISSION:
     'To support businesses in the hospitality and wellness sectors with high-quality, reliable, and hygienic solutions.',
-  EMAIL: 'info@navodaya.group',
+  EMAIL: 'connect@navodaya.group',
   PHONE: '+91 83286 05812',
   WEBSITE: 'www.navodaya.group',
   LOCATION: 'Gandhi Nagar, Hyderabad',

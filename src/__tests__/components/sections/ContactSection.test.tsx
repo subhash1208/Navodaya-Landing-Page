@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import ContactSection from '@/components/sections/ContactSection';
-import { PRODUCTS, productEnquiryLabel } from '@/constants';
+import { BRAND, PRODUCTS, productEnquiryLabel } from '@/constants';
 import { submitContactForm } from '@/app/actions/contact';
 
 /**
@@ -140,8 +140,8 @@ describe('ContactSection', () => {
 
   it('renders contact info', () => {
     render(<ContactSection />);
-    expect(screen.getByText('info@navodaya.group')).toBeTruthy();
-    expect(screen.getByText('+91 83286 05812')).toBeTruthy();
+    expect(screen.getByText(BRAND.EMAIL)).toBeTruthy();
+    expect(screen.getByText(BRAND.PHONE)).toBeTruthy();
   });
 
   it('renders Get in Touch label', () => {
@@ -164,7 +164,7 @@ describe('ContactSection', () => {
 
   it('renders location info', () => {
     render(<ContactSection />);
-    expect(screen.getByText(/Gandhi Nagar, Hyderabad/)).toBeTruthy();
+    expect(screen.getByText(new RegExp(BRAND.LOCATION))).toBeTruthy();
   });
 
   it('renders Designation field', () => {
@@ -592,16 +592,15 @@ describe('ContactSection', () => {
     it('renders a send failure that still tells the visitor how to reach the business', async () => {
       mockSubmit.mockResolvedValue({
         success: false,
-        error:
-          'Failed to send your enquiry. Please try again, or please email us directly at info@navodaya.group or call +91 83286 05812.',
+        error: `Failed to send your enquiry. Please try again, or please email us directly at ${BRAND.EMAIL} or call ${BRAND.PHONE}.`,
       });
       render(<ContactSection />);
       fillForm();
       submitForm();
 
       const banner = await screen.findByRole('alert');
-      expect(banner.textContent).toContain('info@navodaya.group');
-      expect(banner.textContent).toContain('+91 83286 05812');
+      expect(banner.textContent).toContain(BRAND.EMAIL);
+      expect(banner.textContent).toContain(BRAND.PHONE);
     });
   });
 
