@@ -30,7 +30,7 @@ themselves modified by this feature
 
 **Testing**: Vitest + Testing Library (unit, gates 1–5), Playwright (e2e, gates 7 and 10)
 
-**Target Platform**: Web, deployed to Vercel
+**Target Platform**: Web, deployed to Netlify
 
 **Project Type**: Single Next.js application (`src/app/`, `src/components/`) — not a
 web+backend split
