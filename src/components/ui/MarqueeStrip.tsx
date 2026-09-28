@@ -22,11 +22,11 @@ export function MarqueeStrip() {
       {/* Fade edges */}
       <div
         className="absolute left-0 top-0 bottom-0 w-20 z-10 pointer-events-none"
-        style={{ background: 'linear-gradient(to right, #0A0B0D, transparent)' }}
+        style={{ background: 'linear-gradient(to right, #060C10, transparent)' }}
       />
       <div
         className="absolute right-0 top-0 bottom-0 w-20 z-10 pointer-events-none"
-        style={{ background: 'linear-gradient(to left, #0A0B0D, transparent)' }}
+        style={{ background: 'linear-gradient(to left, #060C10, transparent)' }}
       />
 
       {/* Two tracks side by side, both animating — creates seamless infinite loop */}

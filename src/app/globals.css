@@ -87,7 +87,7 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  border: 2px solid rgba(8, 88, 152, 0.6);
+  border: 2px solid rgba(0, 85, 154, 0.6);
   pointer-events: none;
   z-index: 99999;
   transition:
@@ -107,15 +107,15 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #085898;
+  background: #00559a;
   transition: all 0.2s ease;
 }
 
 .custom-cursor--hover {
   width: 56px;
   height: 56px;
-  border-color: rgba(8, 184, 248, 0.8);
-  background: rgba(8, 88, 152, 0.08);
+  border-color: rgba(0, 188, 255, 0.8);
+  background: rgba(0, 85, 154, 0.08);
 }
 
 @media (hover: none) {
@@ -137,7 +137,7 @@
   inset: 0;
   background: radial-gradient(
     200px circle at var(--cursor-x) var(--cursor-y),
-    rgba(8, 88, 152, 0.12),
+    rgba(0, 85, 154, 0.12),
     transparent 70%
   );
   pointer-events: none;
@@ -217,11 +217,11 @@
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(8, 88, 152, 0.25);
+  background: rgba(0, 85, 154, 0.25);
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(8, 88, 152, 0.45);
+  background: rgba(0, 85, 154, 0.45);
 }
 
 /* ─── Reduced motion ────────────────────────────────────────────────────────── */

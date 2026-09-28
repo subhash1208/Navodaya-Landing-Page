@@ -158,4 +158,21 @@ test.describe('Contact Form', () => {
       timeout: 10000,
     });
   });
+
+  test('form submits successfully with the optional email left blank', async ({ page }) => {
+    // The email is optional, so the rate limiter falls back to the phone number as the sender
+    // identity — unique per run for the same reason the email is in the test above.
+    await page.fill('[name="companyName"]', 'Test Hospital');
+    await page.fill('[name="contactPersonName"]', 'Dr. Smith');
+    await page.fill('[name="contactPersonNumber"]', `+91 ${Date.now()}`);
+    await page.fill('[name="quantity"]', '1000 pieces');
+    await page.locator('select[name="productName"]').selectOption({ index: 1 });
+
+    await expect(page.locator('[name="companyEmail"]')).toHaveValue('');
+    await page.locator('button[type="submit"]').click();
+
+    await expect(page.getByRole('heading', { name: /thank you/i })).toBeVisible({
+      timeout: 10000,
+    });
+  });
 });

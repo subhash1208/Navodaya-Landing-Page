@@ -4,7 +4,7 @@
 
 | Branch           | Purpose                                                     |
 | ---------------- | ----------------------------------------------------------- |
-| `master`         | Production (deployed to Vercel)                             |
+| `master`         | Production (deployed to Netlify)                            |
 | `develop`        | Integration branch (all features merge here first)          |
 | `feature/<name>` | New features (e.g., `feature/testimonials-section`)         |
 | `fix/<name>`     | Bug fixes (e.g., `fix/mobile-nav-pointer-events`)           |

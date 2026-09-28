@@ -16,8 +16,8 @@ describe('manifest', () => {
 
   it('uses the SEALED ink and paper tokens for its colours', () => {
     const m = manifest();
-    expect(m.theme_color).toBe('#0A0B0D');
-    expect(m.background_color).toBe('#FAFAF8');
+    expect(m.theme_color).toBe('#060C10');
+    expect(m.background_color).toBe('#F9FAFC');
   });
 
   it('references only icon files that exist in public/', () => {

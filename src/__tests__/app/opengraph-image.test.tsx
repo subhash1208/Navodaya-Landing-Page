@@ -54,7 +54,7 @@ describe('opengraph-image generation', () => {
     expect(html).toContain(BRAND.FULL_NAME);
     expect(html).toContain(BRAND.TAGLINE);
     expect(html).toContain(BRAND.WEBSITE.toUpperCase());
-    expect(html).toContain('background-color:#FAFAF8');
-    expect(html).toContain('color:#0A0B0D');
+    expect(html).toContain('background-color:#F9FAFC');
+    expect(html).toContain('color:#060C10');
   });
 });

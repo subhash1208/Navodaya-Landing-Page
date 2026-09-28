@@ -78,15 +78,34 @@ describe('submitContactForm', () => {
       expect(result.error).toBe('Company name is required.');
     });
 
-    it('rejects empty company email', async () => {
+    it('accepts a submission with no company email', async () => {
+      // The email is optional — the phone number is the guaranteed reply path.
       const result = await submitContactForm({ ...validFormData, companyEmail: '' });
+      expect(result.success).toBe(true);
+      expect(result.error).toBeUndefined();
+    });
+
+    it('treats a whitespace-only company email as absent, not as malformed', async () => {
+      const result = await submitContactForm({ ...validFormData, companyEmail: '   ' });
+      expect(result.success).toBe(true);
+      expect(result.error).toBeUndefined();
+    });
+
+    it('still reports a malformed phone when the email is blank, so field order held', async () => {
+      const result = await submitContactForm({
+        ...validFormData,
+        companyEmail: '',
+        contactPersonNumber: 'abc@def#ghi',
+      });
       expect(result.success).toBe(false);
-      expect(result.error).toBe('Company email is required.');
+      expect(result.field).toBe('contactPersonNumber');
+      expect(result.error).toBe('Invalid phone number.');
     });
 
     it('rejects invalid email format', async () => {
       const result = await submitContactForm({ ...validFormData, companyEmail: 'not-an-email' });
       expect(result.success).toBe(false);
+      expect(result.field).toBe('companyEmail');
       expect(result.error).toBe('Invalid email address.');
     });
 
@@ -507,6 +526,96 @@ describe('submitContactForm', () => {
         true,
       );
     });
+
+    it('gives every email-less sender its own quota, keyed on the phone number', async () => {
+      // The landmine this guards. Keying an absent email on the empty string put every anonymous
+      // visitor on ONE shared counter, so the third email-less enquiry from anywhere locked out
+      // the fourth for ten minutes. Four different people must all get through.
+      process.env.RESEND_API_KEY = 'test_not_a_real_key';
+      const phones = ['+91 90000 00001', '+91 90000 00002', '+91 90000 00003', '+91 90000 00004'];
+
+      for (const contactPersonNumber of phones) {
+        const result = await submitContactForm({
+          ...validFormData,
+          companyEmail: '',
+          contactPersonNumber,
+        });
+        expect(result.success, `blocked ${contactPersonNumber}`).toBe(true);
+      }
+      expect(mockSend).toHaveBeenCalledTimes(4);
+    });
+
+    it('limits an email-less sender on their phone and blames that field, not the email', async () => {
+      // A rate-limited visitor who never filled the email in must not have their cursor thrown
+      // into an empty optional field.
+      process.env.RESEND_API_KEY = 'test_not_a_real_key';
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const anonymous = {
+        ...validFormData,
+        companyEmail: '',
+        contactPersonNumber: '+91 91111 11111',
+      };
+
+      for (let i = 0; i < 3; i++) expect((await submitContactForm(anonymous)).success).toBe(true);
+      const fourth = await submitContactForm(anonymous);
+
+      expect(fourth.success).toBe(false);
+      expect(fourth.field).toBe('contactPersonNumber');
+      expect(fourth.error).toContain(BRAND.EMAIL);
+      expect(mockSend).toHaveBeenCalledTimes(3);
+      warn.mockRestore();
+    });
+
+    it('keys an email-less sender on digits, so re-punctuating the number buys no quota', async () => {
+      process.env.RESEND_API_KEY = 'test_not_a_real_key';
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const anonymous = { ...validFormData, companyEmail: '' };
+
+      await submitContactForm({ ...anonymous, contactPersonNumber: '+91 92222 22222' });
+      await submitContactForm({ ...anonymous, contactPersonNumber: '+91-92222-22222' });
+      await submitContactForm({ ...anonymous, contactPersonNumber: '(+91) 9222222222' });
+      const fourth = await submitContactForm({
+        ...anonymous,
+        contactPersonNumber: '+919222222222',
+      });
+
+      expect(fourth.success).toBe(false);
+      expect(mockSend).toHaveBeenCalledTimes(3);
+      warn.mockRestore();
+    });
+
+    it('counts an email-keyed sender separately from the same phone used anonymously', async () => {
+      // The `email:`/`phone:` namespace. Exhausting the anonymous quota for a phone must not
+      // refuse a named enquiry that happens to carry the same number.
+      process.env.RESEND_API_KEY = 'test_not_a_real_key';
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const phone = '+91 93333 33333';
+
+      for (let i = 0; i < 3; i++) {
+        await submitContactForm({
+          ...validFormData,
+          companyEmail: '',
+          contactPersonNumber: phone,
+        });
+      }
+      expect(
+        (
+          await submitContactForm({
+            ...validFormData,
+            companyEmail: '',
+            contactPersonNumber: phone,
+          })
+        ).success,
+      ).toBe(false);
+
+      const named = await submitContactForm({
+        ...validFormData,
+        companyEmail: 'named@hospital.com',
+        contactPersonNumber: phone,
+      });
+      expect(named.success).toBe(true);
+      warn.mockRestore();
+    });
   });
 
   describe('length caps', () => {
@@ -555,7 +664,6 @@ describe('submitContactForm', () => {
       [{ productName: '' }, 'productName'],
       [{ quantity: '' }, 'quantity'],
       [{ companyName: '' }, 'companyName'],
-      [{ companyEmail: '' }, 'companyEmail'],
       [{ companyEmail: 'nope' }, 'companyEmail'],
       [{ contactPersonName: '' }, 'contactPersonName'],
       [{ contactPersonNumber: '' }, 'contactPersonNumber'],
@@ -640,6 +748,37 @@ describe('submitContactForm', () => {
       const body = mockSend.mock.calls[0][0].text as string;
       expect(body).not.toContain('Designation:');
       expect(body).toContain('(No additional message)');
+    });
+
+    it('says "(not provided)" on the email line rather than silently dropping it', async () => {
+      // Deliberately NOT the designation's line-dropping pattern: the recipient must see
+      // positively that no address was given, not be left to notice a missing line.
+      process.env.RESEND_API_KEY = 'test_not_a_real_key';
+      const result = await submitContactForm({ ...validFormData, companyEmail: '' });
+
+      expect(result.success).toBe(true);
+      const body = mockSend.mock.calls[0][0].text as string;
+      expect(body).toContain('Email:      (not provided)');
+    });
+
+    it('carries the address itself on the email line when one was given', async () => {
+      process.env.RESEND_API_KEY = 'test_not_a_real_key';
+      await submitContactForm(validFormData);
+      const body = mockSend.mock.calls[0][0].text as string;
+      expect(body).toContain(`Email:      ${validFormData.companyEmail}`);
+    });
+
+    it('omits replyTo entirely when no email was given, rather than sending an empty one', async () => {
+      process.env.RESEND_API_KEY = 'test_not_a_real_key';
+      await submitContactForm({ ...validFormData, companyEmail: '' });
+      const payload = mockSend.mock.calls[0][0];
+      expect('replyTo' in payload).toBe(false);
+    });
+
+    it('sets replyTo to the trimmed address when one was given', async () => {
+      process.env.RESEND_API_KEY = 'test_not_a_real_key';
+      await submitContactForm({ ...validFormData, companyEmail: '  buyer@hospital.com  ' });
+      expect(mockSend.mock.calls[0][0].replyTo).toBe('buyer@hospital.com');
     });
   });
 });

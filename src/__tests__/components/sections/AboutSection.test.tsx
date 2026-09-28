@@ -147,7 +147,7 @@ describe('AboutSection', () => {
 
   it('renders description paragraphs', () => {
     render(<AboutSection />);
-    expect(screen.getByText(/dedicated supplier/)).toBeTruthy();
+    expect(screen.getByText(/institutional hygiene products/)).toBeTruthy();
     expect(screen.getByText(/approach is simple/)).toBeTruthy();
   });
 

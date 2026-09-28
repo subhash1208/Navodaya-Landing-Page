@@ -504,6 +504,64 @@ describe('ContactSection', () => {
     });
   });
 
+  describe('optional fields', () => {
+    it('does not mark the email input required', () => {
+      render(<ContactSection />);
+      const email = screen.getByPlaceholderText('company@example.com') as HTMLInputElement;
+      expect(email.required).toBe(false);
+    });
+
+    it('marks exactly the three genuinely optional fields', () => {
+      // Marking only Email while Designation and Message stayed bare would imply those two were
+      // required, which is false — the server has never demanded either.
+      render(<ContactSection />);
+      const marked = screen
+        .getAllByText('(Optional)')
+        .map((span) => (span.closest('label') as HTMLLabelElement).htmlFor)
+        .sort();
+      expect(marked).toEqual(['companyEmail', 'contactPersonDesignation', 'message']);
+    });
+
+    it('puts the marker in the accessible name rather than hiding it from assistive tech', () => {
+      render(<ContactSection />);
+      const email = screen.getByLabelText(/email/i) as HTMLInputElement;
+      expect(email.name).toBe('companyEmail');
+      const label = document.querySelector('label[for="companyEmail"]') as HTMLLabelElement;
+      expect(label.textContent).toContain('(Optional)');
+      for (const span of screen.getAllByText('(Optional)')) {
+        expect(span.closest('[aria-hidden="true"]')).toBeNull();
+      }
+    });
+
+    it('keeps the marker on a grey that clears WCAG 1.4.3 against the section ink', () => {
+      // The section is `bg-ink` (#060C10). On that ground `grey-500` (#616C75) measures 3.66:1
+      // and the marker inherits `text-label` (11px), so the threshold is 4.5:1, not 3:1 —
+      // `grey-500` fails. `grey-400` (#7F8B94) is 5.64:1. The ramp inverts by ground here: the
+      // same `grey-500` passes at 5.13:1 on `bg-paper`, which is why it looks safe and is not.
+      render(<ContactSection />);
+      const markers = screen.getAllByText('(Optional)');
+      expect(markers).toHaveLength(3);
+      for (const marker of markers) {
+        const field = (marker.closest('label') as HTMLLabelElement).htmlFor;
+        expect(marker.className, `${field} marker drifted off grey-400`).toContain('text-grey-400');
+      }
+    });
+
+    it('leaves every required control required', () => {
+      render(<ContactSection />);
+      for (const placeholder of [
+        'e.g. 1000 pieces',
+        'Company name',
+        'Full name',
+        '+91 XXXXX XXXXX',
+      ]) {
+        const input = screen.getByPlaceholderText(placeholder) as HTMLInputElement;
+        expect(input.required, `${placeholder} lost its required flag`).toBe(true);
+      }
+      expect((screen.getByRole('combobox') as HTMLSelectElement).required).toBe(true);
+    });
+  });
+
   describe('per-field errors', () => {
     it('marks the offending input and points it at a rendered message', async () => {
       mockSubmit.mockResolvedValue({

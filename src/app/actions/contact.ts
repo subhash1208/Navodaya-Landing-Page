@@ -72,9 +72,10 @@ function validateForm(data: ContactFormData): ContactActionResult | null {
     return { success: false, error: 'Quantity is required.', field: 'quantity' };
   if (!data.companyName?.trim())
     return { success: false, error: 'Company name is required.', field: 'companyName' };
-  if (!data.companyEmail?.trim())
-    return { success: false, error: 'Company email is required.', field: 'companyEmail' };
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.companyEmail))
+  // Optional. An absent address is a complete enquiry — the phone number is the reply path — so
+  // only a value the visitor actually typed is held to the format.
+  const companyEmail = data.companyEmail?.trim() ?? '';
+  if (companyEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(companyEmail))
     return { success: false, error: 'Invalid email address.', field: 'companyEmail' };
   if (!data.contactPersonName?.trim())
     return {
@@ -124,10 +125,28 @@ const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
  */
 const recentSubmissions = new Map<string, number[]>();
 
-function isRateLimited(email: string): boolean {
+/**
+ * The identity a submission is counted against, plus the field to blame when it is refused.
+ *
+ * `companyEmail` is optional, so an email-less enquiry must NOT fall back to the empty string —
+ * that would put every anonymous visitor on one shared counter and let three of them lock out the
+ * fourth. The phone number is always present (still required by `validateForm`), so it is the
+ * fallback identity; its digits are the key so the same number typed with different separators
+ * cannot buy extra quota. The `email:`/`phone:` namespace keeps the two spaces from colliding.
+ */
+function rateLimitKey(data: ContactFormData): { key: string; field: ContactFieldName } {
+  const email = data.companyEmail?.trim().toLowerCase();
+  if (email) return { key: `email:${email}`, field: 'companyEmail' };
+  return {
+    key: `phone:${data.contactPersonNumber.replace(/\D/g, '')}`,
+    field: 'contactPersonNumber',
+  };
+}
+
+function isRateLimited(identifier: string): boolean {
   const now = Date.now();
 
-  // Sweep every key on the way past. The map is only as large as the number of distinct emails
+  // Sweep every key on the way past. The map is only as large as the number of distinct senders
   // seen inside one 10-minute window on one instance, so this cannot grow without bound.
   for (const [key, stamps] of recentSubmissions) {
     const live = stamps.filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
@@ -135,7 +154,6 @@ function isRateLimited(email: string): boolean {
     else recentSubmissions.set(key, live);
   }
 
-  const identifier = email.trim().toLowerCase();
   const stamps = recentSubmissions.get(identifier) ?? [];
   if (stamps.length >= RATE_LIMIT_MAX) return true;
 
@@ -173,10 +191,13 @@ export async function submitContactForm(data: ContactSubmission): Promise<Contac
   const validationFailure = validateForm(data);
   if (validationFailure) return validationFailure;
 
-  if (isRateLimited(data.companyEmail)) {
-    console.warn('[contact] Rate limit reached for this email; submission not sent.');
-    return { success: false, error: RATE_LIMITED_ERROR, field: 'companyEmail' };
+  const { key: limitKey, field: limitField } = rateLimitKey(data);
+  if (isRateLimited(limitKey)) {
+    console.warn('[contact] Rate limit reached for this sender; submission not sent.');
+    return { success: false, error: RATE_LIMITED_ERROR, field: limitField };
   }
+
+  const companyEmail = data.companyEmail?.trim() ?? '';
 
   const apiKey = process.env.RESEND_API_KEY;
   const isSentinel = apiKey === SENTINEL_API_KEY;
@@ -239,7 +260,7 @@ Quantity:   ${data.quantity}
 COMPANY DETAILS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Company:    ${data.companyName}
-Email:      ${data.companyEmail}
+Email:      ${companyEmail || '(not provided)'}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 CONTACT PERSON
@@ -257,7 +278,9 @@ ${data.message || '(No additional message)'}
     await resend.emails.send({
       from: process.env.RESEND_FROM || DEFAULT_FROM,
       to: [BRAND.EMAIL],
-      replyTo: data.companyEmail,
+      // Spread rather than a conditional value: `replyTo` is optional on Resend's
+      // `CreateEmailOptions`, and an empty string is a malformed address, not an absent one.
+      ...(companyEmail ? { replyTo: companyEmail } : {}),
       // Clamped to 180 chars: well inside RFC 2822's 998-octet line limit once the header name
       // and any encoding overhead are accounted for, and long enough that a realistic product
       // and company name both survive intact.

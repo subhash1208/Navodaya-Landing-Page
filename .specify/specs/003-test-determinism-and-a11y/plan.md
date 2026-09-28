@@ -28,7 +28,7 @@ web-first assertions) for Part A; `@axe-core/playwright` (new) for Part B.
 **Testing**: Playwright e2e only (gate 7 and, for Part B, a new spec under the same gate).
 No unit test is added or changed by this feature — see Testing note in `tasks.md`.
 
-**Target Platform**: Web, deployed to Vercel.
+**Target Platform**: Web, deployed to Netlify.
 
 **Project Type**: Single Next.js application — no structural change.
 
