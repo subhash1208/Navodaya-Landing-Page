@@ -3,6 +3,8 @@ export interface ContactFormData {
   productName: string;
   quantity: string;
   companyName: string;
+  /** Optional on the form, so this is `''` when the visitor gave no address. Never absent: the
+   *  key must stay present for `ContactFieldName` and the server's `FIELD_LIMITS` record. */
   companyEmail: string;
   contactPersonName: string;
   contactPersonDesignation: string;

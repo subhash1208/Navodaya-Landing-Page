@@ -77,9 +77,12 @@ interface FieldProps {
   icon?: React.ReactNode;
   /** Server-reported message for THIS field. Rendered at `${id}-error`, referenced by the input. */
   error?: string;
+  /** Renders a visible "(Optional)" marker inside the label. Real text, not `aria-hidden`
+   *  decoration, so the accessible name says it too. */
+  optional?: boolean;
   children: React.ReactNode;
 }
-function Field({ label, id, icon, error, children }: FieldProps) {
+function Field({ label, id, icon, error, optional, children }: FieldProps) {
   return (
     <div className="flex flex-col gap-2">
       <label
@@ -87,7 +90,10 @@ function Field({ label, id, icon, error, children }: FieldProps) {
         className="flex items-center gap-1.5 font-mono text-label uppercase text-grey-400"
       >
         {icon && <span aria-hidden="true">{icon}</span>}
-        {label}
+        {label}{' '}
+        {/* grey-400, not grey-500: on `bg-ink` grey-500 is 3.67:1 and fails WCAG 1.4.3 at this
+            label's 11px, while grey-400 is 5.67:1. Do not "tidy" this back down the ramp. */}
+        {optional ? <span className="text-grey-400">(Optional)</span> : null}
       </label>
       {children}
       {error ? (
@@ -363,12 +369,12 @@ export default function ContactSection() {
                     id="companyEmail"
                     icon={<Mail className="w-3 h-3" />}
                     error={errorFor('companyEmail')}
+                    optional
                   >
                     <input
                       id="companyEmail"
                       type="email"
                       name="companyEmail"
-                      required
                       maxLength={FIELD_MAX_LENGTHS.companyEmail}
                       placeholder="company@example.com"
                       className={inputClass}
@@ -400,6 +406,7 @@ export default function ContactSection() {
                     id="contactPersonDesignation"
                     icon={<Briefcase className="w-3 h-3" />}
                     error={errorFor('contactPersonDesignation')}
+                    optional
                   >
                     <input
                       id="contactPersonDesignation"
@@ -436,6 +443,7 @@ export default function ContactSection() {
                   id="message"
                   icon={<MessageSquare className="w-3 h-3" />}
                   error={errorFor('message')}
+                  optional
                 >
                   <textarea
                     id="message"
