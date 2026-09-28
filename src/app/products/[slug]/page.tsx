@@ -101,7 +101,7 @@ export default async function ProductPage({ params }: PageProps) {
               {product.category.icon} {product.category.name}
             </span>
 
-            <h1 className="text-[clamp(1.5rem,3vw,2rem)] font-bold text-ink mb-4 leading-tight">
+            <h1 className="text-[clamp(1.5rem,3vw,2rem)] font-bold text-brand-blue mb-4 leading-tight">
               {product.name}
             </h1>
 
@@ -135,7 +135,7 @@ export default async function ProductPage({ params }: PageProps) {
             <div className="flex flex-col sm:flex-row gap-3 mt-auto">
               <Link
                 href={quoteUrl}
-                className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-ink text-white font-semibold text-sm hover:bg-ink/90 hover:-translate-y-0.5 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 min-h-[44px]"
+                className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-brand-blue text-paper font-semibold text-sm hover:bg-brand-blue/90 hover:-translate-y-0.5 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-2 focus-visible:ring-offset-paper min-h-[44px]"
               >
                 <MessageSquare className="w-4 h-4" aria-hidden="true" />
                 Request a Quote
@@ -155,7 +155,7 @@ export default async function ProductPage({ params }: PageProps) {
         {related.length > 0 && (
           <section aria-labelledby="related-heading">
             <div className="flex items-center justify-between mb-6">
-              <h2 id="related-heading" className="text-lg font-bold text-ink">
+              <h2 id="related-heading" className="text-lg font-bold text-brand-blue">
                 Related Products
               </h2>
               <Link

@@ -13,14 +13,14 @@ export default function ProductsError({ error, reset }: ErrorProps) {
     <div className="min-h-[60vh] flex items-center justify-center px-4">
       <div className="text-center max-w-sm">
         <AlertTriangle className="w-12 h-12 text-amber-400 mx-auto mb-4" aria-hidden="true" />
-        <h2 className="text-xl font-bold text-ink mb-2">Something went wrong</h2>
+        <h2 className="text-xl font-bold text-brand-blue mb-2">Something went wrong</h2>
         <p className="text-sm text-grey-500 mb-6">
           {error.message || 'Failed to load the product catalogue. Please try again.'}
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <button
             onClick={reset}
-            className="px-5 py-2.5 bg-ink text-white text-sm font-semibold hover:bg-ink/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2"
+            className="px-5 py-2.5 bg-brand-blue text-paper text-sm font-semibold hover:bg-brand-blue/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-2 focus-visible:ring-offset-paper"
           >
             Try again
           </button>

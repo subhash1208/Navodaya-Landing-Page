@@ -18,8 +18,8 @@ export default function Image() {
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
-        backgroundColor: '#F9FAFC',
-        color: '#060C10',
+        backgroundColor: '#FAF8F2',
+        color: '#0C0B08',
         padding: '72px 80px',
         fontFamily: 'sans-serif',
       }}
@@ -31,7 +31,7 @@ export default function Image() {
             fontFamily: 'monospace',
             fontSize: 22,
             letterSpacing: 8,
-            color: '#616C75',
+            color: '#6F6A60',
           }}
         >
           {BRAND.LOCATION.toUpperCase()}
@@ -41,7 +41,7 @@ export default function Image() {
             display: 'flex',
             width: '100%',
             height: 1,
-            backgroundColor: '#CFD5D9',
+            backgroundColor: '#D7D4CD',
             marginTop: 28,
           }}
         />
@@ -51,13 +51,13 @@ export default function Image() {
         <div style={{ display: 'flex', fontSize: 92, fontWeight: 700, lineHeight: 1.05 }}>
           {BRAND.FULL_NAME}
         </div>
-        <div style={{ display: 'flex', fontSize: 34, color: '#475056', marginTop: 24 }}>
+        <div style={{ display: 'flex', fontSize: 34, color: '#524E46', marginTop: 24 }}>
           {BRAND.TAGLINE}
         </div>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column' }}>
-        <div style={{ display: 'flex', width: '100%', height: 1, backgroundColor: '#CFD5D9' }} />
+        <div style={{ display: 'flex', width: '100%', height: 1, backgroundColor: '#D7D4CD' }} />
         <div style={{ display: 'flex', marginTop: 28 }}>
           <div style={{ display: 'flex', width: 120, height: 6, backgroundColor: '#00325C' }} />
           <div style={{ display: 'flex', width: 120, height: 6, backgroundColor: '#00559A' }} />
@@ -69,7 +69,7 @@ export default function Image() {
             fontFamily: 'monospace',
             fontSize: 22,
             letterSpacing: 4,
-            color: '#616C75',
+            color: '#6F6A60',
             marginTop: 24,
           }}
         >

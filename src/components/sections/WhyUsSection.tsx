@@ -190,7 +190,7 @@ export default function WhyUsSection() {
               <h2
                 ref={headingRef}
                 id="why-us-heading"
-                className="font-display text-heading-1 text-ink"
+                className="font-display text-heading-1 text-brand-blue"
               >
                 Why Businesses Choose Us
               </h2>

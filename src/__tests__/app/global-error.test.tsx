@@ -23,8 +23,8 @@ describe('GlobalError', () => {
     // A global error boundary renders with no stylesheet, no fonts and no
     // providers, so it must style itself inline.
     const html = renderToStaticMarkup(<GlobalError error={mockError} reset={noop} />);
-    expect(html).toContain('background-color:#F9FAFC');
-    expect(html).toContain('color:#060C10');
+    expect(html).toContain('background-color:#FAF8F2');
+    expect(html).toContain('color:#0C0B08');
   });
 
   it('renders the digest when one is present', () => {

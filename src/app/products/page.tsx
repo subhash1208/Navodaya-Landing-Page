@@ -50,7 +50,7 @@ export default async function ProductsPage({
             <span className="text-ink font-medium">Products</span>
           </nav>
 
-          <h1 className="text-[clamp(1.75rem,3vw,2.5rem)] font-bold text-ink mb-2">
+          <h1 className="text-[clamp(1.75rem,3vw,2.5rem)] font-bold text-brand-blue mb-2">
             Product Catalogue
           </h1>
           <p className="text-grey-500 text-lg">

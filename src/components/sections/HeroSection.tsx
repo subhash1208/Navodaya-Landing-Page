@@ -89,7 +89,7 @@ export default function HeroSection() {
     <section
       id="home"
       aria-label="Hero"
-      className="relative overflow-hidden bg-ink"
+      className="relative overflow-hidden bg-paper"
       style={{ minHeight: 'calc(100vh - 4rem)' }}
     >
       {/* 2-column layout: text left (anchored to left), specimen plate right (larger) */}
@@ -107,9 +107,9 @@ export default function HeroSection() {
             initial={false}
             animate={badgeVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="inline-flex items-center gap-2 font-mono text-label uppercase px-4 py-2 mb-8 border border-brand-cyan/30 text-brand-cyan self-center md:self-start"
+            className="inline-flex items-center gap-2 font-mono text-label uppercase px-4 py-2 mb-8 border border-brand-blue/40 text-brand-blue self-center md:self-start"
           >
-            <span className="w-1.5 h-1.5 rounded-full animate-pulse bg-brand-cyan" />
+            <span className="w-1.5 h-1.5 rounded-full animate-pulse bg-brand-blue" />
             Trusted B2B Supplier · Gandhi Nagar, Hyderabad
           </motion.div>
 
@@ -118,11 +118,11 @@ export default function HeroSection() {
             className="font-black leading-[1.05] tracking-tight mb-2 font-display text-display-3"
             aria-label={`${HEADLINE_LINE1} ${HEADLINE_LINE2}`}
           >
-            <span className="block text-paper">
+            <span className="block text-brand-blue">
               {displayed}
               {showCursor && (
                 <span
-                  className="inline-block w-[3px] h-[0.85em] bg-brand-cyan ml-1 align-middle animate-pulse"
+                  className="inline-block w-[3px] h-[0.85em] bg-brand-blue ml-1 align-middle animate-pulse"
                   aria-hidden="true"
                 />
               )}
@@ -138,7 +138,7 @@ export default function HeroSection() {
               transition={{ duration: 0.8, ease: [0.4, 0, 0.2, 1] }}
               style={{ overflow: 'hidden', display: 'block' }}
             >
-              <span className="inline-block text-brand-cyan">{HEADLINE_LINE2}</span>
+              <span className="inline-block text-category-spa">{HEADLINE_LINE2}</span>
             </motion.span>
           </h1>
 
@@ -147,7 +147,7 @@ export default function HeroSection() {
             initial={false}
             animate={contentVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ duration: 0.5 }}
-            className="text-base leading-relaxed mb-8 mt-5 max-w-lg text-grey-400"
+            className="text-base leading-relaxed mb-8 mt-5 max-w-lg text-grey-500"
           >
             {BRAND.MISSION}
           </motion.p>
@@ -165,7 +165,7 @@ export default function HeroSection() {
             >
               <Link
                 href={ROUTES.PRODUCTS}
-                className="group inline-flex items-center gap-2.5 font-mono text-label uppercase bg-paper text-ink hover:bg-paper/90 transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cyan focus-visible:ring-offset-2 focus-visible:ring-offset-ink px-7 py-3.5 min-h-[48px]"
+                className="group inline-flex items-center gap-2.5 font-mono text-label uppercase bg-brand-blue text-paper hover:bg-brand-blue/90 transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-2 focus-visible:ring-offset-paper px-7 py-3.5 min-h-[48px]"
               >
                 Explore Products
                 <ArrowRight
@@ -182,7 +182,7 @@ export default function HeroSection() {
             >
               <Link
                 href={ROUTES.CONTACT}
-                className="inline-flex items-center gap-2 font-mono text-label uppercase border border-paper/30 text-paper hover:bg-paper/10 transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cyan focus-visible:ring-offset-2 focus-visible:ring-offset-ink px-7 py-3.5 min-h-[48px]"
+                className="inline-flex items-center gap-2 font-mono text-label uppercase border border-ink text-ink hover:bg-ink hover:text-paper transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-2 focus-visible:ring-offset-paper px-7 py-3.5 min-h-[48px]"
               >
                 Get a Quote
               </Link>
@@ -194,7 +194,7 @@ export default function HeroSection() {
             initial={false}
             animate={contentVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="inline-flex items-center self-center md:self-start border border-paper/15"
+            className="inline-flex items-center self-center md:self-start border border-grey-200"
             style={{ padding: '16px 32px' }}
           >
             {[
@@ -204,10 +204,10 @@ export default function HeroSection() {
             ].map(({ value, label }, i) => (
               <div key={label} className="flex items-center">
                 <div className="text-center px-6">
-                  <div className="text-xl font-black text-paper">{value}</div>
-                  <div className="text-[11px] font-medium mt-0.5 text-grey-400">{label}</div>
+                  <div className="text-xl font-black text-ink">{value}</div>
+                  <div className="text-[11px] font-medium mt-0.5 text-grey-500">{label}</div>
                 </div>
-                {i < 2 && <div className="w-px h-7 shrink-0 bg-paper/10" />}
+                {i < 2 && <div className="w-px h-7 shrink-0 bg-grey-200" />}
               </div>
             ))}
           </motion.div>
@@ -224,16 +224,16 @@ export default function HeroSection() {
             initial={false}
             animate={plateVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
             transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
-            className="w-full max-w-[400px] border border-paper/15 bg-grey-900 p-6"
+            className="w-full max-w-[400px] border border-grey-200 bg-paper p-6"
           >
             <div className="flex items-baseline justify-between gap-4 mb-6">
-              <span aria-hidden="true" className="font-mono text-label text-grey-400">
+              <span aria-hidden="true" className="font-mono text-label text-grey-500">
                 01
               </span>
-              <span className="font-mono text-label uppercase text-grey-400">Specimen</span>
+              <span className="font-mono text-label uppercase text-grey-500">Specimen</span>
             </div>
 
-            <div className="relative aspect-square overflow-hidden border border-paper/10 bg-ink">
+            <div className="relative aspect-square overflow-hidden border border-grey-200 bg-grey-100">
               {/* The panel is `hidden` below 768px, so the `0px` slot keeps mobile browsers
                   from picking a candidate they will never paint. No `priority` — the LCP
                   element here is the <h1>, not this plate. */}
@@ -246,9 +246,9 @@ export default function HeroSection() {
               />
             </div>
 
-            <figcaption className="mt-6 flex items-baseline justify-between gap-4 border-t border-paper/15 pt-5">
-              <span className="font-mono text-label uppercase text-paper">Branded Paper Cup</span>
-              <span className="font-mono text-data text-grey-400">Hotel Amenities</span>
+            <figcaption className="mt-6 flex items-baseline justify-between gap-4 border-t border-grey-200 pt-5">
+              <span className="font-mono text-label uppercase text-ink">Branded Paper Cup</span>
+              <span className="font-mono text-data text-grey-500">Hotel Amenities</span>
             </figcaption>
           </motion.figure>
         </div>
@@ -258,7 +258,7 @@ export default function HeroSection() {
       <a
         href="#about"
         aria-label="Scroll to About section"
-        className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-grey-400 transition-colors focus-visible:outline-none focus-visible:ring-2 rounded"
+        className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-grey-500 transition-colors focus-visible:outline-none focus-visible:ring-2 rounded"
       >
         <span className="text-xs font-medium tracking-widest uppercase">Scroll</span>
         <ChevronDown className="w-4 h-4 animate-bounce" aria-hidden="true" />

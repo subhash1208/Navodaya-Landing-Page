@@ -309,7 +309,7 @@ describe('LoadingScreen timeline', () => {
 
     const status = container.querySelector('[role="status"]');
     expect(status?.textContent).toContain('NAVODAYA');
-    expect(status?.querySelector('.bg-brand-cyan')).toBeTruthy();
+    expect(status?.querySelector('.bg-brand-blue')).toBeTruthy();
 
     // The six deleted effects: particles, radial glow, gradient sweep, keyword reel,
     // motto and progress bar. Their class and colour hooks must be gone for good.

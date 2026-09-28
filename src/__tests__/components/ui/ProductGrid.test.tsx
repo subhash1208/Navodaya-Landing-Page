@@ -76,10 +76,10 @@ describe('ProductGrid', () => {
     expect(screen.getByRole('tab', { name: /All Products/i })).toBeTruthy();
   });
 
-  it('marks the active tab with a single ink rule', () => {
+  it('marks the active tab with a single navy rule', () => {
     render(<ProductGrid activeCategory={ALL_ID} />);
     const tablist = screen.getByRole('tablist');
-    expect(tablist.querySelectorAll('.bg-ink')).toHaveLength(1);
+    expect(tablist.querySelectorAll('.bg-brand-blue')).toHaveLength(1);
     expect(screen.getByRole('tab', { name: /All Products/i }).getAttribute('aria-selected')).toBe(
       'true',
     );

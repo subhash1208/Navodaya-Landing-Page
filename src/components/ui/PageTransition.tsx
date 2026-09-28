@@ -95,7 +95,7 @@ export function PageTransition({ children }: { children: React.ReactNode }) {
           position: 'fixed',
           inset: 0,
           zIndex: 9998,
-          background: '#060C10',
+          background: '#00559A',
           transform: 'translateX(-100%)',
           pointerEvents: isAnimating ? 'all' : 'none',
         }}
