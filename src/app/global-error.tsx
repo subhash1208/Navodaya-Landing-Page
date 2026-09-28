@@ -22,8 +22,8 @@ export default function GlobalError({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          backgroundColor: '#FAFAF8',
-          color: '#0A0B0D',
+          backgroundColor: '#F9FAFC',
+          color: '#060C10',
           fontFamily: 'ui-sans-serif, system-ui, sans-serif',
         }}
       >
@@ -35,7 +35,7 @@ export default function GlobalError({
               fontSize: '0.75rem',
               letterSpacing: '0.2em',
               textTransform: 'uppercase',
-              color: '#6B6B64',
+              color: '#616C75',
               margin: 0,
             }}
           >
@@ -44,14 +44,14 @@ export default function GlobalError({
           <hr
             style={{
               border: 0,
-              borderTop: '1px solid #D4D4D0',
+              borderTop: '1px solid #CFD5D9',
               margin: '1rem 0',
             }}
           />
           <h1 style={{ fontSize: '1.75rem', fontWeight: 700, margin: '0 0 0.75rem' }}>
             Something went wrong
           </h1>
-          <p style={{ fontSize: '0.95rem', color: '#4F4F49', margin: '0 0 1.5rem' }}>
+          <p style={{ fontSize: '0.95rem', color: '#475056', margin: '0 0 1.5rem' }}>
             The page could not be rendered. Please try again, or reload if the problem persists.
           </p>
           {error.digest ? (
@@ -59,7 +59,7 @@ export default function GlobalError({
               style={{
                 fontFamily: 'ui-monospace, SFMono-Regular, monospace',
                 fontSize: '0.75rem',
-                color: '#8A8A83',
+                color: '#7F8B94',
                 margin: '0 0 1.5rem',
               }}
             >
@@ -70,8 +70,8 @@ export default function GlobalError({
             onClick={reset}
             style={{
               padding: '0.65rem 1.25rem',
-              backgroundColor: '#0A0B0D',
-              color: '#FAFAF8',
+              backgroundColor: '#060C10',
+              color: '#F9FAFC',
               border: 0,
               fontSize: '0.875rem',
               fontWeight: 600,

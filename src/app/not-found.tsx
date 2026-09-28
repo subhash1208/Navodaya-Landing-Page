@@ -11,7 +11,7 @@ export default function NotFound() {
           WhyUsSection.tsx:187, ProductCard.tsx:45). `aria-hidden` alone does NOT discharge WCAG
           1.4.3 though: axe's `color-contrast` rule keys on visible-on-screen, not exposed-to-AT,
           and measured red on this node with `aria-hidden` present. `grey-100` on `paper` was
-          1.17:1; `grey-400 #8A8A83` on `paper #FAFAF8` is 3.32:1, which clears the 3:1 bar this
+          1.17:1; `grey-400 #7F8B94` on `paper #F9FAFC` is 3.34:1, which clears the 3:1 bar this
           text qualifies for at 96px (`text-8xl`, far above axe's 24px large-text threshold).
         */}
         <div className="text-8xl font-black text-grey-400 mb-4 select-none" aria-hidden="true">

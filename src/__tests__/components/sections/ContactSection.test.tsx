@@ -534,9 +534,9 @@ describe('ContactSection', () => {
     });
 
     it('keeps the marker on a grey that clears WCAG 1.4.3 against the section ink', () => {
-      // The section is `bg-ink` (#0A0B0D). On that ground `grey-500` (#6B6B64) measures 3.67:1
+      // The section is `bg-ink` (#060C10). On that ground `grey-500` (#616C75) measures 3.66:1
       // and the marker inherits `text-label` (11px), so the threshold is 4.5:1, not 3:1 —
-      // `grey-500` fails. `grey-400` (#8A8A83) is 5.67:1. The ramp inverts by ground here: the
+      // `grey-500` fails. `grey-400` (#7F8B94) is 5.64:1. The ramp inverts by ground here: the
       // same `grey-500` passes at 5.13:1 on `bg-paper`, which is why it looks safe and is not.
       render(<ContactSection />);
       const markers = screen.getAllByText('(Optional)');

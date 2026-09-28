@@ -317,7 +317,15 @@ describe('LoadingScreen timeline', () => {
     expect(container.querySelector('.loading-gradient-sweep')).toBeNull();
     expect(container.innerHTML).not.toContain('slotMachine');
     expect(container.innerHTML).not.toContain('radial-gradient');
-    expect(container.innerHTML).not.toContain('#08B8F8');
+    // The cyan of those decorations was written as a hex inside React `style` OBJECTS, which
+    // React applies through the CSSOM — and jsdom serialises a CSSOM-set colour back out as
+    // `rgb(...)`, never as the hex that was written. So the `#08B8F8` this line used to read
+    // could not have failed even while the sweep existed, and after the palette recast moved
+    // brand cyan to #00BCFF it was unfalsifiable twice over. Assert on both forms the current
+    // cyan can actually reach this markup in: the CSSOM round-trip, and a literal attribute
+    // (an SVG `fill`, a raw `style` string), which jsdom does keep verbatim.
+    expect(container.innerHTML).not.toContain('rgb(0, 188, 255)');
+    expect(container.innerHTML).not.toMatch(/#00bcff/i);
   });
 });
 
