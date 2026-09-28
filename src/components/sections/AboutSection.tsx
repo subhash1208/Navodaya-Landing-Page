@@ -247,9 +247,13 @@ export default function AboutSection() {
             <div ref={textColRef} className="scroll-animate-left">
               <h3 className="text-heading-2 text-ink mb-4">{BRAND.TAGLINE}</h3>
               <p className="text-body text-grey-600 mb-4">
-                Based in {BRAND.LOCATION}, we are a dedicated supplier of disposable hygiene &amp;
-                safety products, hotel room slippers, guest amenities, and spa &amp; salon
-                essentials — serving the hospitality and wellness sectors with reliability and care.
+                Navodaya Industries &amp; Care Kits is a Hyderabad based startup established in
+                2025, specializing in B2B housekeeping supplies, institutional hygiene products,
+                protective packaging covers, and customized care kit solutions. We serve
+                organizations across the education, healthcare, and hospitality sectors, combining
+                reliable product sourcing with manufacturing capabilities to deliver quality
+                solutions, efficient procurement, and dependable service to our institutional
+                customers.
               </p>
               <p className="text-body text-grey-600">
                 Our approach is simple: understand what businesses need, source the best products,
