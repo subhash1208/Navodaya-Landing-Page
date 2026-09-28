@@ -14,8 +14,9 @@ const PILLARS = [
   },
   {
     icon: Globe,
-    title: 'Global Reach',
-    description: 'Strategic import-export operations ensuring reliable supply across markets.',
+    title: 'South India Coverage',
+    description:
+      'A growing service network across South India, backed by expanding manufacturing capabilities and product range.',
   },
   {
     icon: Handshake,
@@ -245,7 +246,6 @@ export default function AboutSection() {
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-12 items-center">
             <div ref={textColRef} className="scroll-animate-left">
-              <h3 className="text-heading-2 text-ink mb-4">{BRAND.TAGLINE}</h3>
               <p className="text-body text-grey-600 mb-4">
                 Navodaya Industries &amp; Care Kits is a Hyderabad based startup established in
                 2025, specializing in B2B housekeeping supplies, institutional hygiene products,

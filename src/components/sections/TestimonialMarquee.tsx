@@ -71,7 +71,7 @@ export function TestimonialMarquee() {
             <h2 className="font-mono text-label uppercase text-brand-blue">What Our Clients Say</h2>
           </div>
           <p className="font-mono text-data text-grey-500">
-            Trusted by hotels, hospitals, spas and industries across India
+            Trusted by hotels, hospitals, spas, educational institutions and industries across India
           </p>
         </div>
       </div>

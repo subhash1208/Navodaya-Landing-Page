@@ -251,8 +251,8 @@ export default function ContactSection() {
 
             <div className="mt-12 p-5 border border-grey-200">
               <p className="font-mono text-data text-grey-500">
-                📍 Gandhi Nagar, Hyderabad · Serving hotels, hospitals, spas &amp; industries across
-                India
+                📍 Hyderabad · Serving educational institutions, healthcare, hospitality &amp; other
+                institutional customers across India
               </p>
             </div>
           </AnimateIn>

@@ -79,7 +79,7 @@ describe('AboutSection', () => {
   it('renders pillars', () => {
     render(<AboutSection />);
     expect(screen.getByText('Quality Assured')).toBeTruthy();
-    expect(screen.getByText('Global Reach')).toBeTruthy();
+    expect(screen.getByText('South India Coverage')).toBeTruthy();
     expect(screen.getByText('Customer First')).toBeTruthy();
   });
 
@@ -94,9 +94,9 @@ describe('AboutSection', () => {
     expect(screen.getByText('Who We Are')).toBeTruthy();
   });
 
-  it('renders brand tagline', () => {
+  it('does not duplicate the brand tagline — it now lives only in the hero badge', () => {
     render(<AboutSection />);
-    expect(screen.getByText('Your Trusted Partner in Progress and Care')).toBeTruthy();
+    expect(screen.queryByText('Your Trusted Partner in Progress and Care')).toBeNull();
   });
 
   it('checks CSS.supports branch (returns false by default)', () => {
@@ -189,7 +189,7 @@ describe('AboutSection', () => {
   it('renders all pillar descriptions', () => {
     render(<AboutSection />);
     expect(screen.getByText(/Every product meets international/)).toBeTruthy();
-    expect(screen.getByText(/Strategic import-export/)).toBeTruthy();
+    expect(screen.getByText(/growing service network across South India/)).toBeTruthy();
     expect(screen.getByText(/Prompt service and a commitment/)).toBeTruthy();
   });
 

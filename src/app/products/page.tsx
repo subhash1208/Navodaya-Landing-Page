@@ -54,8 +54,8 @@ export default async function ProductsPage({
             Product Catalogue
           </h1>
           <p className="text-grey-500 text-lg">
-            {PRODUCTS.length}+ products across {PRODUCT_CATEGORIES.length} categories — hygiene,
-            hospitality &amp; wellness.
+            {PRODUCTS.length}+ products across {PRODUCT_CATEGORIES.length} categories — education,
+            healthcare &amp; hospitality.
           </p>
         </div>
       </div>

@@ -6,11 +6,17 @@ export const BRAND = {
   FULL_NAME: 'Navodaya Industries and Care Kits',
   TAGLINE: 'Your Trusted Partner in Progress and Care',
   MISSION:
-    'To support businesses in the hospitality and wellness sectors with high-quality, reliable, and hygienic solutions.',
+    'To provide high-quality hygiene, housekeeping, protective packaging, and customized care-kit solutions for educational, healthcare, hospitality, and other institutional customers.',
+  // Deliberately separate from MISSION: this is the <meta name="description">
+  // shown in search results, which Google truncates around ~155-160
+  // characters. MISSION is client-approved on-page copy with no such limit —
+  // do not derive one from the other.
+  SEO_DESCRIPTION:
+    'B2B hygiene, housekeeping, protective packaging and custom care-kit supplies for educational, healthcare and hospitality institutions. Based in Hyderabad.',
   EMAIL: 'connect@navodaya.group',
   PHONE: '+91 83286 05812',
   WEBSITE: 'www.navodaya.group',
-  LOCATION: 'Gandhi Nagar, Hyderabad',
+  LOCATION: 'Hyderabad',
 } as const;
 
 // ─── Site ────────────────────────────────────────────────────────────────────

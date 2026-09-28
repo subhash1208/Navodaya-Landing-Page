@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { Mail, Phone, MapPin } from 'lucide-react';
 import { BRAND, NAV_LINKS, ROUTES, PRODUCT_CATEGORIES } from '@/constants';
 
@@ -11,7 +12,13 @@ export default function Footer() {
           <div>
             <div className="flex items-center gap-3 mb-4">
               <div className="w-9 h-9 rounded-full bg-paper flex items-center justify-center shrink-0">
-                <span className="text-ink font-black text-sm select-none">N</span>
+                <Image
+                  src="/navodaya-logo.png"
+                  alt=""
+                  width={28}
+                  height={28}
+                  style={{ width: '28px', height: '28px', objectFit: 'contain' }}
+                />
               </div>
               <span className="font-bold text-lg text-white">{BRAND.NAME}</span>
             </div>

@@ -25,7 +25,7 @@ test.describe('Mobile navigation', () => {
   });
 
   // `/products` rather than `/`, deliberately. `LoadingScreen` is mounted only on the homepage
-  // (src/app/page.tsx:20) and covers everything with a fixed/inset-0/z-9999 overlay for ~1.4s on
+  // (src/app/page.tsx:20) and covers everything with a fixed/inset-0/z-9999 overlay for ~3.4s on
   // a first visit; the header and footer under test are in the shared layout, so starting here
   // removes the intro from the picture entirely instead of working around it.
   test.beforeEach(async ({ page }) => {

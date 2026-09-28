@@ -16,7 +16,9 @@ describe('TestimonialMarquee', () => {
 
   it('renders subtitle', () => {
     render(<TestimonialMarquee />);
-    expect(screen.getByText(/Trusted by hotels, hospitals/)).toBeTruthy();
+    expect(
+      screen.getByText(/Trusted by hotels, hospitals, spas, educational institutions/),
+    ).toBeTruthy();
   });
 
   it('renders the section index number', () => {
