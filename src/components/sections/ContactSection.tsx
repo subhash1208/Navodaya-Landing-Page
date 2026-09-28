@@ -18,20 +18,27 @@ import { submitContactForm } from '@/app/actions/contact';
 import { AnimateIn } from '@/components/ui/AnimateIn';
 import { cn } from '@/utils/cn';
 
+// `grey-400`, not `grey-300`: this border is the visual boundary of every input, the select, and
+// the textarea below (all three share `inputClass`) on the section's `bg-paper` ground. WCAG
+// 1.4.11 requires 3:1 for a form field's boundary. `grey-300 #B4AFA6` on `paper #FAF8F2` measures
+// 2.055:1 and fails; `grey-400 #8E897C` measures 3.285:1 and clears the floor. Do not "tidy" this
+// back down the ramp — this is the same bug class as `sealed-contrast-rule` in the knowledge
+// graph, recurring in the opposite direction on the light-ground recast.
 const inputClass =
-  'w-full px-4 py-3 bg-transparent border border-grey-500 text-body-sm text-paper placeholder:text-grey-400 outline-none transition-colors duration-150 focus:border-paper min-h-[44px]';
+  'w-full px-4 py-3 bg-transparent border border-grey-400 text-body-sm text-ink placeholder:text-grey-500 outline-none transition-colors duration-150 focus:border-ink min-h-[44px]';
 
 /**
  * The closed `<select>` inherits `bg-transparent` happily, but its open dropdown is a native OS
- * popup: `background-color` does not reach it, while `color` does — so `text-paper` painted the
- * options near-white on the light system popup at ~1.05:1 and the product list was unreadable.
- * An opaque `bg-ink` plus `color-scheme: dark` makes the browser paint its own popup chrome dark;
- * the `option`/`optgroup` rules are a defensive floor for engines that ignore `color-scheme`.
+ * popup: `background-color` does not reach it, while `color` does — so an option colour tuned for
+ * the page ground can land near-invisible on a system popup painted the other way round. An opaque
+ * `bg-paper` plus `color-scheme: light` makes the browser paint its own popup chrome light, to
+ * match the near-white options; the `option`/`optgroup` rules are a defensive floor for engines
+ * that ignore `color-scheme`.
  * Tailwind 3.4 has no `color-scheme` core plugin, hence the arbitrary property.
  * Scoped to the `<select>` — the seven sibling inputs share `inputClass` and are unaffected.
  */
 const selectClass =
-  'bg-ink [color-scheme:dark] [&>option]:bg-ink [&>option]:text-paper [&>optgroup]:bg-ink [&>optgroup]:text-grey-300';
+  'bg-paper [color-scheme:light] [&>option]:bg-paper [&>option]:text-ink [&>optgroup]:bg-paper [&>optgroup]:text-grey-600';
 
 /** Sentinel option value for "my product is not listed". */
 const OTHER_VALUE = 'Other';
@@ -87,17 +94,17 @@ function Field({ label, id, icon, error, optional, children }: FieldProps) {
     <div className="flex flex-col gap-2">
       <label
         htmlFor={id}
-        className="flex items-center gap-1.5 font-mono text-label uppercase text-grey-400"
+        className="flex items-center gap-1.5 font-mono text-label uppercase text-grey-500"
       >
         {icon && <span aria-hidden="true">{icon}</span>}
         {label}{' '}
-        {/* grey-400, not grey-500: on `bg-ink` grey-500 is 3.67:1 and fails WCAG 1.4.3 at this
-            label's 11px, while grey-400 is 5.67:1. Do not "tidy" this back down the ramp. */}
-        {optional ? <span className="text-grey-400">(Optional)</span> : null}
+        {/* grey-500, not grey-400: on `bg-paper` grey-400 is 3.34:1 and fails WCAG 1.4.3 at this
+            label's 11px, while grey-500 is 5.14:1. Do not "tidy" this back up the ramp. */}
+        {optional ? <span className="text-grey-500">(Optional)</span> : null}
       </label>
       {children}
       {error ? (
-        <p id={`${id}-error`} className="font-mono text-label text-red-300">
+        <p id={`${id}-error`} className="font-mono text-label text-red-700">
           {error}
         </p>
       ) : null}
@@ -195,23 +202,23 @@ export default function ContactSection() {
       ref={sectionRef}
       id="contact"
       aria-labelledby="contact-heading"
-      className="py-24 bg-ink cursor-spotlight"
+      className="py-24 bg-paper cursor-spotlight"
       onMouseMove={handleMouseMove}
     >
       <div className="container mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-start">
           {/* Left — info */}
-          <AnimateIn direction="right" className="text-paper">
-            <div className="flex items-baseline gap-5 border-t border-grey-700 pt-8">
-              <span aria-hidden="true" className="font-mono text-label text-grey-400">
+          <AnimateIn direction="right" className="text-ink">
+            <div className="flex items-baseline gap-5 border-t border-grey-200 pt-8">
+              <span aria-hidden="true" className="font-mono text-label text-grey-500">
                 05
               </span>
-              <span className="font-mono text-label uppercase text-grey-400">Get in Touch</span>
+              <span className="font-mono text-label uppercase text-grey-500">Get in Touch</span>
             </div>
-            <h2 id="contact-heading" className="mt-6 font-display text-heading-1 text-paper">
+            <h2 id="contact-heading" className="mt-6 font-display text-heading-1 text-brand-blue">
               Request a Quote
             </h2>
-            <p className="mt-4 mb-10 max-w-lg text-body-lg text-grey-300">
+            <p className="mt-4 mb-10 max-w-lg text-body-lg text-grey-600">
               Tell us what you need and we&apos;ll get back to you with pricing and availability. We
               work with hotels, hospitals, spas, salons, and industries across India.
             </p>
@@ -229,21 +236,21 @@ export default function ContactSection() {
                 <a
                   key={label}
                   href={href}
-                  className="flex items-center gap-4 text-grey-300 hover:text-paper transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-paper"
+                  className="flex items-center gap-4 text-grey-600 hover:text-ink transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink"
                 >
-                  <div className="w-11 h-11 border border-grey-700 flex items-center justify-center shrink-0">
+                  <div className="w-11 h-11 border border-grey-200 flex items-center justify-center shrink-0">
                     <Icon className="w-[18px] h-[18px]" aria-hidden="true" />
                   </div>
                   <div>
-                    <div className="font-mono text-label uppercase text-grey-400">{label}</div>
-                    <div className="mt-1 font-mono text-data text-grey-300">{value}</div>
+                    <div className="font-mono text-label uppercase text-grey-500">{label}</div>
+                    <div className="mt-1 font-mono text-data text-grey-600">{value}</div>
                   </div>
                 </a>
               ))}
             </div>
 
-            <div className="mt-12 p-5 border border-grey-700">
-              <p className="font-mono text-data text-grey-400">
+            <div className="mt-12 p-5 border border-grey-200">
+              <p className="font-mono text-data text-grey-500">
                 📍 Gandhi Nagar, Hyderabad · Serving hotels, hospitals, spas &amp; industries across
                 India
               </p>
@@ -251,32 +258,31 @@ export default function ContactSection() {
           </AnimateIn>
 
           {/* Right — specification form */}
-          <AnimateIn direction="left" delay={0.1} className="p-8 border border-grey-700">
+          <AnimateIn direction="left" delay={0.1} className="p-8 border border-grey-200">
             {showSuccess ? (
               <div className="py-8" role="alert" aria-live="polite">
-                <CheckCircle className="w-10 h-10 text-paper mb-4" aria-hidden="true" />
-                <h3 className="text-heading-2 text-paper mb-2">Thank You!</h3>
-                <p className="text-body-sm text-grey-300 mb-6">
-                  Your enquiry has been sent to{' '}
-                  <strong className="text-paper">{BRAND.EMAIL}</strong>. We&apos;ll be in touch
-                  shortly.
+                <CheckCircle className="w-10 h-10 text-ink mb-4" aria-hidden="true" />
+                <h3 className="text-heading-2 text-ink mb-2">Thank You!</h3>
+                <p className="text-body-sm text-grey-600 mb-6">
+                  Your enquiry has been sent to <strong className="text-ink">{BRAND.EMAIL}</strong>.
+                  We&apos;ll be in touch shortly.
                 </p>
                 <button
                   onClick={handleDismiss}
-                  className="font-mono text-label uppercase text-paper underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-paper"
+                  className="font-mono text-label uppercase text-ink underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink"
                 >
                   Send another enquiry
                 </button>
               </div>
             ) : (
               <form onSubmit={handleAction} noValidate className="flex flex-col gap-6">
-                <h3 className="font-mono text-label uppercase text-grey-400">Send an Enquiry</h3>
+                <h3 className="font-mono text-label uppercase text-grey-500">Send an Enquiry</h3>
 
                 {state?.error && (
                   <div
                     role="alert"
                     aria-live="assertive"
-                    className="flex items-start gap-2.5 border border-red-400 bg-red-950 text-body-sm text-red-200 p-3"
+                    className="flex items-start gap-2.5 border border-red-300 bg-red-50 text-body-sm text-red-800 p-3"
                   >
                     <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" aria-hidden="true" />
                     {state.error}
@@ -480,7 +486,7 @@ export default function ContactSection() {
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="w-full flex items-center justify-center gap-2 py-3.5 bg-paper text-ink font-mono text-label uppercase transition-colors duration-200 hover:bg-grey-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-paper focus-visible:ring-offset-2 focus-visible:ring-offset-ink min-h-[48px] disabled:bg-grey-600 disabled:text-grey-200 disabled:cursor-not-allowed"
+                  className="w-full flex items-center justify-center gap-2 py-3.5 bg-brand-blue text-paper font-mono text-label uppercase transition-colors duration-200 hover:bg-brand-blue/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-2 focus-visible:ring-offset-paper min-h-[48px] disabled:bg-grey-300 disabled:text-grey-500 disabled:cursor-not-allowed"
                 >
                   <span>{isPending ? 'Sending…' : 'Send Enquiry'}</span>
                   <Send className="w-4 h-4" aria-hidden="true" />

@@ -11,8 +11,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: BRAND.MISSION,
     start_url: '/',
     display: 'standalone',
-    background_color: '#F9FAFC', // paper
-    theme_color: '#060C10', // ink
+    background_color: '#FAF8F2', // paper
+    theme_color: '#0C0B08', // ink
     icons: [
       {
         src: '/navodaya-logo.png',

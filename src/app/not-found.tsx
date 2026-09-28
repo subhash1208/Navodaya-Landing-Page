@@ -11,20 +11,20 @@ export default function NotFound() {
           WhyUsSection.tsx:187, ProductCard.tsx:45). `aria-hidden` alone does NOT discharge WCAG
           1.4.3 though: axe's `color-contrast` rule keys on visible-on-screen, not exposed-to-AT,
           and measured red on this node with `aria-hidden` present. `grey-100` on `paper` was
-          1.17:1; `grey-400 #7F8B94` on `paper #F9FAFC` is 3.34:1, which clears the 3:1 bar this
+          1.17:1; `grey-400 #8E897C` on `paper #FAF8F2` is 3.28:1, which clears the 3:1 bar this
           text qualifies for at 96px (`text-8xl`, far above axe's 24px large-text threshold).
         */}
         <div className="text-8xl font-black text-grey-400 mb-4 select-none" aria-hidden="true">
           404
         </div>
-        <h1 className="text-2xl font-bold text-ink mb-3">Page Not Found</h1>
+        <h1 className="text-2xl font-bold text-brand-blue mb-3">Page Not Found</h1>
         <p className="text-grey-500 mb-8">
           The page you&apos;re looking for doesn&apos;t exist or has been moved.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link
             href={ROUTES.HOME}
-            className="px-6 py-3 bg-ink text-white font-semibold text-sm hover:bg-ink/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2"
+            className="px-6 py-3 bg-brand-blue text-paper font-semibold text-sm hover:bg-brand-blue/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-2 focus-visible:ring-offset-paper"
           >
             Go Home
           </Link>

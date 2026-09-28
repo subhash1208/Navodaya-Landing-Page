@@ -46,11 +46,11 @@ const TESTIMONIALS = [
 
 function TestimonialCard({ quote, name, role, location }: (typeof TESTIMONIALS)[0]) {
   return (
-    <div className="shrink-0 w-80 mx-3 p-6 border border-grey-800 bg-grey-900">
-      <p className="text-body-sm text-grey-300 mb-4">&ldquo;{quote}&rdquo;</p>
+    <div className="shrink-0 w-80 mx-3 p-6 border border-grey-200 bg-paper">
+      <p className="text-body-sm text-grey-600 mb-4">&ldquo;{quote}&rdquo;</p>
       <div>
-        <p className="text-body-sm font-medium text-paper">{name}</p>
-        <p className="mt-1 font-mono text-data text-grey-400">
+        <p className="text-body-sm font-medium text-ink">{name}</p>
+        <p className="mt-1 font-mono text-data text-grey-500">
           {role} · {location}
         </p>
       </div>
@@ -60,17 +60,17 @@ function TestimonialCard({ quote, name, role, location }: (typeof TESTIMONIALS)[
 
 export function TestimonialMarquee() {
   return (
-    <section className="py-24 overflow-hidden bg-ink" aria-label="Client testimonials">
+    <section className="py-24 overflow-hidden bg-grey-50" aria-label="Client testimonials">
       <div className="container mx-auto mb-12">
         {/* Quiet mono header line — the marquee is the content, not the heading */}
-        <div className="flex flex-col gap-2 border-t border-grey-800 pt-6 md:flex-row md:items-baseline md:justify-between">
+        <div className="flex flex-col gap-2 border-t border-grey-200 pt-6 md:flex-row md:items-baseline md:justify-between">
           <div className="flex items-baseline gap-5">
-            <span aria-hidden="true" className="font-mono text-label text-grey-400">
+            <span aria-hidden="true" className="font-mono text-label text-grey-500">
               04
             </span>
-            <h2 className="font-mono text-label uppercase text-grey-300">What Our Clients Say</h2>
+            <h2 className="font-mono text-label uppercase text-brand-blue">What Our Clients Say</h2>
           </div>
-          <p className="font-mono text-data text-grey-400">
+          <p className="font-mono text-data text-grey-500">
             Trusted by hotels, hospitals, spas and industries across India
           </p>
         </div>

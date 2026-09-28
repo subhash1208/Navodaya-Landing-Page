@@ -226,7 +226,7 @@ export default function AboutSection() {
             <h2
               ref={headingRef}
               id="about-heading"
-              className="mt-3 font-display text-heading-1 text-ink"
+              className="mt-3 font-display text-heading-1 text-brand-blue"
             >
               About {BRAND.NAME}
             </h2>

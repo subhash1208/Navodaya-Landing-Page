@@ -16,7 +16,7 @@ export type TabId = CategorySlug | typeof ALL_ID;
 
 /** The catalogue rules, plus the "all" tab's neutral ink rule. */
 const TAB_RULE = {
-  [ALL_ID]: 'bg-ink',
+  [ALL_ID]: 'bg-brand-blue',
   ...CATEGORY_RULE,
 } satisfies Record<TabId, string>;
 
@@ -192,7 +192,7 @@ export function ProductGrid({ activeCategory: categoryFromUrl }: ProductGridProp
               setQuery('');
               handleCategoryChange(ALL_ID);
             }}
-            className="mt-6 inline-flex items-center border border-ink px-6 py-3 font-mono text-label uppercase text-ink transition-colors duration-200 hover:bg-ink hover:text-paper focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2"
+            className="mt-6 inline-flex items-center border border-ink px-6 py-3 font-mono text-label uppercase text-ink transition-colors duration-200 hover:bg-brand-blue hover:text-paper focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2"
           >
             Clear filters
           </button>

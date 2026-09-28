@@ -129,7 +129,7 @@ export function LoadingScreen({ children }: LoadingScreenProps) {
         // before we know whether to play it, but still RENDER children underneath so the
         // server HTML is complete for crawlers and no-JS visitors. No `motion` element is
         // reachable on this branch, so nothing can serialise a content-hiding `initial`.
-        <div aria-hidden="true" className="fixed inset-0 z-[9999] bg-ink" />
+        <div aria-hidden="true" className="fixed inset-0 z-[9999] bg-paper" />
       ) : show ? (
         <div
           role="status"
@@ -148,7 +148,7 @@ export function LoadingScreen({ children }: LoadingScreenProps) {
             initial={false}
             animate={{ y: stage >= 3 ? '-100%' : '0%' }}
             transition={{ duration: reduced ? INSTANT : PANEL_SPLIT, ease: EASE }}
-            className="absolute inset-x-0 top-0 flex h-1/2 flex-col items-center justify-end overflow-hidden bg-ink"
+            className="absolute inset-x-0 top-0 flex h-1/2 flex-col items-center justify-end overflow-hidden bg-paper"
           >
             <Image
               src="/navodaya-logo.png"
@@ -173,7 +173,7 @@ export function LoadingScreen({ children }: LoadingScreenProps) {
                       delay: reduced ? 0 : i * LETTER_STAGGER,
                       ease: EASE,
                     }}
-                    className="font-display block text-display-2 font-black text-paper"
+                    className="font-display block text-display-2 font-black text-ink"
                   >
                     {letter}
                   </motion.span>
@@ -186,7 +186,7 @@ export function LoadingScreen({ children }: LoadingScreenProps) {
               initial={false}
               animate={{ scaleX: stage >= 1 ? 1 : 0 }}
               transition={{ duration: reduced ? INSTANT : SEAL_DRAW, ease: EASE }}
-              className="absolute inset-x-0 bottom-0 h-px origin-center bg-brand-cyan"
+              className="absolute inset-x-0 bottom-0 h-px origin-center bg-brand-blue"
             />
           </motion.div>
 
@@ -196,7 +196,7 @@ export function LoadingScreen({ children }: LoadingScreenProps) {
             initial={false}
             animate={{ y: stage >= 3 ? '100%' : '0%' }}
             transition={{ duration: reduced ? INSTANT : PANEL_SPLIT, ease: EASE }}
-            className="absolute inset-x-0 bottom-0 h-1/2 bg-ink"
+            className="absolute inset-x-0 bottom-0 h-1/2 bg-paper"
           />
 
           {/* Skip affordance. A real full-viewport button rather than a click handler on a
@@ -205,7 +205,7 @@ export function LoadingScreen({ children }: LoadingScreenProps) {
           <button
             type="button"
             onClick={skipIntro}
-            className="absolute inset-0 z-10 h-full w-full cursor-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-cyan"
+            className="absolute inset-0 z-10 h-full w-full cursor-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-blue"
           >
             <span className="sr-only">Skip intro animation</span>
           </button>

@@ -109,10 +109,10 @@ describe('ContactSection', () => {
     expect(container.querySelector('#contact')).toBeTruthy();
   });
 
-  it('renders the section on a solid ink surface, not a gradient, keeping cursor-spotlight', () => {
+  it('renders the section on a solid paper surface, not a gradient, keeping cursor-spotlight', () => {
     const { container } = render(<ContactSection />);
     const section = container.querySelector('#contact') as HTMLElement;
-    expect(section.className).toContain('bg-ink');
+    expect(section.className).toContain('bg-paper');
     expect(section.className).not.toContain('bg-gradient-');
     expect(section.className).toContain('cursor-spotlight');
   });
@@ -155,11 +155,11 @@ describe('ContactSection', () => {
     expect(screen.getByText('Message').className).toContain('font-mono');
   });
 
-  it('renders the heading in the dark-ground inversion, never near-black on near-black', () => {
+  it('renders the heading in navy on the paper ground, never near-white on near-white', () => {
     render(<ContactSection />);
     const heading = screen.getByText('Request a Quote');
-    expect(heading.className).toContain('text-paper');
-    expect(heading.className).not.toContain('text-ink');
+    expect(heading.className).toContain('text-brand-blue');
+    expect(heading.className).not.toContain('text-paper');
   });
 
   it('renders location info', () => {
@@ -238,14 +238,14 @@ describe('ContactSection', () => {
   });
 
   describe('product dropdown', () => {
-    it('paints an opaque dark surface so the native popup is not white-on-white', () => {
+    it('paints an opaque light surface so the native popup is not white-on-white', () => {
       render(<ContactSection />);
       const select = screen.getByRole('combobox');
-      expect(select.className).toContain('bg-ink');
+      expect(select.className).toContain('bg-paper');
       expect(select.className).not.toContain('bg-transparent');
-      expect(select.className).toContain('[color-scheme:dark]');
-      expect(select.className).toContain('[&>option]:bg-ink');
-      expect(select.className).toContain('[&>option]:text-paper');
+      expect(select.className).toContain('[color-scheme:light]');
+      expect(select.className).toContain('[&>option]:bg-paper');
+      expect(select.className).toContain('[&>option]:text-ink');
     });
 
     it('submits productEnquiryLabel as each option value while showing the bare name', () => {
@@ -533,17 +533,18 @@ describe('ContactSection', () => {
       }
     });
 
-    it('keeps the marker on a grey that clears WCAG 1.4.3 against the section ink', () => {
-      // The section is `bg-ink` (#060C10). On that ground `grey-500` (#616C75) measures 3.66:1
+    it('keeps the marker on a grey that clears WCAG 1.4.3 against the section paper', () => {
+      // The section is `bg-paper` (#FAF8F2). On that ground `grey-400` (#8E897C) measures 3.28:1
       // and the marker inherits `text-label` (11px), so the threshold is 4.5:1, not 3:1 —
-      // `grey-500` fails. `grey-400` (#7F8B94) is 5.64:1. The ramp inverts by ground here: the
-      // same `grey-500` passes at 5.13:1 on `bg-paper`, which is why it looks safe and is not.
+      // `grey-400` fails. `grey-500` (#6F6A60) is 5.06:1. The ramp inverts by ground here: the
+      // same `grey-400` passed at 5.64:1 back when this section was `bg-ink`, which is why the
+      // old token looks safe and is not.
       render(<ContactSection />);
       const markers = screen.getAllByText('(Optional)');
       expect(markers).toHaveLength(3);
       for (const marker of markers) {
         const field = (marker.closest('label') as HTMLLabelElement).htmlFor;
-        expect(marker.className, `${field} marker drifted off grey-400`).toContain('text-grey-400');
+        expect(marker.className, `${field} marker drifted off grey-500`).toContain('text-grey-500');
       }
     });
 
@@ -559,6 +560,34 @@ describe('ContactSection', () => {
         expect(input.required, `${placeholder} lost its required flag`).toBe(true);
       }
       expect((screen.getByRole('combobox') as HTMLSelectElement).required).toBe(true);
+    });
+  });
+
+  describe('form control borders', () => {
+    it('keeps every input, the select, and the textarea on a border that clears WCAG 1.4.11', () => {
+      // The section is `bg-paper` (#FAF8F2). `grey-300` (#B4AFA6) measures 2.055:1 against it,
+      // failing the 3:1 floor WCAG 1.4.11 requires for a form control's visual boundary.
+      // `grey-400` (#8E897C) measures 3.285:1 and clears it. All three control types share
+      // `inputClass`, so one assertion covers the select and the textarea as well as every input.
+      render(<ContactSection />);
+      for (const placeholder of [
+        'e.g. 1000 pieces',
+        'Company name',
+        'company@example.com',
+        'Full name',
+        'e.g. Manager',
+        '+91 XXXXX XXXXX',
+        'Tell us more about your requirements...',
+      ]) {
+        const control = screen.getByPlaceholderText(placeholder);
+        expect(control.className, `${placeholder} drifted off grey-400`).toContain(
+          'border-grey-400',
+        );
+        expect(control.className).not.toContain('border-grey-300');
+      }
+      const select = screen.getByRole('combobox');
+      expect(select.className).toContain('border-grey-400');
+      expect(select.className).not.toContain('border-grey-300');
     });
   });
 

@@ -175,10 +175,10 @@ describe('Header', () => {
     expect(home.className).toContain('before:inset-y-[-4px]');
   });
 
-  it('renders the CTA as a filled-ink button, not a gradient', () => {
+  it('renders the CTA as a filled-navy button, not a gradient', () => {
     render(<Header />);
     const cta = screen.getAllByText('Get a Quote')[0];
-    expect(cta.className).toContain('bg-ink');
+    expect(cta.className).toContain('bg-brand-blue');
     expect(cta.getAttribute('style')).toBeNull();
   });
 

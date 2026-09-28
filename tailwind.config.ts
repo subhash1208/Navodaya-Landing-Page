@@ -24,33 +24,35 @@ export default {
           // The EXACT sampled pixels of public/navodaya-logo.png, which is a strict two-colour
           // mark: navy #00559A and cyan #00BCFF are the only hues present, everything else in
           // the file is anti-aliasing blend between them. (The former #085898 / #08B8F8 were
-          // near-misses.) The surface restriction is load-bearing and unchanged: blue is 7.27:1
-          // on paper (AAA) but 2.59:1 on ink, cyan is 9.03:1 on ink but 2.09:1 on paper.
-          // Using either on the wrong ground is an accessibility failure.
+          // near-misses.) The surface restriction is load-bearing and unchanged: blue is 7.15:1
+          // on paper (AAA) but 2.59:1 on ink, cyan is 9.03:1 on ink but 2.05:1 on paper.
+          // Using either on the wrong ground is an accessibility failure — cyan fails even the
+          // 3:1 bar on paper and is valid ONLY on ink or navy grounds.
           blue: '#00559A', // LIGHT surfaces only
           cyan: '#00BCFF', // DARK surfaces only
         },
-        ink: '#060C10',
-        paper: '#F9FAFC',
-        // Luminance-matched COOL recast: every step below holds its predecessor's relative
-        // luminance constant and rotates the hue to the logo navy's 206deg, which is why the
-        // whole documented contrast table survives to within 0.03. The ramp was warm (R > G > B,
-        // a sepia cast) and read as off-logo on a cool blue mark.
-        // Do NOT "tidy" these back to neutral greys — the contrast pins below depend on the
+        ink: '#0C0B08',
+        paper: '#FAF8F2',
+        // Luminance-matched WARM BEIGE recast: every step below holds its predecessor's relative
+        // luminance constant and rotates the hue to the client's invoice paper (~41deg, warm —
+        // red exceeds blue by 7-10 across 5 sampled regions), which is why the whole documented
+        // contrast table survives to within 1e-16. The prior ramp was cool (hue 206deg, blue cast)
+        // and read as off-brand against the warm printed reference.
+        // Do NOT "tidy" these back to cool greys — the contrast pins below depend on the
         // matched luminance, not on the hue:
-        //   grey-500 on paper 5.14 | grey-400 on ink 5.64 | grey-600 on paper 7.89
+        //   grey-500 on paper 5.06 | grey-400 on ink 5.64 | grey-600 on paper 7.79
         // grey-500 is LIGHT-surfaces-only; grey-400 is the floor on ink (see ContactSection).
         grey: {
-          50: '#F3F5F7',
-          100: '#E4E8EC',
-          200: '#CFD5D9',
-          300: '#A8B1B8',
-          400: '#7F8B94',
-          500: '#616C75',
-          600: '#475056',
-          700: '#333B41',
-          800: '#20272C',
-          900: '#13191D',
+          50: '#F5F2EA',
+          100: '#EAE7E2',
+          200: '#D7D4CD',
+          300: '#B4AFA6',
+          400: '#8E897C',
+          500: '#6F6A60',
+          600: '#524E46',
+          700: '#3C3A33',
+          800: '#282621',
+          900: '#191815',
         },
         // Three steps along the logo's own navy -> cyan axis, replacing an electric blue, a rust
         // orange and a forest green that appeared nowhere in the logo or the brand. `hotel` is
@@ -59,8 +61,8 @@ export default {
         // Mutual separation is 1.72 / 2.11 / 3.63 so the three stay tellable apart.
         category: {
           hygiene: '#00325C', // 12.48 on paper | 11.93 on grey-50 | 1.51 on ink
-          hotel: '#00559A', // 7.27 on paper | 6.95 on grey-50 | 2.59 on ink — the logo navy
-          spa: '#008FD1', // 3.44 on paper | 3.28 on grey-50 | 5.48 on ink
+          hotel: '#00559A', // 7.15 on paper | 6.79 on grey-50 | 2.59 on ink — the logo navy
+          spa: '#008FD1', // 3.38 on paper (large text only) | 3.28 on grey-50 | 5.48 on ink
         },
       },
       fontFamily: {
