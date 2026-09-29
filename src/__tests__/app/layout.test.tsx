@@ -137,13 +137,25 @@ describe('metadata', () => {
     expect(metadata.alternates?.canonical).toBe('/');
   });
 
-  it('references only icon assets that exist on disk', () => {
-    const icons = metadata.icons as { icon: string; shortcut: string; apple: string };
-    expect(icons.icon).toBe('/favicon.ico');
-    expect(icons.shortcut).toBe('/favicon.ico');
-    expect(icons.apple).toBe('/navodaya-logo.png');
+  // As of the icon-generation pass, `metadata.icons` is deliberately absent —
+  // resolve-metadata.js only merges the file-convention icons (icon.png,
+  // apple-icon.png, favicon.ico) `if (!resolvedMetadata.icons)`, so an explicit
+  // `icons` object would silently suppress them. The file-convention icons
+  // resolve on their own; this test just proves the source files exist.
+  it('leaves metadata.icons unset so the file-convention icons resolve on their own', () => {
+    expect(metadata.icons).toBeUndefined();
+    expect(existsSync(join(process.cwd(), 'src/app/icon.png'))).toBe(true);
+    expect(existsSync(join(process.cwd(), 'src/app/apple-icon.png'))).toBe(true);
     expect(existsSync(join(process.cwd(), 'src/app/favicon.ico'))).toBe(true);
-    expect(existsSync(join(process.cwd(), 'public/navodaya-logo.png'))).toBe(true);
+  });
+
+  // Invisible in every other assertion here — the title is only checked for
+  // truthiness above. A browser tab shows ~20 characters and Google truncates
+  // around ~60, so this is the only guard against the next copy edit
+  // silently growing it back past that limit.
+  it('keeps the default title within tab/search-result truncation limits', () => {
+    const title = metadata.title as { default: string; template: string };
+    expect(title.default.length).toBeLessThanOrEqual(60);
   });
 
   it('leaves twitter.images unset so the opengraph-image file convention fills it', () => {

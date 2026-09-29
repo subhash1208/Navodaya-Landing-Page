@@ -12,7 +12,12 @@ import { LenisProvider } from '@/components/ui/LenisProvider';
 
 export const metadata: Metadata = {
   title: {
-    default: `${BRAND.FULL_NAME} — ${BRAND.TAGLINE}`,
+    // Title-only, deliberately separate from BRAND.FULL_NAME/BRAND.TAGLINE —
+    // those also feed the PWA manifest name, the OpenGraph image copy, the
+    // footer and the contact email `from` header, so editing them to fix the
+    // browser-tab title would move all of those. Kept under 60 characters,
+    // the point Google starts truncating a tab/search-result title.
+    default: 'Navodaya Industries and Care Kits | B2B Hygiene Supplies',
     template: `%s | ${BRAND.NAME}`,
   },
   description: BRAND.SEO_DESCRIPTION,
@@ -38,14 +43,6 @@ export const metadata: Metadata = {
     },
   },
   alternates: { canonical: '/' },
-  // Only assets that actually exist: `src/app/favicon.ico` is served at
-  // /favicon.ico by the file convention, and `public/navodaya-logo.png` is the
-  // repo's only PNG icon.
-  icons: {
-    icon: '/favicon.ico',
-    shortcut: '/favicon.ico',
-    apple: '/navodaya-logo.png',
-  },
   openGraph: {
     title: BRAND.FULL_NAME,
     description: BRAND.TAGLINE,
