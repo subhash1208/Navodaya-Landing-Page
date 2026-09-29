@@ -64,11 +64,11 @@ describe('LoadingScreen', () => {
       </LoadingScreen>,
     );
 
-    // The intro is one 1400ms gesture, not the old four-second montage. Advancing just past
+    // The intro is one 3400ms gesture, not the old four-second montage. Advancing just past
     // TOTAL_DURATION must be enough — a slower timeline would fail here rather than hide
     // behind a generous 5000ms advance.
     act(() => {
-      vi.advanceTimersByTime(1500);
+      vi.advanceTimersByTime(3500);
     });
 
     expect(screen.getByTestId('main-content')).toBeTruthy();
@@ -121,9 +121,9 @@ describe('LoadingScreen', () => {
       </LoadingScreen>,
     );
 
-    // Reduced motion holds a static brand frame for 600ms — no seal draw, no split.
+    // Reduced motion holds a static brand frame for 2600ms — no seal draw, no split.
     act(() => {
-      vi.advanceTimersByTime(599);
+      vi.advanceTimersByTime(2599);
     });
     expect(container.querySelector('[role="status"]')).toBeTruthy();
 
@@ -264,7 +264,7 @@ describe('LoadingScreen timeline', () => {
     vi.useRealTimers();
   });
 
-  it('marks the intro seen when the panels split, and lifts the overlay at 1400ms', () => {
+  it('marks the intro seen when the panels split, and lifts the overlay at 3400ms', () => {
     const { container } = render(
       <LoadingScreen>
         <div data-testid="main-content">Main</div>
@@ -284,9 +284,9 @@ describe('LoadingScreen timeline', () => {
     expect(sessionStorage.getItem('nv_intro_seen')).toBe('1');
     expect(container.querySelector('[role="status"]')).toBeTruthy();
 
-    // 1400ms — TOTAL_DURATION. The overlay unmounts.
+    // 3400ms — TOTAL_DURATION. The overlay unmounts.
     act(() => {
-      vi.advanceTimersByTime(498);
+      vi.advanceTimersByTime(2498);
     });
     expect(container.querySelector('[role="status"]')).toBeTruthy();
 
@@ -547,7 +547,7 @@ describe('LoadingScreen inert gating', () => {
     );
 
     act(() => {
-      vi.advanceTimersByTime(1500);
+      vi.advanceTimersByTime(3500);
     });
 
     const gate = screen.getByTestId('intro-content-gate');

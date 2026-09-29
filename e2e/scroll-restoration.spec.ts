@@ -89,7 +89,7 @@ async function settledScrollY(page: Page): Promise<number> {
  * of pixels.
  *
  * The `nv_intro_seen` set + reload is the established pattern (e2e/navigation.spec.ts:44) and does
- * two jobs: it stops the 1.4s `LoadingScreen` overlay absorbing the click, and because
+ * two jobs: it stops the 3.4s `LoadingScreen` overlay absorbing the click, and because
  * sessionStorage is per-origin it also keeps the intro from replaying on arrival at `/`.
  */
 async function openScrolledNearBottom(page: Page, path: string): Promise<number> {

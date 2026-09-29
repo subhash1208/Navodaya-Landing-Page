@@ -28,7 +28,7 @@ test.describe('Loading Screen', () => {
 
     // Wait on the condition, not a fixed duration: LoadingScreen writes the key when the
     // panels start to split, 900ms in (it used to be the 3.2s stage, before the intro was
-    // rebuilt as a single ~1.4s seal gesture). `expect.poll` retries until it appears.
+    // rebuilt as a single ~3.4s seal gesture). `expect.poll` retries until it appears.
     await expect
       .poll(() => page.evaluate(() => sessionStorage.getItem('nv_intro_seen')), {
         timeout: 5000,

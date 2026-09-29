@@ -110,7 +110,7 @@ export default function HeroSection() {
             className="inline-flex items-center gap-2 font-mono text-label uppercase px-4 py-2 mb-8 border border-brand-blue/40 text-brand-blue self-center md:self-start"
           >
             <span className="w-1.5 h-1.5 rounded-full animate-pulse bg-brand-blue" />
-            Trusted B2B Supplier · Gandhi Nagar, Hyderabad
+            {BRAND.TAGLINE}
           </motion.div>
 
           {/* Headline */}

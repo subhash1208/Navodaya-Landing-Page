@@ -35,6 +35,14 @@ describe('BRAND constants', () => {
   it('website is navodaya.group', () => {
     expect(BRAND.WEBSITE).toContain('navodaya.group');
   });
+
+  // SEO_DESCRIPTION feeds <meta name="description">, which Google truncates
+  // around ~155-160 characters. Unlike MISSION (client-approved on-page copy
+  // with no length limit), this string must stay short — this is the only
+  // thing guarding that constraint from rotting on the next copy edit.
+  it('keeps SEO_DESCRIPTION within search-result truncation limits', () => {
+    expect(BRAND.SEO_DESCRIPTION.length).toBeLessThanOrEqual(160);
+  });
 });
 
 describe('NAV_LINKS', () => {

@@ -10,9 +10,9 @@ const SESSION_KEY = 'nv_intro_seen';
 const LETTERS = 'NAVODAYA'.split('');
 
 /** When the overlay unmounts on a first visit. One gesture, not a six-effect montage. */
-const TOTAL_DURATION = 1400;
+const TOTAL_DURATION = 3400;
 /** Reduced motion: a static brand frame, held just long enough to register, then gone. */
-const REDUCED_DURATION = 600;
+const REDUCED_DURATION = 2600;
 
 /** Material Design 3 standard easing. No overshoot — this is a seal, not a bounce. */
 const EASE: [number, number, number, number] = [0.2, 0, 0, 1];

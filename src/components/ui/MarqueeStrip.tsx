@@ -4,11 +4,12 @@ const ITEMS = [
   `${PRODUCTS.length}+ Products`,
   `${PRODUCT_CATEGORIES.length} Categories`,
   'B2B Focused',
-  'Gandhi Nagar, Hyderabad',
+  'Hyderabad',
   'Hotels',
   'Hospitals',
   'Spas',
   'Salons',
+  'Educational Institutions',
   'Industries',
   'Corporate Offices',
 ];

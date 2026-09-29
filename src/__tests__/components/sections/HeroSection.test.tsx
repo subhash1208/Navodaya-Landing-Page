@@ -153,7 +153,7 @@ describe('HeroSection', () => {
 
   it('renders badge text', () => {
     render(<HeroSection />);
-    expect(screen.getByText(/Trusted B2B Supplier/)).toBeTruthy();
+    expect(screen.getByText(/Your Trusted Partner in Progress and Care/)).toBeTruthy();
   });
 
   it('keeps hero content visible immediately when prefers-reduced-motion is set', () => {

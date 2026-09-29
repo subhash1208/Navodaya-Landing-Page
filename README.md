@@ -1,7 +1,7 @@
 # Navodaya Industries — Landing Page
 
 Marketing site and product catalogue for Navodaya Industries, a B2B supplier of hygiene,
-hospitality, and care-kit products based in Gandhi Nagar, Hyderabad.
+hospitality, and care-kit products based in Hyderabad.
 
 Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS · GSAP / Motion / Lenis
 · Vitest · Playwright

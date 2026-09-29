@@ -20,7 +20,7 @@ const REASONS = [
     icon: Users,
     title: 'B2B Expertise',
     description:
-      'We work exclusively with businesses — hotels, hospitals, spas, and industries. We speak your language.',
+      'We work exclusively with businesses — hotels, hospitals, spas, educational institutions, and industries. We speak your language.',
   },
   {
     icon: Leaf,

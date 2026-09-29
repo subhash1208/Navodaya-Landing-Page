@@ -3,7 +3,7 @@ import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { render, screen } from '@testing-library/react';
 import RootLayout, { metadata } from '@/app/layout';
-import { SITE_URL } from '@/constants';
+import { BRAND, SITE_URL } from '@/constants';
 
 vi.mock('geist/font/sans', () => ({
   GeistSans: { variable: '--font-geist-sans', className: 'font-geist-sans' },
@@ -102,7 +102,11 @@ describe('metadata', () => {
   });
 
   it('has description', () => {
-    expect(metadata.description).toContain('Navodaya');
+    expect(metadata.description).toBe(BRAND.SEO_DESCRIPTION);
+  });
+
+  it('keeps the description within search-result truncation limits', () => {
+    expect((metadata.description as string).length).toBeLessThanOrEqual(160);
   });
 
   it('has keywords', () => {

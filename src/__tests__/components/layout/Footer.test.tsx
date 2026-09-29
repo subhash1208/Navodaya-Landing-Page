@@ -23,6 +23,13 @@ describe('Footer', () => {
     expect(screen.getByText('Navodaya')).toBeTruthy();
   });
 
+  it('renders the real logo image, decorative, in place of the old letter placeholder', () => {
+    const { container } = render(<Footer />);
+    const logo = container.querySelector('img[src="/navodaya-logo.png"]');
+    expect(logo).toBeTruthy();
+    expect(logo?.getAttribute('alt')).toBe('');
+  });
+
   it('renders brand full name', () => {
     render(<Footer />);
     expect(screen.getByText('Navodaya Industries and Care Kits')).toBeTruthy();
