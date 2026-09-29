@@ -10,17 +10,36 @@ const SESSION_KEY = 'nv_intro_seen';
 const LETTERS = 'NAVODAYA'.split('');
 
 /** When the overlay unmounts on a first visit. One gesture, not a six-effect montage. */
-const TOTAL_DURATION = 3400;
-/** Reduced motion: a static brand frame, held just long enough to register, then gone. */
-const REDUCED_DURATION = 2600;
+export const TOTAL_DURATION = 3400;
+/** Reduced motion: a static brand frame, held just long enough to register, then gone. There
+ * is no animation on this branch to stretch, so this is NOT derived from TOTAL_DURATION — it
+ * stays a short, deliberate hold regardless of how long the full-motion intro runs. */
+export const REDUCED_DURATION = 600;
 
 /** Material Design 3 standard easing. No overshoot — this is a seal, not a bounce. */
 const EASE: [number, number, number, number] = [0.2, 0, 0, 1];
 
-const SEAL_DRAW = 0.45; // stage 1 → seal line scales out from the centre
-const LETTER_RISE = 0.27; // stage 2 → per letter; + 7 × 40ms stagger = 550ms total
-const LETTER_STAGGER = 0.04;
-const PANEL_SPLIT = 0.4; // stage 3 → panels part along the seam
+/**
+ * The choreography below (offsets 20/350/900ms, seal/letter/panel durations) was tuned for a
+ * ~1400ms envelope. Rather than hardcoding new absolute numbers when the client asked for the
+ * intro to run 2 seconds longer, every beat is scaled by SCALE — the ratio between the current
+ * TOTAL_DURATION and that original envelope. Change TOTAL_DURATION alone in future and the
+ * whole gesture stretches (or compresses) proportionally instead of finishing early and
+ * leaving dead air before dismissal, which is exactly the bug this constant exists to prevent.
+ * Exported (with the derived timings below) so tests can assert against the same source of
+ * truth instead of pinning a second copy of the arithmetic.
+ */
+export const BASE_TOTAL_DURATION = 1400;
+export const SCALE = TOTAL_DURATION / BASE_TOTAL_DURATION;
+
+export const STAGE_1_DELAY = Math.round(20 * SCALE); //  seal line begins drawing
+export const STAGE_2_DELAY = Math.round(350 * SCALE); // wordmark begins rising from under the seam
+export const STAGE_3_DELAY = Math.round(900 * SCALE); // panels begin splitting, page revealed
+
+export const SEAL_DRAW = 0.45 * SCALE; // stage 1 → seal line scales out from the centre
+export const LETTER_RISE = 0.27 * SCALE; // stage 2 → per letter
+export const LETTER_STAGGER = 0.04 * SCALE;
+export const PANEL_SPLIT = 0.4 * SCALE; // stage 3 → panels part along the seam
 /** Never a literal 0 — a zero-length transition can skip its completion event. */
 const INSTANT = 0.01;
 
@@ -94,12 +113,12 @@ export function LoadingScreen({ children }: LoadingScreenProps) {
     const timers = [
       // One frame's grace: the overlay's first render has to seed at the stage-0 target
       // (seal at scaleX 0) before the flip to stage 1 can animate away from it.
-      setTimeout(() => setStage(1), 20), //    20 →  470  seal line draws
-      setTimeout(() => setStage(2), 350), //  350 →  900  wordmark rises from under the seam
+      setTimeout(() => setStage(1), STAGE_1_DELAY), // seal line draws
+      setTimeout(() => setStage(2), STAGE_2_DELAY), // wordmark rises from under the seam
       setTimeout(() => {
-        setStage(3); //                       900 → 1300  panels split, page revealed beneath
+        setStage(3); // panels split, page revealed beneath
         markIntroSeen();
-      }, 900),
+      }, STAGE_3_DELAY),
       setTimeout(() => setShow(false), TOTAL_DURATION),
     ];
 

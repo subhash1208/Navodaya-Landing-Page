@@ -166,6 +166,7 @@ export default function HeroSection() {
               <Link
                 href={ROUTES.PRODUCTS}
                 className="group inline-flex items-center gap-2.5 font-mono text-label uppercase bg-brand-blue text-paper hover:bg-brand-blue/90 transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-2 focus-visible:ring-offset-paper px-7 py-3.5 min-h-[48px]"
+                data-cursor-invert
               >
                 Explore Products
                 <ArrowRight
@@ -183,6 +184,7 @@ export default function HeroSection() {
               <Link
                 href={ROUTES.CONTACT}
                 className="inline-flex items-center gap-2 font-mono text-label uppercase border border-ink text-ink hover:bg-ink hover:text-paper transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-2 focus-visible:ring-offset-paper px-7 py-3.5 min-h-[48px]"
+                data-cursor-invert
               >
                 Get a Quote
               </Link>

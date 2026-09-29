@@ -38,6 +38,11 @@ describe('NotFound', () => {
     expect(homeLink.closest('a')?.getAttribute('href')).toBe('/');
   });
 
+  it('marks the Go Home CTA for cursor inversion on the brand-blue background', () => {
+    render(<NotFound />);
+    expect(screen.getByText('Go Home').closest('a')?.hasAttribute('data-cursor-invert')).toBe(true);
+  });
+
   it('renders Browse Products link', () => {
     render(<NotFound />);
     const productsLink = screen.getByText('Browse Products');

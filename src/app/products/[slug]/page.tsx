@@ -136,6 +136,7 @@ export default async function ProductPage({ params }: PageProps) {
               <Link
                 href={quoteUrl}
                 className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-brand-blue text-paper font-semibold text-sm hover:bg-brand-blue/90 hover:-translate-y-0.5 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-2 focus-visible:ring-offset-paper min-h-[44px]"
+                data-cursor-invert
               >
                 <MessageSquare className="w-4 h-4" aria-hidden="true" />
                 Request a Quote

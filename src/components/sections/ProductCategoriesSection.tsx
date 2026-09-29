@@ -165,6 +165,7 @@ export default function ProductCategoriesSection() {
             <Link
               href={ROUTES.PRODUCTS}
               className="inline-flex items-center gap-2.5 px-8 py-3.5 font-mono text-label uppercase text-ink border border-ink bg-transparent hover:bg-brand-blue hover:text-paper transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 min-h-[48px]"
+              data-cursor-invert
             >
               <BookOpen className="w-4 h-4" aria-hidden="true" />
               View Full Product Catalogue

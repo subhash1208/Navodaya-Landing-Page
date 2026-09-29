@@ -25,6 +25,7 @@ export default function NotFound() {
           <Link
             href={ROUTES.HOME}
             className="px-6 py-3 bg-brand-blue text-paper font-semibold text-sm hover:bg-brand-blue/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-2 focus-visible:ring-offset-paper"
+            data-cursor-invert
           >
             Go Home
           </Link>

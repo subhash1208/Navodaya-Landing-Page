@@ -19,6 +19,7 @@ export function MarqueeStrip() {
     <div
       className="relative overflow-hidden bg-brand-blue py-4 border-y border-paper/20"
       aria-hidden="true"
+      data-cursor-invert
     >
       {/* Fade edges */}
       <div

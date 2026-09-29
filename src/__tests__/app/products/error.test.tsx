@@ -48,6 +48,11 @@ describe('ProductsError', () => {
     expect(mockReset).toHaveBeenCalled();
   });
 
+  it('marks the Try again CTA for cursor inversion on the brand-blue background', () => {
+    render(<ProductsError error={mockError} reset={mockReset} />);
+    expect(screen.getByText('Try again').hasAttribute('data-cursor-invert')).toBe(true);
+  });
+
   it('renders Go Home link', () => {
     render(<ProductsError error={mockError} reset={mockReset} />);
     const link = screen.getByText('Go Home');
