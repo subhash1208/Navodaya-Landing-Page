@@ -258,7 +258,7 @@ export default function HeroSection() {
       <a
         href="#about"
         aria-label="Scroll to About section"
-        className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-grey-500 transition-colors focus-visible:outline-none focus-visible:ring-2 rounded"
+        className="absolute bottom-6 left-1/2 z-20 -translate-x-1/2 flex flex-col items-center gap-1 text-grey-500 transition-colors focus-visible:outline-none focus-visible:ring-2 rounded"
       >
         <span className="text-xs font-medium tracking-widest uppercase">Scroll</span>
         <ChevronDown className="w-4 h-4 animate-bounce" aria-hidden="true" />

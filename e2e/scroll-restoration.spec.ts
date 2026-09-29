@@ -272,6 +272,24 @@ test.describe('In-page anchors still arrive', () => {
     });
   }
 
+  /**
+   * `HeroSection.tsx`'s own "Scroll" cue — the `<a href="#about">` at the bottom of the hero —
+   * is a distinct element from the header's About link already covered above. It sits inside the
+   * same `<section>` as a sibling `<div className="relative z-10 …">` that spans the section's
+   * full height; without an explicit z-index of its own the anchor computes to `z-index: auto`
+   * and the `z-10` sibling's transparent bottom strip paints in front of it, silently absorbing
+   * the click. `click()` on an occluded element does not throw — it logs `click action done` and
+   * moves on — so this asserts the outcome (arrival at `#about`), not that the click happened.
+   */
+  test('hero scroll cue lands on #about', async ({ page }) => {
+    await openHomepageSettled(page);
+
+    await page.getByRole('link', { name: 'Scroll to About section' }).click();
+    await expect(page).toHaveURL(/#about$/);
+
+    await expectAnchorAtViewportTop(page, '#about');
+  });
+
   test('skip link lands on #main-content from deep in the page', async ({ page }) => {
     await openHomepageSettled(page);
 
