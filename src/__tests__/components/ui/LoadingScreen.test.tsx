@@ -1,7 +1,13 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { useEffect } from 'react';
 import { render, screen, act, fireEvent } from '@testing-library/react';
-import { LoadingScreen } from '@/components/ui/LoadingScreen';
+import {
+  LoadingScreen,
+  TOTAL_DURATION,
+  REDUCED_DURATION,
+  STAGE_3_DELAY,
+  PANEL_SPLIT,
+} from '@/components/ui/LoadingScreen';
 import { useIntroFinished } from '@/hooks/useIntroFinished';
 
 vi.mock('motion/react', () => {
@@ -64,11 +70,10 @@ describe('LoadingScreen', () => {
       </LoadingScreen>,
     );
 
-    // The intro is one 3400ms gesture, not the old four-second montage. Advancing just past
-    // TOTAL_DURATION must be enough — a slower timeline would fail here rather than hide
-    // behind a generous 5000ms advance.
+    // The intro is one TOTAL_DURATION-ms gesture. Advancing just past it must be enough — a
+    // slower timeline would fail here rather than hide behind a generous fixed advance.
     act(() => {
-      vi.advanceTimersByTime(3500);
+      vi.advanceTimersByTime(TOTAL_DURATION + 100);
     });
 
     expect(screen.getByTestId('main-content')).toBeTruthy();
@@ -121,9 +126,12 @@ describe('LoadingScreen', () => {
       </LoadingScreen>,
     );
 
-    // Reduced motion holds a static brand frame for 2600ms — no seal draw, no split.
+    // Reduced motion holds a static brand frame for REDUCED_DURATION ms — no seal draw,
+    // no split. This is deliberately NOT scaled with TOTAL_DURATION: a reduced-motion
+    // visitor has no animation to stretch, only a static frame to sit through, and making
+    // them wait out the full-motion schedule would be a regression, not a feature.
     act(() => {
-      vi.advanceTimersByTime(2599);
+      vi.advanceTimersByTime(REDUCED_DURATION - 1);
     });
     expect(container.querySelector('[role="status"]')).toBeTruthy();
 
@@ -264,17 +272,18 @@ describe('LoadingScreen timeline', () => {
     vi.useRealTimers();
   });
 
-  it('marks the intro seen when the panels split, and lifts the overlay at 3400ms', () => {
+  it('marks the intro seen when the panels split, and lifts the overlay at TOTAL_DURATION', () => {
     const { container } = render(
       <LoadingScreen>
         <div data-testid="main-content">Main</div>
       </LoadingScreen>,
     );
 
-    // 900ms — the split begins and the session key is written. This is the marker
-    // `e2e/loading-screen.spec.ts` polls for; it used to be the 3.2s stage.
+    // STAGE_3_DELAY — the split begins and the session key is written. This is the marker
+    // `e2e/loading-screen.spec.ts` polls for; it used to be the 3.2s stage, then a hardcoded
+    // 900ms, and now scales with TOTAL_DURATION via STAGE_3_DELAY.
     act(() => {
-      vi.advanceTimersByTime(899);
+      vi.advanceTimersByTime(STAGE_3_DELAY - 1);
     });
     expect(sessionStorage.getItem('nv_intro_seen')).toBeNull();
 
@@ -284,9 +293,9 @@ describe('LoadingScreen timeline', () => {
     expect(sessionStorage.getItem('nv_intro_seen')).toBe('1');
     expect(container.querySelector('[role="status"]')).toBeTruthy();
 
-    // 3400ms — TOTAL_DURATION. The overlay unmounts.
+    // TOTAL_DURATION — the overlay unmounts.
     act(() => {
-      vi.advanceTimersByTime(2498);
+      vi.advanceTimersByTime(TOTAL_DURATION - (STAGE_3_DELAY + 1) - 1);
     });
     expect(container.querySelector('[role="status"]')).toBeTruthy();
 
@@ -294,6 +303,35 @@ describe('LoadingScreen timeline', () => {
       vi.advanceTimersByTime(2);
     });
     expect(container.querySelector('[role="status"]')).toBeNull();
+  });
+
+  it('stretches the last visible motion to finish close to TOTAL_DURATION, not long before it', () => {
+    // This is the regression guard for the original defect: raising TOTAL_DURATION and
+    // REDUCED_DURATION without touching the stage/motion arithmetic left the last visible
+    // motion (the panel split) complete at 1300ms while dismissal waited until 3400ms — 2100ms
+    // of a frozen, fully-revealed screen. The panel split now starts at STAGE_3_DELAY and runs
+    // for PANEL_SPLIT seconds, both derived from TOTAL_DURATION, so the residual hold before
+    // dismissal must stay a small fraction of TOTAL_DURATION rather than the majority of it.
+    const lastMotionCompletesAt = STAGE_3_DELAY + PANEL_SPLIT * 1000;
+    const residualHold = TOTAL_DURATION - lastMotionCompletesAt;
+
+    expect(lastMotionCompletesAt).toBeLessThan(TOTAL_DURATION);
+    expect(residualHold).toBeGreaterThan(0);
+    // The old bug left ~2100ms of dead air on a 3400ms total. The fixed schedule must leave
+    // well under half that.
+    expect(residualHold).toBeLessThan(1000);
+
+    const { container } = render(
+      <LoadingScreen>
+        <div data-testid="main-content">Main</div>
+      </LoadingScreen>,
+    );
+
+    // Just before the last motion completes, the overlay is still up.
+    act(() => {
+      vi.advanceTimersByTime(Math.round(lastMotionCompletesAt) - 1);
+    });
+    expect(container.querySelector('[role="status"]')).toBeTruthy();
   });
 
   it('renders the wordmark and a single seal line, and no retired ornament', () => {
