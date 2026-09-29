@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, act } from '@testing-library/react';
 import HeroSection from '@/components/sections/HeroSection';
-import { PRODUCTS } from '@/constants';
+import { BRAND, PRODUCTS } from '@/constants';
 
 vi.mock('motion/react', () => {
   // The component per tag is CACHED. A bare `get` handler returns a fresh function on every
@@ -153,7 +153,7 @@ describe('HeroSection', () => {
 
   it('renders badge text', () => {
     render(<HeroSection />);
-    expect(screen.getByText(/Your Trusted Partner in Progress and Care/)).toBeTruthy();
+    expect(screen.getByText(BRAND.TAGLINE)).toBeTruthy();
   });
 
   it('keeps hero content visible immediately when prefers-reduced-motion is set', () => {

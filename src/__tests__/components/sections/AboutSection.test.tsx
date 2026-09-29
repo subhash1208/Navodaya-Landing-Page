@@ -96,7 +96,7 @@ describe('AboutSection', () => {
 
   it('does not duplicate the brand tagline — it now lives only in the hero badge', () => {
     render(<AboutSection />);
-    expect(screen.queryByText('Your Trusted Partner in Progress and Care')).toBeNull();
+    expect(screen.queryByText('Your Trusted Partner in Progress & Care')).toBeNull();
   });
 
   it('checks CSS.supports branch (returns false by default)', () => {
