@@ -17,6 +17,23 @@ describe('CustomCursor', () => {
     }));
     // Reset cursor style
     document.documentElement.style.cursor = '';
+    // jsdom does no layout, so getBoundingClientRect defaults to an all-zero rect.
+    // Stub it to a real painted size for the happy-path tests below; the
+    // paint-guard test further down overrides this per-test to zero.
+    HTMLElement.prototype.getBoundingClientRect = vi.fn(
+      () =>
+        ({
+          width: 40,
+          height: 40,
+          top: 0,
+          left: 0,
+          right: 40,
+          bottom: 40,
+          x: 0,
+          y: 0,
+          toJSON: () => {},
+        }) as DOMRect,
+    );
   });
 
   it('renders cursor div', () => {
@@ -149,5 +166,32 @@ describe('CustomCursor', () => {
 
     render(<CustomCursor />);
     expect(document.documentElement.style.cursor).toBe('none');
+  });
+
+  it('leaves the native cursor visible if the custom cursor fails to paint (zero size)', () => {
+    // Simulate globals.css failing to load: the unstyled div has no width/height.
+    HTMLElement.prototype.getBoundingClientRect = vi.fn(
+      () =>
+        ({
+          width: 0,
+          height: 0,
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          x: 0,
+          y: 0,
+          toJSON: () => {},
+        }) as DOMRect,
+    );
+
+    const addEventSpy = vi.spyOn(window, 'addEventListener');
+    render(<CustomCursor />);
+
+    expect(document.documentElement.style.cursor).toBe('');
+    expect(addEventSpy).not.toHaveBeenCalledWith('mousemove', expect.any(Function), {
+      passive: true,
+    });
+    addEventSpy.mockRestore();
   });
 });
