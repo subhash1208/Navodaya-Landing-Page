@@ -49,7 +49,9 @@ export default async function ProductPage({ params }: PageProps) {
     { label: 'Availability', value: 'In Stock — Bulk Orders Welcome', icon: Package },
   ];
 
-  const quoteUrl = `/?product=${encodeURIComponent(product.name)}#contact`;
+  // The slug, not the name: two products in the catalogue share a bare `name`, so only the slug
+  // uniquely identifies a product on the other side of this link. It also needs no URL encoding.
+  const quoteUrl = `/?product=${product.slug}#contact`;
 
   return (
     <div className="min-h-screen bg-grey-50">

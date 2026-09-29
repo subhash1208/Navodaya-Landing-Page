@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import ContactSection from '@/components/sections/ContactSection';
 import { BRAND, PRODUCTS, productEnquiryLabel } from '@/constants';
@@ -285,6 +285,76 @@ describe('ContactSection', () => {
       const select = screen.getByRole('combobox') as HTMLSelectElement;
       const options = Array.from(select.querySelectorAll('option'));
       expect(options.find((o) => o.value === 'Other')).toBeTruthy();
+    });
+  });
+
+  describe('prefill from ?product=', () => {
+    afterEach(() => {
+      window.history.pushState({}, '', '/');
+    });
+
+    it('pre-selects the product named by a valid slug', () => {
+      window.history.pushState({}, '', '/?product=surgeon-cap#contact');
+      render(<ContactSection />);
+      const product = PRODUCTS.find((p) => p.slug === 'surgeon-cap')!;
+      expect((screen.getByRole('combobox') as HTMLSelectElement).value).toBe(
+        productEnquiryLabel(product),
+      );
+    });
+
+    it('selects the correct product of a duplicate-name pair by slug, not the other one', () => {
+      window.history.pushState({}, '', '/?product=bio-shower-spa');
+      render(<ContactSection />);
+      const spa = PRODUCTS.find((p) => p.slug === 'bio-shower-spa')!;
+      const cap = PRODUCTS.find((p) => p.slug === 'bio-shower-cap')!;
+      expect(spa.name).toBe(cap.name); // proves this is the duplicate-name pair
+      const value = (screen.getByRole('combobox') as HTMLSelectElement).value;
+      expect(value).toBe(productEnquiryLabel(spa));
+      expect(value).not.toBe(productEnquiryLabel(cap));
+    });
+
+    it('leaves the placeholder selected for an unknown slug', () => {
+      window.history.pushState({}, '', '/?product=not-a-real-product');
+      render(<ContactSection />);
+      expect((screen.getByRole('combobox') as HTMLSelectElement).value).toBe('');
+    });
+
+    it('leaves the placeholder selected when the parameter is absent', () => {
+      window.history.pushState({}, '', '/');
+      render(<ContactSection />);
+      expect((screen.getByRole('combobox') as HTMLSelectElement).value).toBe('');
+    });
+
+    it('leaves the placeholder selected when the parameter is empty', () => {
+      window.history.pushState({}, '', '/?product=');
+      render(<ContactSection />);
+      expect((screen.getByRole('combobox') as HTMLSelectElement).value).toBe('');
+    });
+
+    it('still lets the visitor change a pre-filled selection, including to Other', () => {
+      window.history.pushState({}, '', '/?product=surgeon-cap');
+      render(<ContactSection />);
+      const select = screen.getByRole('combobox') as HTMLSelectElement;
+      expect(select.value).not.toBe('');
+
+      fireEvent.change(select, { target: { value: 'Other' } });
+      expect(select.value).toBe('Other');
+      expect(screen.getByPlaceholderText('Describe the product you need')).toBeTruthy();
+    });
+
+    it('resets the pre-filled dropdown to blank after a successful submission is dismissed', async () => {
+      window.history.pushState({}, '', '/?product=surgeon-cap');
+      render(<ContactSection />);
+      const select = screen.getByRole('combobox') as HTMLSelectElement;
+      expect(select.value).not.toBe('');
+
+      fillForm({ product: select.value });
+      submitForm();
+
+      expect(await screen.findByText('Thank You!')).toBeTruthy();
+      fireEvent.click(screen.getByText('Send another enquiry'));
+
+      expect((screen.getByRole('combobox') as HTMLSelectElement).value).toBe('');
     });
   });
 

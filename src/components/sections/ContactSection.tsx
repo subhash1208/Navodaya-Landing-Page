@@ -164,6 +164,20 @@ export default function ContactSection() {
     if (focusTarget) document.getElementById(focusTarget)?.focus();
   }, [state, focusTarget]);
 
+  useEffect(() => {
+    // One-shot prefill from `/products/<slug>`'s "Request a Quote" link. Read directly off
+    // `window.location.search` rather than `useSearchParams` — that hook forces this section's
+    // subtree under a Suspense boundary and, on the homepage, would opt `/` into client-only
+    // rendering for the same reason `useSearchParams` was removed from `/products` (see
+    // `ProductGrid.tsx`). The slug is validated against `PRODUCTS`; anything unmatched leaves the
+    // select at its blank placeholder exactly as today.
+    const slug = new URLSearchParams(window.location.search).get('product');
+    if (!slug) return;
+    const product = PRODUCTS.find((p) => p.slug === slug);
+    if (!product) return;
+    setProductChoice(productEnquiryLabel(product));
+  }, []);
+
   const handleAction = useCallback(
     (event: React.FormEvent<HTMLFormElement>) => {
       // Dispatched from `onSubmit` rather than `<form action={…}>` on purpose. React 19 resets
@@ -301,7 +315,7 @@ export default function ContactSection() {
                       name="productName"
                       required
                       className={cn(inputClass, selectClass)}
-                      defaultValue=""
+                      value={productChoice}
                       onChange={(e) => setProductChoice(e.target.value)}
                       {...invalidProps('productName')}
                     >

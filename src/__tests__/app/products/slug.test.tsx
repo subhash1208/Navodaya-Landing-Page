@@ -112,5 +112,12 @@ describe('ProductPage [slug]', () => {
       expect(cards.length).toBeGreaterThan(0);
       expect(cards.length).toBeLessThanOrEqual(4);
     });
+
+    it('points "Request a Quote" at the homepage contact form, keyed by slug', async () => {
+      const Page = await ProductPage({ params: Promise.resolve({ slug: 'surgeon-cap' }) });
+      render(Page as any);
+      const link = screen.getByRole('link', { name: /request a quote/i });
+      expect(link.getAttribute('href')).toBe('/?product=surgeon-cap#contact');
+    });
   });
 });
