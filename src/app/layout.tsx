@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     // footer and the contact email `from` header, so editing them to fix the
     // browser-tab title would move all of those. Kept under 60 characters,
     // the point Google starts truncating a tab/search-result title.
-    default: 'Navodaya Industries and Care Kits | B2B Hygiene Supplies',
+    default: 'Navodaya Industries & Care Kits | B2B Hygiene Supplies',
     template: `%s | ${BRAND.NAME}`,
   },
   description: BRAND.SEO_DESCRIPTION,

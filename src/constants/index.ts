@@ -3,7 +3,7 @@ import type { ProductItem, ProductCategory, CategorySlug, NavLink } from '@/type
 // ─── Brand ───────────────────────────────────────────────────────────────────
 export const BRAND = {
   NAME: 'Navodaya',
-  FULL_NAME: 'Navodaya Industries and Care Kits',
+  FULL_NAME: 'Navodaya Industries & Care Kits',
   TAGLINE: 'Your Trusted Partner in Progress and Care',
   MISSION:
     'To provide high-quality hygiene, housekeeping, protective packaging, and customized care-kit solutions for educational, healthcare, hospitality, and other institutional customers.',

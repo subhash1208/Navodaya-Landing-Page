@@ -51,7 +51,10 @@ describe('opengraph-image generation', () => {
   it('renders the brand name, tagline and website in SEALED colours', () => {
     Image();
     const html = renderToStaticMarkup(captured.element as ReactElement);
-    expect(html).toContain(BRAND.FULL_NAME);
+    // Raw HTML, not JSX text — React HTML-escapes `&` to `&amp;` when it serialises
+    // BRAND.FULL_NAME's own literal ampersand, so the containment check must expect the
+    // escaped form rather than the source string verbatim.
+    expect(html).toContain(BRAND.FULL_NAME.replace('&', '&amp;'));
     expect(html).toContain(BRAND.TAGLINE);
     expect(html).toContain(BRAND.WEBSITE.toUpperCase());
     expect(html).toContain('background-color:#FAF8F2');

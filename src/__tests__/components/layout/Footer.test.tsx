@@ -32,7 +32,7 @@ describe('Footer', () => {
 
   it('renders brand full name', () => {
     render(<Footer />);
-    expect(screen.getByText('Navodaya Industries and Care Kits')).toBeTruthy();
+    expect(screen.getByText('Navodaya Industries & Care Kits')).toBeTruthy();
   });
 
   it('renders nav links', () => {
