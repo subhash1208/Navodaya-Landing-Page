@@ -19,6 +19,12 @@ export function CustomCursor() {
     const cursor = cursorRef.current;
     if (!cursor) return;
 
+    // Only hide the native cursor once the custom cursor has actually painted —
+    // if globals.css ever fails to load, the unstyled div has zero size and this
+    // guard leaves the visitor with a real pointer instead of none at all.
+    const rect = cursor.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) return;
+
     // Hide default cursor
     document.documentElement.style.cursor = 'none';
 
