@@ -24,6 +24,7 @@ export default function RootError({ error, reset }: ErrorProps) {
           <button
             onClick={reset}
             className="px-5 py-2.5 bg-brand-blue text-paper text-sm font-semibold hover:bg-brand-blue/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-2 focus-visible:ring-offset-paper"
+            data-cursor-invert
           >
             Try again
           </button>

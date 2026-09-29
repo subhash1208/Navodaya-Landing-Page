@@ -36,15 +36,26 @@ export function CustomCursor() {
 
     window.addEventListener('mousemove', onMouseMove, { passive: true });
 
-    // Change cursor on interactive elements via event delegation
+    // Change cursor on interactive elements via event delegation. Also invert
+    // the cursor's colour to paper over surfaces marked [data-cursor-invert]
+    // (dark or brand-blue grounds) — independent of the hover check, since an
+    // element can be both (e.g. the header's blue "Get a Quote" CTA).
     const onOver = (e: MouseEvent) => {
-      if ((e.target as Element).closest('a, button, [role="button"]')) {
+      const target = e.target as Element;
+      if (target.closest('a, button, [role="button"]')) {
         cursor.classList.add('custom-cursor--hover');
+      }
+      if (target.closest('[data-cursor-invert]')) {
+        cursor.classList.add('custom-cursor--invert');
       }
     };
     const onOut = (e: MouseEvent) => {
-      if ((e.target as Element).closest('a, button, [role="button"]')) {
+      const target = e.target as Element;
+      if (target.closest('a, button, [role="button"]')) {
         cursor.classList.remove('custom-cursor--hover');
+      }
+      if (target.closest('[data-cursor-invert]')) {
+        cursor.classList.remove('custom-cursor--invert');
       }
     };
     document.addEventListener('mouseover', onOver);

@@ -40,4 +40,9 @@ describe('SkipNav', () => {
     expect(link.style.height).toBe('1px');
     expect(link.style.overflow).toBe('hidden');
   });
+
+  it('marks the link for cursor inversion, since it paints a brand-blue background on focus', () => {
+    const { container } = render(<SkipNav />);
+    expect(container.querySelector('a')?.hasAttribute('data-cursor-invert')).toBe(true);
+  });
 });

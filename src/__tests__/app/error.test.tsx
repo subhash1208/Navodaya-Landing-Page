@@ -51,6 +51,11 @@ describe('RootError', () => {
     expect(reset).toHaveBeenCalledTimes(1);
   });
 
+  it('marks the Try again CTA for cursor inversion on the brand-blue background', () => {
+    render(<RootError error={mockError} reset={mockReset} />);
+    expect(screen.getByText('Try again').hasAttribute('data-cursor-invert')).toBe(true);
+  });
+
   it('offers a link back to the home page', () => {
     render(<RootError error={mockError} reset={mockReset} />);
     expect(screen.getByText('Go Home').closest('a')?.getAttribute('href')).toBe('/');

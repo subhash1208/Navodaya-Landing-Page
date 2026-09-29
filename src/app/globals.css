@@ -80,15 +80,14 @@
 }
 
 /* ─── Custom cursor ─────────────────────────────────────────────────────────── */
-/* Dual-tone: a brand.blue ring/dot plus a paper-coloured outline layered on via
-   box-shadow, so the cursor stays visible on every ground the site uses.
-   brand.blue #00559A reads 7.15:1 on paper but collapses to 1:1 on brand-blue
-   surfaces (bg-brand-blue marquee/CTAs, tailwind.config.ts:31,64) and 2.59:1 on
-   ink (footer) — under either, the paper #FAF8F2 outline carries instead, at
-   7.15:1 on brand-blue and 18.53:1 on ink (ratios verified in
-   tailwind.config.ts:27-44). Colours are solid/opaque on purpose: alpha would
-   blend with whatever is behind and undercut these numbers. Box-shadow is
-   spread-only (no blur/offset) so it never changes the element's box size. */
+/* Solid brand.blue by default — 7.15:1 on paper (tailwind.config.ts:27-44). The
+   client rejected an outline (box-shadow ring) as a fix for the low-contrast
+   surfaces below: at this cursor's small size an outline reads as a
+   distorted, fuzzy edge rather than a border. Instead, over a dark or
+   brand-blue surface — marked with [data-cursor-invert] and detected in
+   CustomCursor.tsx — the WHOLE cursor repaints solid paper #FAF8F2 instead of
+   brand.blue: paper is 7.15:1 on brand-blue and 18.54:1 on ink. One solid
+   colour at a time, never two layered. */
 .custom-cursor {
   position: fixed;
   top: 0;
@@ -97,9 +96,6 @@
   height: 40px;
   border-radius: 50%;
   border: 2px solid #00559a; /* brand.blue */
-  box-shadow:
-    0 0 0 1px #faf8f2 /* paper — outer outline */,
-    inset 0 0 0 1px #faf8f2 /* paper — inner outline */;
   pointer-events: none;
   z-index: 99999;
   transition:
@@ -120,15 +116,34 @@
   height: 6px;
   border-radius: 50%;
   background: #00559a; /* brand.blue */
-  box-shadow: 0 0 0 1px #faf8f2; /* paper — outline so the dot reads on brand-blue grounds too */
   transition: all 0.2s ease;
 }
 
 .custom-cursor--hover {
   width: 56px;
   height: 56px;
-  border-color: #00559a; /* brand.blue — solid, was rgba(0, 85, 154, 0.8) */
-  background: rgba(0, 85, 154, 0.08);
+  border-color: #00559a; /* brand.blue — solid */
+  background: rgba(0, 85, 154, 0.08); /* brand.blue tint */
+}
+
+/* Dark/brand-blue surface — repaint the ring border and the dot paper instead
+   of outlining them. */
+.custom-cursor--invert {
+  border-color: #faf8f2; /* paper */
+}
+
+.custom-cursor--invert::after {
+  background: #faf8f2; /* paper */
+}
+
+/* Inverted wins over the hover tint too — a hovered blue/dark button (e.g. the
+   header "Get a Quote" CTA, both blue AND a link) must not revert to an
+   invisible blue cursor. Declared after --hover so the cascade already favours
+   it; the combined selector additionally overrides --hover's blue background
+   tint, which --invert alone does not touch. */
+.custom-cursor--hover.custom-cursor--invert {
+  border-color: #faf8f2; /* paper */
+  background: rgba(250, 248, 242, 0.08); /* paper tint */
 }
 
 @media (hover: none) {

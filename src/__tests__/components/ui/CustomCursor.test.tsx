@@ -142,6 +142,61 @@ describe('CustomCursor', () => {
     expect(cursor.classList.contains('custom-cursor--hover')).toBe(false);
   });
 
+  it('adds cursor--invert class on entering a marked dark/blue surface', () => {
+    const { container } = render(
+      <div>
+        <div data-testid="surface" data-cursor-invert>
+          Blue surface
+        </div>
+        <CustomCursor />
+      </div>,
+    );
+    const cursor = container.querySelector('.custom-cursor') as HTMLElement;
+    const surface = container.querySelector('[data-testid="surface"]') as HTMLElement;
+
+    fireEvent.mouseEnter(surface);
+    expect(cursor.classList.contains('custom-cursor--invert')).toBe(true);
+
+    fireEvent.mouseLeave(surface);
+    expect(cursor.classList.contains('custom-cursor--invert')).toBe(false);
+  });
+
+  it('does not add cursor--invert class for an unmarked element', () => {
+    const { container } = render(
+      <div>
+        <div data-testid="plain">Plain surface</div>
+        <CustomCursor />
+      </div>,
+    );
+    const cursor = container.querySelector('.custom-cursor') as HTMLElement;
+    const plain = container.querySelector('[data-testid="plain"]') as HTMLElement;
+
+    fireEvent.mouseEnter(plain);
+    expect(cursor.classList.contains('custom-cursor--invert')).toBe(false);
+  });
+
+  it('applies both hover and invert classes for an element that is both blue and interactive', () => {
+    // e.g. the header's "Get a Quote" CTA: a <button> AND marked [data-cursor-invert]
+    const { container } = render(
+      <div>
+        <button data-testid="blue-cta" data-cursor-invert>
+          Get a Quote
+        </button>
+        <CustomCursor />
+      </div>,
+    );
+    const cursor = container.querySelector('.custom-cursor') as HTMLElement;
+    const btn = container.querySelector('[data-testid="blue-cta"]') as HTMLElement;
+
+    fireEvent.mouseEnter(btn);
+    expect(cursor.classList.contains('custom-cursor--hover')).toBe(true);
+    expect(cursor.classList.contains('custom-cursor--invert')).toBe(true);
+
+    fireEvent.mouseLeave(btn);
+    expect(cursor.classList.contains('custom-cursor--hover')).toBe(false);
+    expect(cursor.classList.contains('custom-cursor--invert')).toBe(false);
+  });
+
   it('cleans up on unmount (restores default cursor)', () => {
     const { unmount } = render(<CustomCursor />);
 

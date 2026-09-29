@@ -487,6 +487,7 @@ export default function ContactSection() {
                   type="submit"
                   disabled={isPending}
                   className="w-full flex items-center justify-center gap-2 py-3.5 bg-brand-blue text-paper font-mono text-label uppercase transition-colors duration-200 hover:bg-brand-blue/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-2 focus-visible:ring-offset-paper min-h-[48px] disabled:bg-grey-300 disabled:text-grey-500 disabled:cursor-not-allowed"
+                  data-cursor-invert
                 >
                   <span>{isPending ? 'Sending…' : 'Send Enquiry'}</span>
                   <Send className="w-4 h-4" aria-hidden="true" />

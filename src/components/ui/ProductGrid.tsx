@@ -193,6 +193,7 @@ export function ProductGrid({ activeCategory: categoryFromUrl }: ProductGridProp
               handleCategoryChange(ALL_ID);
             }}
             className="mt-6 inline-flex items-center border border-ink px-6 py-3 font-mono text-label uppercase text-ink transition-colors duration-200 hover:bg-brand-blue hover:text-paper focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2"
+            data-cursor-invert
           >
             Clear filters
           </button>

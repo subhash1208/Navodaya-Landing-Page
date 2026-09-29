@@ -4,6 +4,7 @@ export function SkipNav() {
   return (
     <a
       href="#main-content"
+      data-cursor-invert
       style={{
         position: 'absolute',
         width: '1px',

@@ -175,6 +175,7 @@ export function Header() {
           <Link
             href={ROUTES.CONTACT}
             className="ml-4 inline-flex items-center min-h-[44px] px-6 font-mono text-label uppercase bg-brand-blue text-paper hover:bg-brand-blue/90 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-2 focus-visible:ring-offset-paper"
+            data-cursor-invert
           >
             Get a Quote
           </Link>
@@ -250,6 +251,7 @@ export function Header() {
                     href={ROUTES.CONTACT}
                     onClick={closeViaLink}
                     className="flex w-full items-center justify-center min-h-[48px] px-4 font-mono text-label uppercase bg-brand-blue text-paper hover:bg-brand-blue/90 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-2 focus-visible:ring-offset-paper"
+                    data-cursor-invert
                   >
                     Get a Quote
                   </Link>
