@@ -192,7 +192,7 @@ export function LoadingScreen({ children }: LoadingScreenProps) {
                       delay: reduced ? 0 : i * LETTER_STAGGER,
                       ease: EASE,
                     }}
-                    className="font-display block text-display-2 font-black text-ink"
+                    className="font-display block text-display-2 font-black text-brand-blue"
                   >
                     {letter}
                   </motion.span>

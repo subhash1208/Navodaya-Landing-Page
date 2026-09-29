@@ -349,6 +349,16 @@ describe('LoadingScreen timeline', () => {
     expect(status?.textContent).toContain('NAVODAYA');
     expect(status?.querySelector('.bg-brand-blue')).toBeTruthy();
 
+    // The company name follows the client's brand rule (blue for the name, black for body
+    // text) — every rendered letter must carry the brand-blue token, never the near-black
+    // `text-ink` this file used before the palette recast reached the intro.
+    const letters = status?.querySelectorAll('.font-display');
+    expect(letters?.length).toBeGreaterThan(0);
+    letters?.forEach((letter) => {
+      expect(letter.className).toContain('text-brand-blue');
+      expect(letter.className).not.toContain('text-ink');
+    });
+
     // The six deleted effects: particles, radial glow, gradient sweep, keyword reel,
     // motto and progress bar. Their class and colour hooks must be gone for good.
     expect(container.querySelector('.loading-particle')).toBeNull();
