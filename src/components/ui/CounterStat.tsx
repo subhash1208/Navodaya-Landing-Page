@@ -20,8 +20,7 @@ export function CounterStat({ value, label }: CounterStatProps) {
     if (!el) return;
 
     let destroyed = false;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let trigger: any = null;
+    let tween: gsap.core.Tween | null = null;
 
     async function init() {
       const { gsap } = await import('gsap');
@@ -33,19 +32,22 @@ export function CounterStat({ value, label }: CounterStatProps) {
       // Parse numeric part and suffix
       const match = value.match(/^(\d+)(.*)$/);
       if (!match) {
-        // Non-numeric (e.g. "HYD") — just fade in with scale
-        trigger = ScrollTrigger.create({
-          trigger: el,
-          start: 'top 85%',
-          once: true,
-          onEnter: () => {
-            gsap.fromTo(
-              el,
-              { opacity: 0, scale: 0.8 },
-              { opacity: 1, scale: 1, duration: 0.6, ease: 'back.out(1.7)' },
-            );
+        // Non-numeric (e.g. "HYD") — just fade in with scale. The scrollTrigger config
+        // lives inside the tween's own vars (matching AboutSection.tsx/WhyUsSection.tsx),
+        // so `tween.scrollTrigger` below is associated with THIS tween and killing it
+        // kills both — unlike a bare ScrollTrigger.create() whose onEnter tween is never
+        // linked to the trigger it was created from.
+        tween = gsap.fromTo(
+          el,
+          { opacity: 0, scale: 0.8 },
+          {
+            opacity: 1,
+            scale: 1,
+            duration: 0.6,
+            ease: 'back.out(1.7)',
+            scrollTrigger: { trigger: el, start: 'top 85%', once: true },
           },
-        });
+        );
         return;
       }
 
@@ -55,22 +57,16 @@ export function CounterStat({ value, label }: CounterStatProps) {
 
       const obj = { val: 0 };
 
-      trigger = ScrollTrigger.create({
-        trigger: el,
-        start: 'top 85%',
-        once: true,
-        onEnter: () => {
-          gsap.to(obj, {
-            val: endNum,
-            duration,
-            ease: 'power2.out',
-            onUpdate: () => {
-              el.textContent = Math.round(obj.val) + suffix;
-            },
-            onComplete: () => {
-              el.textContent = value; // Ensure exact final value
-            },
-          });
+      tween = gsap.to(obj, {
+        val: endNum,
+        duration,
+        ease: 'power2.out',
+        scrollTrigger: { trigger: el, start: 'top 85%', once: true },
+        onUpdate: () => {
+          el.textContent = Math.round(obj.val) + suffix;
+        },
+        onComplete: () => {
+          el.textContent = value; // Ensure exact final value
         },
       });
     }
@@ -79,7 +75,10 @@ export function CounterStat({ value, label }: CounterStatProps) {
 
     return () => {
       destroyed = true;
-      trigger?.kill();
+      // Killing the tween's ScrollTrigger (rather than the tween directly) also kills
+      // the associated tween by default, stopping any in-flight `onUpdate` write to
+      // `el.textContent` from reaching a node that may since have been detached.
+      tween?.scrollTrigger?.kill();
     };
   }, [value]);
 

@@ -44,4 +44,13 @@ describe('GlobalError', () => {
     fireEvent.click(screen.getByText('Try again'));
     expect(reset).toHaveBeenCalledTimes(1);
   });
+
+  it('keeps the digest reference on a grey that clears WCAG 1.4.3 against paper', () => {
+    // grey-400 (#8E897C) on paper (#FAF8F2) is 3.28:1 at 12px normal weight, below the 4.5:1
+    // threshold. grey-600 (#524E46) is 7.79:1 on the same ground (tailwind.config.ts).
+    const withDigest = Object.assign(new Error('boom'), { digest: 'deadbeef' });
+    const html = renderToStaticMarkup(<GlobalError error={withDigest} reset={noop} />);
+    expect(html).toContain('color:#524E46');
+    expect(html).not.toContain('color:#8E897C');
+  });
 });

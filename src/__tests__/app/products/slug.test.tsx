@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { generateStaticParams, generateMetadata } from '@/app/products/[slug]/page';
 import ProductPage from '@/app/products/[slug]/page';
+import { PRODUCTS } from '@/constants';
 
 vi.mock('next/navigation', () => ({
   notFound: vi.fn(),
@@ -64,6 +65,24 @@ describe('ProductPage [slug]', () => {
     it('omits a canonical for an unknown slug', async () => {
       const metadata = await generateMetadata({ params: Promise.resolve({ slug: 'nonexistent' }) });
       expect(metadata.alternates).toBeUndefined();
+    });
+
+    it('sets openGraph.url to the canonical product route', async () => {
+      const metadata = await generateMetadata({ params: Promise.resolve({ slug: 'surgeon-cap' }) });
+      expect(metadata.openGraph?.url).toBe('/products/surgeon-cap');
+    });
+
+    it('keeps the generated meta description within search-result truncation limits for every product', async () => {
+      // Derived from PRODUCTS by actually generating every product's metadata rather
+      // than hardcoding a slug, so a future product addition (longer description OR
+      // longer category name) cannot silently regress this unnoticed.
+      const allMetadata = await Promise.all(
+        PRODUCTS.map((p) => generateMetadata({ params: Promise.resolve({ slug: p.slug }) })),
+      );
+      const longest = allMetadata.reduce((max, m) =>
+        (m.description as string).length > (max.description as string).length ? m : max,
+      );
+      expect((longest.description as string).length).toBeLessThanOrEqual(160);
     });
   });
 

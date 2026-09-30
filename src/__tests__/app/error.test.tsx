@@ -60,4 +60,21 @@ describe('RootError', () => {
     render(<RootError error={mockError} reset={mockReset} />);
     expect(screen.getByText('Go Home').closest('a')?.getAttribute('href')).toBe('/');
   });
+
+  it('keeps the digest reference on a grey that clears WCAG 1.4.3 against paper', () => {
+    // grey-400 (#8E897C) on paper (#FAF8F2) is 3.28:1 at text-xs (12px) normal weight, below
+    // the 4.5:1 threshold. grey-600 (#524E46) is 7.79:1 on the same ground.
+    const withDigest = Object.assign(new Error('boom'), { digest: 'abc123' });
+    render(<RootError error={withDigest} reset={mockReset} />);
+    expect(screen.getByText(/abc123/).className).toContain('text-grey-600');
+    expect(screen.getByText(/abc123/).className).not.toContain('text-grey-400');
+  });
+
+  it('replaces the amber alert icon with a SEALED-palette grey token', () => {
+    render(<RootError error={mockError} reset={mockReset} />);
+    const icon = screen.getByTestId('alert-icon');
+    // `className` on an <svg> is an SVGAnimatedString, not a plain string — read the attribute.
+    expect(icon.getAttribute('class')).toContain('text-grey-400');
+    expect(icon.getAttribute('class')).not.toContain('amber');
+  });
 });

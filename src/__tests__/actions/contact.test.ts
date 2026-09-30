@@ -11,8 +11,23 @@ vi.mock('resend', () => ({
 
 // We need to test the validateForm logic via the exported action
 // Since validateForm is private, we test it through submitContactForm
-import { submitContactForm } from '@/app/actions/contact';
+import { submitContactForm, type ContactActionResult } from '@/app/actions/contact';
 import { BRAND } from '@/constants';
+
+/**
+ * `ContactActionResult` is a discriminated union — reading `.error` or `.field` off a value typed
+ * merely `ContactActionResult` is a compile error until `success` is narrowed to `false`. This
+ * narrows in one place, as an `asserts` function, so every test below keeps its existing
+ * `expect(result.success).toBe(false)` as the thing that actually performs the check; calling this
+ * instead of that just teaches the compiler what the runtime assertion already proves, and every
+ * subsequent line in the same block sees `result` (or whichever identifier is passed) as the
+ * failure variant.
+ */
+function assertFailure(
+  result: ContactActionResult,
+): asserts result is Extract<ContactActionResult, { success: false }> {
+  expect(result.success).toBe(false);
+}
 
 const validFormData = {
   productName: 'Surgeon Cap',
@@ -56,25 +71,25 @@ describe('submitContactForm', () => {
   describe('validation', () => {
     it('rejects empty product name', async () => {
       const result = await submitContactForm({ ...validFormData, productName: '' });
-      expect(result.success).toBe(false);
+      assertFailure(result);
       expect(result.error).toBe('Product name is required.');
     });
 
     it('rejects whitespace-only product name', async () => {
       const result = await submitContactForm({ ...validFormData, productName: '   ' });
-      expect(result.success).toBe(false);
+      assertFailure(result);
       expect(result.error).toBe('Product name is required.');
     });
 
     it('rejects empty quantity', async () => {
       const result = await submitContactForm({ ...validFormData, quantity: '' });
-      expect(result.success).toBe(false);
+      assertFailure(result);
       expect(result.error).toBe('Quantity is required.');
     });
 
     it('rejects empty company name', async () => {
       const result = await submitContactForm({ ...validFormData, companyName: '' });
-      expect(result.success).toBe(false);
+      assertFailure(result);
       expect(result.error).toBe('Company name is required.');
     });
 
@@ -82,13 +97,15 @@ describe('submitContactForm', () => {
       // The email is optional — the phone number is the guaranteed reply path.
       const result = await submitContactForm({ ...validFormData, companyEmail: '' });
       expect(result.success).toBe(true);
-      expect(result.error).toBeUndefined();
+      // The success variant of `ContactActionResult` carries no `error` field at all — `in` proves
+      // its absence without narrowing `result` to the failure branch.
+      expect('error' in result).toBe(false);
     });
 
     it('treats a whitespace-only company email as absent, not as malformed', async () => {
       const result = await submitContactForm({ ...validFormData, companyEmail: '   ' });
       expect(result.success).toBe(true);
-      expect(result.error).toBeUndefined();
+      expect('error' in result).toBe(false);
     });
 
     it('still reports a malformed phone when the email is blank, so field order held', async () => {
@@ -98,6 +115,7 @@ describe('submitContactForm', () => {
         contactPersonNumber: 'abc@def#ghi',
       });
       expect(result.success).toBe(false);
+      assertFailure(result);
       expect(result.field).toBe('contactPersonNumber');
       expect(result.error).toBe('Invalid phone number.');
     });
@@ -105,31 +123,32 @@ describe('submitContactForm', () => {
     it('rejects invalid email format', async () => {
       const result = await submitContactForm({ ...validFormData, companyEmail: 'not-an-email' });
       expect(result.success).toBe(false);
+      assertFailure(result);
       expect(result.field).toBe('companyEmail');
       expect(result.error).toBe('Invalid email address.');
     });
 
     it('rejects email without domain', async () => {
       const result = await submitContactForm({ ...validFormData, companyEmail: 'user@' });
-      expect(result.success).toBe(false);
+      assertFailure(result);
       expect(result.error).toBe('Invalid email address.');
     });
 
     it('rejects empty contact person name', async () => {
       const result = await submitContactForm({ ...validFormData, contactPersonName: '' });
-      expect(result.success).toBe(false);
+      assertFailure(result);
       expect(result.error).toBe('Contact person name is required.');
     });
 
     it('rejects empty contact number', async () => {
       const result = await submitContactForm({ ...validFormData, contactPersonNumber: '' });
-      expect(result.success).toBe(false);
+      assertFailure(result);
       expect(result.error).toBe('Contact number is required.');
     });
 
     it('rejects phone number too short', async () => {
       const result = await submitContactForm({ ...validFormData, contactPersonNumber: '123' });
-      expect(result.success).toBe(false);
+      assertFailure(result);
       expect(result.error).toBe('Invalid phone number.');
     });
 
@@ -139,6 +158,7 @@ describe('submitContactForm', () => {
         contactPersonNumber: '+123456789012345678901234',
       });
       expect(result.success).toBe(false);
+      assertFailure(result);
       expect(result.error).toBe('Invalid phone number.');
     });
 
@@ -156,7 +176,7 @@ describe('submitContactForm', () => {
 
     it('rejects a phone number one character below the floor', async () => {
       const result = await submitContactForm({ ...validFormData, contactPersonNumber: '123456' });
-      expect(result.success).toBe(false);
+      assertFailure(result);
       expect(result.error).toBe('Invalid phone number.');
     });
 
@@ -184,6 +204,7 @@ describe('submitContactForm', () => {
         contactPersonNumber: '+++++++',
       });
       expect(result.success).toBe(false);
+      assertFailure(result);
       expect(result.error).toBe('Invalid phone number.');
     });
 
@@ -201,6 +222,7 @@ describe('submitContactForm', () => {
         contactPersonNumber: 'abc@def#ghi',
       });
       expect(result.success).toBe(false);
+      assertFailure(result);
       expect(result.error).toBe('Invalid phone number.');
     });
 
@@ -239,7 +261,7 @@ describe('submitContactForm', () => {
     it('accepts valid form data', async () => {
       const result = await submitContactForm(validFormData);
       expect(result.success).toBe(true);
-      expect(result.error).toBeUndefined();
+      expect('error' in result).toBe(false);
     });
 
     it('accepts form without optional fields (designation, message)', async () => {
@@ -273,7 +295,7 @@ describe('submitContactForm', () => {
       const result = await submitContactForm(validFormData);
 
       expect(result.success).toBe(true);
-      expect(result.error).toBeUndefined();
+      expect('error' in result).toBe(false);
       expect(mockSend).not.toHaveBeenCalled();
       log.mockRestore();
     });
@@ -287,7 +309,7 @@ describe('submitContactForm', () => {
       const result = await submitContactForm(validFormData);
 
       expect(result.success).toBe(true);
-      expect(result.error).toBeUndefined();
+      expect('error' in result).toBe(false);
       expect(mockSend).not.toHaveBeenCalled();
       log.mockRestore();
     });
@@ -306,6 +328,7 @@ describe('submitContactForm', () => {
       const result = await submitContactForm(validFormData);
 
       expect(result.success).toBe(false);
+      assertFailure(result);
       expect(mockSend).not.toHaveBeenCalled();
       expect(result.error).toContain(BRAND.EMAIL);
       expect(result.error).toContain(BRAND.PHONE);
@@ -327,6 +350,7 @@ describe('submitContactForm', () => {
       const result = await submitContactForm(validFormData);
 
       expect(result.success).toBe(false);
+      assertFailure(result);
       expect(mockSend).not.toHaveBeenCalled();
       expect(result.error).toContain(BRAND.EMAIL);
       expect(consoleError.mock.calls[0][0]).toContain('[contact] FATAL:');
@@ -368,6 +392,7 @@ describe('submitContactForm', () => {
       const result = await submitContactForm(validFormData);
 
       expect(result.success).toBe(false);
+      assertFailure(result);
       expect(mockSend).not.toHaveBeenCalled();
       // The visitor must still be able to reach the business.
       expect(result.error).toContain(BRAND.EMAIL);
@@ -461,6 +486,7 @@ describe('submitContactForm', () => {
       const fourth = await submitContactForm(rateLimited);
 
       expect(fourth.success).toBe(false);
+      assertFailure(fourth);
       expect(fourth.field).toBe('companyEmail');
       expect(fourth.error).toContain(BRAND.EMAIL);
       expect(mockSend).toHaveBeenCalledTimes(3);
@@ -520,6 +546,7 @@ describe('submitContactForm', () => {
           companyEmail: email,
           quantity: '',
         });
+        assertFailure(rejected);
         expect(rejected.error).toBe('Quantity is required.');
       }
       expect((await submitContactForm({ ...validFormData, companyEmail: email })).success).toBe(
@@ -560,6 +587,7 @@ describe('submitContactForm', () => {
       const fourth = await submitContactForm(anonymous);
 
       expect(fourth.success).toBe(false);
+      assertFailure(fourth);
       expect(fourth.field).toBe('contactPersonNumber');
       expect(fourth.error).toContain(BRAND.EMAIL);
       expect(mockSend).toHaveBeenCalledTimes(3);
@@ -629,6 +657,7 @@ describe('submitContactForm', () => {
     ] as const)('rejects %s beyond %i characters', async (field, max, label) => {
       const result = await submitContactForm({ ...validFormData, [field]: 'x'.repeat(max + 1) });
       expect(result.success).toBe(false);
+      assertFailure(result);
       expect(result.error).toBe(`${label} must be ${max} characters or fewer.`);
       expect(result.field).toBe(field);
     });
@@ -644,6 +673,7 @@ describe('submitContactForm', () => {
         companyEmail: `${'a'.repeat(115)}@test.com`,
       });
       expect(result.success).toBe(false);
+      assertFailure(result);
       expect(result.error).toBe('Company email must be 120 characters or fewer.');
       expect(result.field).toBe('companyEmail');
     });
@@ -654,6 +684,7 @@ describe('submitContactForm', () => {
         ...validFormData,
         contactPersonNumber: '+1234567890123456789012345',
       });
+      assertFailure(result);
       expect(result.error).toBe('Invalid phone number.');
       expect(result.field).toBe('contactPersonNumber');
     });
@@ -671,12 +702,13 @@ describe('submitContactForm', () => {
     ])('names the offending field for %o', async (override, field) => {
       const result = await submitContactForm({ ...validFormData, ...override });
       expect(result.success).toBe(false);
+      assertFailure(result);
       expect(result.field).toBe(field);
     });
 
     it('carries no field on a successful submission', async () => {
       const result = await submitContactForm(validFormData);
-      expect(result.field).toBeUndefined();
+      expect('field' in result).toBe(false);
     });
   });
 
@@ -696,6 +728,7 @@ describe('submitContactForm', () => {
       const result = await submitContactForm(validFormData);
 
       expect(result.success).toBe(false);
+      assertFailure(result);
       // A visitor told only "something went wrong" is a lost lead. The message must hand them
       // another way to reach the business.
       expect(result.error).toContain(BRAND.EMAIL);

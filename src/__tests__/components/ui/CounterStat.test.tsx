@@ -4,14 +4,28 @@ import { CounterStat } from '@/components/ui/CounterStat';
 
 const mockFromTo = vi.fn();
 const mockTo = vi.fn();
-const mockCreate = vi.fn();
-const mockGetAll = vi.fn().mockReturnValue([]);
+const mockKill = vi.fn();
+
+// Mirrors real GSAP: a tween returned WITHOUT a `scrollTrigger` in its vars carries no
+// `.scrollTrigger` handle. This is what makes the unmount test below meaningful against the
+// original bug — a bare `ScrollTrigger.create({ onEnter: () => gsap.to(...) })` produces a
+// tween whose vars never include `scrollTrigger`, so `tween?.scrollTrigger?.kill()` would
+// silently no-op and this test would fail against the unfixed code.
+function tweenFor(vars: any) {
+  return vars?.scrollTrigger ? { scrollTrigger: { kill: mockKill } } : {};
+}
 
 vi.mock('gsap', () => ({
   gsap: {
     registerPlugin: vi.fn(),
-    fromTo: (...args: any[]) => mockFromTo(...args),
-    to: (...args: any[]) => mockTo(...args),
+    fromTo: (...args: any[]) => {
+      mockFromTo(...args);
+      return tweenFor(args[2]);
+    },
+    to: (...args: any[]) => {
+      mockTo(...args);
+      return tweenFor(args[1]);
+    },
     set: vi.fn(),
     context: vi.fn().mockReturnValue({ revert: vi.fn() }),
   },
@@ -19,8 +33,8 @@ vi.mock('gsap', () => ({
 
 vi.mock('gsap/ScrollTrigger', () => ({
   ScrollTrigger: {
-    create: (...args: any[]) => mockCreate(...args),
-    getAll: () => mockGetAll(),
+    create: vi.fn(),
+    getAll: vi.fn().mockReturnValue([]),
   },
 }));
 
@@ -41,8 +55,7 @@ describe('CounterStat', () => {
   beforeEach(() => {
     mockFromTo.mockClear();
     mockTo.mockClear();
-    mockCreate.mockClear();
-    mockGetAll.mockClear().mockReturnValue([]);
+    mockKill.mockClear();
     setReducedMotion(false);
   });
 
@@ -72,40 +85,36 @@ describe('CounterStat', () => {
     expect(el).toBeTruthy();
   });
 
-  it('creates ScrollTrigger for numeric values', async () => {
+  it('embeds a scrollTrigger config inside the tween for numeric values', async () => {
     await act(async () => {
       render(<CounterStat value="51+" label="Products" />);
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
-    expect(mockCreate).toHaveBeenCalledWith(
+    expect(mockTo).toHaveBeenCalledWith(
+      expect.objectContaining({ val: 0 }),
       expect.objectContaining({
-        start: 'top 85%',
-        once: true,
+        val: 51,
+        scrollTrigger: expect.objectContaining({ start: 'top 85%', once: true }),
       }),
     );
   });
 
   it('calls gsap.fromTo for non-numeric values (fade in with scale)', async () => {
-    mockCreate.mockImplementation((config: any) => {
-      if (config.onEnter) config.onEnter();
-      return { kill: vi.fn() };
-    });
-
     await act(async () => {
       render(<CounterStat value="HYD" label="Based in Hyderabad" />);
       // Wait for dynamic import to resolve
       await new Promise((resolve) => setTimeout(resolve, 50));
     });
-    expect(mockFromTo).toHaveBeenCalled();
+    expect(mockFromTo).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything(),
+      expect.objectContaining({
+        scrollTrigger: expect.objectContaining({ start: 'top 85%', once: true }),
+      }),
+    );
   });
 
-  it('executes onEnter callback which starts counter animation', async () => {
-    // Capture the onEnter callback
-    mockCreate.mockImplementation((config: any) => {
-      if (config.onEnter) config.onEnter();
-      return { kill: vi.fn() };
-    });
-
+  it('starts the counter tween directly on init (no ScrollTrigger.create indirection)', async () => {
     await act(async () => {
       render(<CounterStat value="51+" label="Products" />);
       await new Promise((resolve) => setTimeout(resolve, 0));
@@ -124,17 +133,12 @@ describe('CounterStat', () => {
   });
 
   it('onUpdate callback updates element textContent', async () => {
-    mockCreate.mockImplementation((config: any) => {
-      if (config.onEnter) config.onEnter();
-      return { kill: vi.fn() };
-    });
-
     let capturedOnUpdate: (() => void) | undefined;
     let capturedOnComplete: (() => void) | undefined;
-    mockTo.mockImplementation((_target: any, vars: any) => {
+    mockTo.mockImplementationOnce((_target: any, vars: any) => {
       capturedOnUpdate = vars.onUpdate;
       capturedOnComplete = vars.onComplete;
-      return {};
+      return { scrollTrigger: { kill: mockKill } };
     });
 
     let container: any;
@@ -155,11 +159,6 @@ describe('CounterStat', () => {
   });
 
   it('uses shorter duration for small numbers', async () => {
-    mockCreate.mockImplementation((config: any) => {
-      if (config.onEnter) config.onEnter();
-      return { kill: vi.fn() };
-    });
-
     await act(async () => {
       render(<CounterStat value="3" label="Categories" />);
       await new Promise((resolve) => setTimeout(resolve, 0));
@@ -173,11 +172,6 @@ describe('CounterStat', () => {
   });
 
   it('uses longer duration for large numbers', async () => {
-    mockCreate.mockImplementation((config: any) => {
-      if (config.onEnter) config.onEnter();
-      return { kill: vi.fn() };
-    });
-
     await act(async () => {
       render(<CounterStat value="100%" label="B2B focused" />);
       await new Promise((resolve) => setTimeout(resolve, 0));
@@ -190,10 +184,7 @@ describe('CounterStat', () => {
     );
   });
 
-  it('kills the ScrollTrigger on unmount', async () => {
-    const kill = vi.fn();
-    mockCreate.mockImplementation(() => ({ kill }));
-
+  it('kills the tween itself on unmount, via tween.scrollTrigger.kill() — not merely an orphaned trigger', async () => {
     let unmount: () => void = () => {};
     await act(async () => {
       const result = render(<CounterStat value="51+" label="Products" />);
@@ -201,41 +192,31 @@ describe('CounterStat', () => {
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
-    expect(kill).not.toHaveBeenCalled();
+    expect(mockKill).not.toHaveBeenCalled();
     act(() => unmount());
-    expect(kill).toHaveBeenCalledTimes(1);
+    expect(mockKill).toHaveBeenCalledTimes(1);
   });
 
   describe('prefers-reduced-motion: reduce', () => {
-    it('creates no ScrollTrigger and runs no tween for a numeric value', async () => {
+    it('creates no tween for a numeric value', async () => {
       setReducedMotion(true);
-      mockCreate.mockImplementation((config: any) => {
-        if (config.onEnter) config.onEnter();
-        return { kill: vi.fn() };
-      });
 
       await act(async () => {
         render(<CounterStat value="51+" label="Products" />);
         await new Promise((resolve) => setTimeout(resolve, 50));
       });
 
-      expect(mockCreate).not.toHaveBeenCalled();
       expect(mockTo).not.toHaveBeenCalled();
     });
 
-    it('creates no ScrollTrigger and runs no fade for a non-numeric value', async () => {
+    it('creates no fade tween for a non-numeric value', async () => {
       setReducedMotion(true);
-      mockCreate.mockImplementation((config: any) => {
-        if (config.onEnter) config.onEnter();
-        return { kill: vi.fn() };
-      });
 
       await act(async () => {
         render(<CounterStat value="HYD" label="Based in Hyderabad" />);
         await new Promise((resolve) => setTimeout(resolve, 50));
       });
 
-      expect(mockCreate).not.toHaveBeenCalled();
       expect(mockFromTo).not.toHaveBeenCalled();
     });
 

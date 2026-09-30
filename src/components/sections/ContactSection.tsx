@@ -14,7 +14,8 @@ import {
   Briefcase,
 } from 'lucide-react';
 import { BRAND, PRODUCT_CATEGORIES, PRODUCTS, productEnquiryLabel } from '@/constants';
-import { submitContactForm } from '@/app/actions/contact';
+import { SEND_FAILED_ERROR } from '@/constants/contact';
+import { submitContactForm, type ContactActionResult } from '@/app/actions/contact';
 import { AnimateIn } from '@/components/ui/AnimateIn';
 import { cn } from '@/utils/cn';
 
@@ -82,14 +83,20 @@ interface FieldProps {
   label: string;
   id: string;
   icon?: React.ReactNode;
-  /** Server-reported message for THIS field. Rendered at `${id}-error`, referenced by the input. */
+  /** Server-reported message for THIS field. Rendered at `errorId ?? `${id}-error``, referenced
+   *  by the input. */
   error?: string;
+  /** Overrides the error paragraph's id. Needed only when the visible message belongs to a
+   *  DIFFERENT input's `aria-describedby` than this Field's own `id` — the `productOther` /
+   *  `productName` case, where the server names `productName` but the visitor is looking at
+   *  `productOther`. Defaults to `${id}-error`. */
+  errorId?: string;
   /** Renders a visible "(Optional)" marker inside the label. Real text, not `aria-hidden`
    *  decoration, so the accessible name says it too. */
   optional?: boolean;
   children: React.ReactNode;
 }
-function Field({ label, id, icon, error, optional, children }: FieldProps) {
+function Field({ label, id, icon, error, errorId, optional, children }: FieldProps) {
   return (
     <div className="flex flex-col gap-2">
       <label
@@ -104,7 +111,7 @@ function Field({ label, id, icon, error, optional, children }: FieldProps) {
       </label>
       {children}
       {error ? (
-        <p id={`${id}-error`} className="font-mono text-label text-red-700">
+        <p id={errorId ?? `${id}-error`} className="font-mono text-label text-red-700">
           {error}
         </p>
       ) : null}
@@ -112,7 +119,16 @@ function Field({ label, id, icon, error, optional, children }: FieldProps) {
   );
 }
 
-type FormState = { success: boolean; error?: string; field?: string } | null;
+type FormState = ContactActionResult | null;
+
+/**
+ * Defensive fallback for a `{ success: false }` result carrying no `error`. `ContactActionResult`
+ * makes that shape a compile error for any TypeScript-checked return path, but the guarantee ends
+ * at the server-action RPC boundary — it does not protect against a malformed response crossing
+ * the wire. Rendering this instead of nothing means the visitor is never left staring at a reverted
+ * button with zero explanation of what happened to their enquiry.
+ */
+const UNKNOWN_ERROR_MESSAGE = `Something went wrong sending your enquiry. Please try again, or email us directly at ${BRAND.EMAIL} or call ${BRAND.PHONE}.`;
 
 async function contactAction(_prev: FormState, formData: FormData): Promise<FormState> {
   const selected = readString(formData, 'productName');
@@ -122,17 +138,26 @@ async function contactAction(_prev: FormState, formData: FormData): Promise<Form
   const productName =
     selected === OTHER_VALUE ? (otherDetail ? `${OTHER_VALUE} — ${otherDetail}` : '') : selected;
 
-  return submitContactForm({
-    productName,
-    quantity: readString(formData, 'quantity'),
-    companyName: readString(formData, 'companyName'),
-    companyEmail: readString(formData, 'companyEmail'),
-    contactPersonName: readString(formData, 'contactPersonName'),
-    contactPersonDesignation: readString(formData, 'contactPersonDesignation'),
-    contactPersonNumber: readString(formData, 'contactPersonNumber'),
-    message: readString(formData, 'message'),
-    honeypot: readString(formData, HONEYPOT_FIELD),
-  });
+  try {
+    return await submitContactForm({
+      productName,
+      quantity: readString(formData, 'quantity'),
+      companyName: readString(formData, 'companyName'),
+      companyEmail: readString(formData, 'companyEmail'),
+      contactPersonName: readString(formData, 'contactPersonName'),
+      contactPersonDesignation: readString(formData, 'contactPersonDesignation'),
+      contactPersonNumber: readString(formData, 'contactPersonNumber'),
+      message: readString(formData, 'message'),
+      honeypot: readString(formData, HONEYPOT_FIELD),
+    });
+  } catch {
+    // The action call itself failed in transit — offline, DNS blip, connection reset before the
+    // server responded — as opposed to the server returning a structured failure. Uncaught, this
+    // rejection bubbles out of `startTransition` to the nearest error boundary and replaces the
+    // ENTIRE page, taking every field the visitor typed with it. Catching it here keeps the
+    // failure inline, exactly like a Resend rejection already is.
+    return { success: false, error: SEND_FAILED_ERROR };
+  }
 }
 
 export default function ContactSection() {
@@ -153,7 +178,8 @@ export default function ContactSection() {
   const invalidField = state?.success === false ? state.field : undefined;
   const focusTarget = invalidField === 'productName' && isOther ? 'productOther' : invalidField;
 
-  const errorFor = (id: string) => (invalidField === id ? state?.error : undefined);
+  const errorFor = (id: string) =>
+    state?.success === false && invalidField === id ? state.error : undefined;
   const invalidProps = (id: string) =>
     invalidField === id ? { 'aria-invalid': true, 'aria-describedby': `${id}-error` } : {};
 
@@ -274,7 +300,7 @@ export default function ContactSection() {
           {/* Right — specification form */}
           <AnimateIn direction="left" delay={0.1} className="p-8 border border-grey-200">
             {showSuccess ? (
-              <div className="py-8" role="alert" aria-live="polite">
+              <div className="py-8" role="alert" aria-live="assertive">
                 <CheckCircle className="w-10 h-10 text-ink mb-4" aria-hidden="true" />
                 <h3 className="text-heading-2 text-ink mb-2">Thank You!</h3>
                 <p className="text-body-sm text-grey-600 mb-6">
@@ -292,14 +318,14 @@ export default function ContactSection() {
               <form onSubmit={handleAction} noValidate className="flex flex-col gap-6">
                 <h3 className="font-mono text-label uppercase text-grey-500">Send an Enquiry</h3>
 
-                {state?.error && (
+                {state?.success === false && (
                   <div
                     role="alert"
                     aria-live="assertive"
                     className="flex items-start gap-2.5 border border-red-300 bg-red-50 text-body-sm text-red-800 p-3"
                   >
                     <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" aria-hidden="true" />
-                    {state.error}
+                    {state.error || UNKNOWN_ERROR_MESSAGE}
                   </div>
                 )}
 
@@ -308,7 +334,7 @@ export default function ContactSection() {
                     label="Product"
                     id="productName"
                     icon={<Package className="w-3 h-3" />}
-                    error={errorFor('productName')}
+                    error={isOther ? undefined : errorFor('productName')}
                   >
                     <select
                       id="productName"
@@ -351,7 +377,16 @@ export default function ContactSection() {
                   </Field>
                   {/* Stable trailing slot — holds `null` rather than shifting its siblings. */}
                   {isOther ? (
-                    <Field label="Which product?" id="productOther">
+                    <Field
+                      label="Which product?"
+                      id="productOther"
+                      // The server reports this failure against `productName` (see `invalidField`
+                      // above), but the visitor is looking at THIS input — render the message
+                      // here, at the id `invalidProps('productName')` already points
+                      // `aria-describedby` at, rather than leaving it under the now-hidden select.
+                      error={errorFor('productName')}
+                      errorId="productName-error"
+                    >
                       <input
                         id="productOther"
                         type="text"

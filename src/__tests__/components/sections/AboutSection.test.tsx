@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, act } from '@testing-library/react';
 import AboutSection from '@/components/sections/AboutSection';
+import { BRAND } from '@/constants';
 
 vi.mock('gsap', () => ({
   gsap: {
@@ -149,6 +150,16 @@ describe('AboutSection', () => {
     render(<AboutSection />);
     expect(screen.getByText(/institutional hygiene products/)).toBeTruthy();
     expect(screen.getByText(/approach is simple/)).toBeTruthy();
+  });
+
+  // Guards against re-hardcoding the company name literal: this asserts the
+  // rendered text against the live BRAND.FULL_NAME constant, so it fails if a
+  // future edit reverts the JSX to a hardcoded string while the constant moves.
+  it('renders the company name by reference to BRAND.FULL_NAME, not a hardcoded literal', () => {
+    render(<AboutSection />);
+    expect(
+      screen.getByText(`${BRAND.FULL_NAME} is a Hyderabad based startup`, { exact: false }),
+    ).toBeTruthy();
   });
 
   it('tests destroyed flag path - unmount before async init completes', async () => {

@@ -74,6 +74,13 @@ describe('Footer', () => {
     expect(screen.getByText(BRAND.WEBSITE)).toBeTruthy();
   });
 
+  it('points the website link at the homepage instead of opening a second tab of the current site', () => {
+    render(<Footer />);
+    const link = screen.getByText(BRAND.WEBSITE);
+    expect(link.getAttribute('href')).toBe('/');
+    expect(link.getAttribute('target')).toBeNull();
+  });
+
   it('renders Quick Links heading', () => {
     render(<Footer />);
     expect(screen.getByText('Quick Links')).toBeTruthy();

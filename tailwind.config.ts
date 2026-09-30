@@ -103,20 +103,6 @@ export default {
         e4: '4px 8px 16px -8px rgb(10 11 13 / 0.10), 8px 16px 32px -4px rgb(10 11 13 / 0.07)',
         e5: '8px 16px 32px -12px rgb(10 11 13 / 0.12), 16px 32px 64px -8px rgb(10 11 13 / 0.08)',
       },
-      keyframes: {
-        fadeUp: {
-          from: { opacity: '0', transform: 'translateY(32px)' },
-          to: { opacity: '1', transform: 'translateY(0)' },
-        },
-        fadeIn: {
-          from: { opacity: '0' },
-          to: { opacity: '1' },
-        },
-      },
-      animation: {
-        'fade-up': 'fadeUp 0.6s ease forwards',
-        'fade-in': 'fadeIn 0.5s ease forwards',
-      },
     },
   },
   plugins: [],

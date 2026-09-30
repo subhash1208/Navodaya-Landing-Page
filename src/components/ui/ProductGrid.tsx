@@ -24,9 +24,17 @@ const TAB_RULE = {
  * Active state is expressed with the `aria-selected` variant rather than a conditional class, so
  * this needs no `cn()` call. (The `text-label` token is now registered with `tailwind-merge` in
  * `src/utils/cn.ts`, so it would survive a merge either way.)
+ *
+ * `text-label` is 0.6875rem/1.3 (11px * 1.3 = 14.3px line height); with `pt-2` (8px) and `pb-3`
+ * (12px) the rendered box is 8 + 14.3 + 12 = 34.3px tall, short of the 44px WCAG 2.5.5/2.5.8
+ * touch-target floor. `before:inset-y-[-5px]` grows the invisible hit area by 5px top and bottom
+ * (34.3 + 10 = 44.3px) without touching the visible padding — same `before:` pseudo-element
+ * technique as the desktop nav links in `Header.tsx:157-165`. Horizontal reach is left untouched
+ * (`before:inset-x-0`): the tabs are already wide enough on their own text content, and growing
+ * sideways would risk overlapping neighbouring tabs across the `gap-x-8` row gap.
  */
 const TAB_CLASS =
-  'relative flex items-baseline gap-2 px-1 pb-3 pt-2 font-mono text-label uppercase text-grey-500 transition-colors duration-200 hover:text-ink aria-selected:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2';
+  "relative flex items-baseline gap-2 px-1 pb-3 pt-2 font-mono text-label uppercase text-grey-500 transition-colors duration-200 hover:text-ink aria-selected:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 before:absolute before:inset-x-0 before:inset-y-[-5px] before:content-['']";
 
 interface ProductGridProps {
   /**
@@ -125,7 +133,14 @@ export function ProductGrid({ activeCategory: categoryFromUrl }: ProductGridProp
               <button
                 onClick={() => setQuery('')}
                 aria-label="Clear search"
-                className="absolute right-0 top-1/2 -translate-y-1/2 text-grey-400 transition-colors duration-200 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink"
+                // The visible icon stays a 16x16 `w-4 h-4` glyph positioned by the button's own
+                // box — `before:inset-[-14px]` grows only the invisible hit area to 44x44
+                // (16 + 14*2), clearing the WCAG 2.5.5/2.5.8 touch-target floor without moving
+                // the icon. Same `before:` technique as the desktop nav links in
+                // `Header.tsx:157-165`. The extra reach stays inside the input's own `pr-8`
+                // (32px) icon gutter on the left/top/bottom, so it does not steal clicks from
+                // the input's actual text-entry region.
+                className="absolute right-0 top-1/2 -translate-y-1/2 text-grey-400 transition-colors duration-200 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink before:absolute before:inset-[-14px] before:content-['']"
               >
                 <X className="w-4 h-4" />
               </button>

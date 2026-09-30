@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import ProductsPage, { metadata } from '@/app/products/page';
-import { PRODUCT_CATEGORIES } from '@/constants';
+import { BRAND, PRODUCT_CATEGORIES } from '@/constants';
 
 vi.mock('next/link', () => ({
   default: ({ children, href, ...props }: any) => (
@@ -101,5 +101,30 @@ describe('ProductsPage metadata', () => {
 
   it('declares /products as its canonical URL', () => {
     expect(metadata.alternates?.canonical).toBe('/products');
+  });
+
+  it('sets its own openGraph.url matching the canonical route', () => {
+    expect(metadata.openGraph?.url).toBe('/products');
+  });
+
+  it('sets its own openGraph title and description, not inherited from the root layout', () => {
+    // The root layout's openGraph title/description are BRAND.FULL_NAME / BRAND.TAGLINE
+    // (src/app/layout.tsx). Per the Metadata API's inheritance rule, setting `openGraph`
+    // here replaces the whole parent object — this proves it wasn't left to inherit.
+    expect(metadata.openGraph?.title).not.toBe(BRAND.FULL_NAME);
+    expect(metadata.openGraph?.description).not.toBe(BRAND.TAGLINE);
+    expect(metadata.openGraph?.title).toContain('Product Catalogue');
+    expect(metadata.openGraph?.description).toContain('hygiene and care products');
+  });
+
+  it('carries forward siteName, type and locale so they are not lost by the inheritance replacement', () => {
+    // `OpenGraph` is a union keyed on `type`, and one union member (bare
+    // `OpenGraphMetadata`) has no `type` field at all — so `.type` isn't
+    // narrowed without a cast, same pattern as the `description as string`
+    // casts above.
+    const openGraph = metadata.openGraph as { siteName?: string; type?: string; locale?: string };
+    expect(openGraph?.siteName).toBe(BRAND.FULL_NAME);
+    expect(openGraph?.type).toBe('website');
+    expect(openGraph?.locale).toBe('en_IN');
   });
 });

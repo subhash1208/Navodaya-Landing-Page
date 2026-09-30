@@ -85,6 +85,15 @@ describe('ProductGrid', () => {
     );
   });
 
+  it('keeps the tablist ARIA wiring intact alongside the expanded hit areas', () => {
+    render(<ProductGrid activeCategory={ALL_ID} />);
+    const tab = screen.getByRole('tab', { name: /All Products/i });
+    expect(tab.getAttribute('id')).toBe('tab-all');
+    expect(tab.getAttribute('aria-controls')).toBe('product-grid-panel');
+    const panel = document.getElementById('product-grid-panel');
+    expect(panel?.getAttribute('aria-labelledby')).toBe('tab-all');
+  });
+
   it('reports the result count in the plural', () => {
     render(<ProductGrid activeCategory={ALL_ID} />);
     expect(screen.getByText(/^\d+ products$/)).toBeTruthy();
@@ -119,6 +128,26 @@ describe('ProductGrid', () => {
     const clearBtn = screen.getByLabelText('Clear search');
     fireEvent.click(clearBtn);
     expect(input.value).toBe('');
+  });
+
+  it('expands the clear-search button hit area to the 44px touch-target floor without moving the icon', () => {
+    render(<ProductGrid activeCategory={ALL_ID} />);
+    const input = screen.getByLabelText('Search products');
+    fireEvent.change(input, { target: { value: 'test' } });
+    const clearBtn = screen.getByLabelText('Clear search');
+    // The icon keeps its own w-4 h-4 box; only the invisible `before` pseudo-element grows the
+    // hit area, so the button itself must stay absolutely positioned (unchanged) and gain the
+    // before:inset-[-14px] expansion — never `relative`, which would break its own placement.
+    expect(clearBtn.className).toContain('absolute');
+    expect(clearBtn.className).toContain('before:inset-[-14px]');
+    expect(clearBtn.querySelector('svg')?.getAttribute('class')).toContain('w-4 h-4');
+  });
+
+  it('expands the category tab hit area vertically without changing horizontal reach', () => {
+    render(<ProductGrid activeCategory={ALL_ID} />);
+    const tab = screen.getByRole('tab', { name: /All Products/i });
+    expect(tab.className).toContain('before:inset-y-[-5px]');
+    expect(tab.className).toContain('before:inset-x-0');
   });
 
   it('handles category filter change', () => {

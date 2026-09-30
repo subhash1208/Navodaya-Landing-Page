@@ -8,6 +8,14 @@ export const metadata: Metadata = {
   title: 'Product Catalogue',
   description: `Browse ${PRODUCTS.length}+ hygiene and care products across ${PRODUCT_CATEGORIES.length} categories. ${BRAND.FULL_NAME}, ${BRAND.LOCATION}.`,
   alternates: { canonical: ROUTES.PRODUCTS },
+  openGraph: {
+    title: `Product Catalogue | ${BRAND.NAME}`,
+    description: `Browse ${PRODUCTS.length}+ hygiene and care products across ${PRODUCT_CATEGORIES.length} categories from ${BRAND.FULL_NAME}.`,
+    url: ROUTES.PRODUCTS,
+    type: 'website',
+    locale: 'en_IN',
+    siteName: BRAND.FULL_NAME,
+  },
 };
 
 /**

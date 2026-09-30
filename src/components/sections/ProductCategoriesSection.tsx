@@ -42,48 +42,46 @@ export default function ProductCategoriesSection() {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     let destroyed = false;
-    const triggers: { kill: () => void }[] = [];
+    let ctx: gsap.Context | null = null;
 
     async function init() {
       const { gsap } = await import('gsap');
       const { ScrollTrigger } = await import('gsap/ScrollTrigger');
       gsap.registerPlugin(ScrollTrigger);
 
-      if (destroyed) return;
+      if (destroyed || !cardsContainer) return;
 
       const cards = cardRefs.map((r) => r.current).filter(Boolean) as HTMLElement[];
 
-      // Set initial hidden state
-      cards.forEach((card, i) => {
-        gsap.set(card, { opacity: 0, x: CARD_ORIGINS[i].x, y: CARD_ORIGINS[i].y });
-      });
-
-      // Staggered scroll-triggered reveal — NO pin (avoids React DOM conflict)
-      cards.forEach((card, i) => {
-        const st = ScrollTrigger.create({
-          trigger: cardsContainer,
-          start: 'top 75%',
-          once: true,
-          onEnter: () => {
-            gsap.to(card, {
+      // Staggered scroll-triggered reveal — NO pin (avoids React DOM conflict). The
+      // scrollTrigger config lives inside each tween's own vars (matching AboutSection.tsx
+      // and WhyUsSection.tsx) so the trigger and the tween it drives are one associated
+      // unit, and creating them inside gsap.context() records both for ctx.revert() to
+      // kill together in cleanup.
+      ctx = gsap.context(() => {
+        cards.forEach((card, i) => {
+          gsap.fromTo(
+            card,
+            { opacity: 0, x: CARD_ORIGINS[i].x, y: CARD_ORIGINS[i].y },
+            {
               opacity: 1,
               x: 0,
               y: 0,
               duration: 0.7,
               delay: i * 0.15,
               ease: 'power3.out',
-            });
-          },
+              scrollTrigger: { trigger: cardsContainer, start: 'top 75%', once: true },
+            },
+          );
         });
-        triggers.push(st);
-      });
+      }, cardsContainer);
     }
 
     init();
 
     return () => {
       destroyed = true;
-      triggers.forEach((t) => t.kill());
+      ctx?.revert();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -116,7 +114,8 @@ export default function ProductCategoriesSection() {
               </span>
             </div>
             <p className="mt-6 max-w-xl text-body-lg text-grey-600">
-              Three focused ranges covering every hygiene and care need across industries.
+              {PRODUCT_CATEGORIES.length} focused ranges covering every hygiene and care need across
+              industries.
             </p>
           </div>
         </AnimateIn>

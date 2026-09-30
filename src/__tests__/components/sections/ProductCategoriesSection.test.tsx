@@ -3,13 +3,20 @@ import { render, screen, act } from '@testing-library/react';
 import ProductCategoriesSection from '@/components/sections/ProductCategoriesSection';
 import { PRODUCT_CATEGORIES, PRODUCT_COUNT_BY_CATEGORY } from '@/constants';
 
+const mockFromTo = vi.fn();
+const mockRevert = vi.fn();
+const mockContext = vi.fn().mockImplementation((fn: () => void) => {
+  fn();
+  return { revert: mockRevert };
+});
+
 vi.mock('gsap', () => ({
   gsap: {
     registerPlugin: vi.fn(),
-    fromTo: vi.fn(),
+    fromTo: (...args: any[]) => mockFromTo(...args),
     to: vi.fn(),
     set: vi.fn(),
-    context: vi.fn().mockReturnValue({ revert: vi.fn() }),
+    context: (...args: any[]) => mockContext(...args),
   },
 }));
 
@@ -84,6 +91,13 @@ vi.mock('@/components/ui/AnimateIn', () => ({
 
 describe('ProductCategoriesSection', () => {
   beforeEach(() => {
+    mockFromTo.mockClear();
+    mockRevert.mockClear();
+    mockContext.mockClear();
+    mockContext.mockImplementation((fn: () => void) => {
+      fn();
+      return { revert: mockRevert };
+    });
     vi.mocked(window.CSS.supports).mockReturnValue(false);
     vi.mocked(window.matchMedia).mockImplementation((query: string) => ({
       matches: false,
@@ -270,6 +284,43 @@ describe('ProductCategoriesSection', () => {
 
   it('renders subheading text', () => {
     render(<ProductCategoriesSection />);
-    expect(screen.getByText(/Three focused ranges/)).toBeTruthy();
+    expect(screen.getByText(/3 focused ranges/)).toBeTruthy();
+  });
+
+  it('creates one tween per card inside gsap.context, scoped to the cards container', async () => {
+    const { container } = render(<ProductCategoriesSection />);
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    });
+
+    const cardsContainer = container.querySelector('.grid');
+    expect(mockContext).toHaveBeenCalledTimes(1);
+    expect(mockContext.mock.calls[0][1]).toBe(cardsContainer);
+
+    expect(mockFromTo).toHaveBeenCalledTimes(3);
+    mockFromTo.mock.calls.forEach((call) => {
+      expect(call[2]).toEqual(
+        expect.objectContaining({
+          scrollTrigger: expect.objectContaining({
+            trigger: cardsContainer,
+            start: 'top 75%',
+            once: true,
+          }),
+        }),
+      );
+    });
+  });
+
+  it('reverts the gsap.context on unmount, killing every card tween together — not a bare ScrollTrigger handle', async () => {
+    let unmount: () => void = () => {};
+    await act(async () => {
+      const result = render(<ProductCategoriesSection />);
+      unmount = result.unmount;
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    });
+
+    expect(mockRevert).not.toHaveBeenCalled();
+    act(() => unmount());
+    expect(mockRevert).toHaveBeenCalledTimes(1);
   });
 });

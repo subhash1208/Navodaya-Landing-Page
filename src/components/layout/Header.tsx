@@ -14,8 +14,19 @@ export function Header() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  // Checked once on mount, matching the repo-wide pattern (AnimateIn, CustomCursor,
+  // PageTransition, CounterStat): a plain `matchMedia` read in an effect, no live
+  // subscription. The mobile nav is closed on both the server and the initial client
+  // render, so there is no SSR-visible content this gates — only the entrance/exit
+  // animation the menu plays once a visitor can actually open it, well after this
+  // effect has run.
+  const [reducedMotion, setReducedMotion] = useState(false);
   const toggleButtonRef = useRef<HTMLButtonElement>(null);
   const scrollLockedRef = useRef(false);
+
+  useEffect(() => {
+    setReducedMotion(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  }, []);
 
   useEffect(() => {
     let rafId: number;
@@ -114,6 +125,34 @@ export function Header() {
     };
   }, [mobileOpen]);
 
+  // The open mobile nav traps Tab focus (`useFocusTrap` above) but that only covers
+  // sequential keyboard navigation — a screen-reader virtual cursor moves by document
+  // order, not Tab order, and could still read and activate the page content sitting
+  // behind the overlay. `Header` cannot reach `<main>`/`<Footer>` through props or
+  // context — they are its siblings in `src/app/layout.tsx`, not its children — so this
+  // reaches them the same way the scroll lock above reaches `document.body`: directly,
+  // by DOM query, imperatively. `inert` is a real HTML attribute (React 19 can also
+  // render it as a JSX boolean prop, but there is no JSX here to render it onto), so
+  // setting it outside React does not fight any render.
+  // `SkipNav` (a sibling in `layout.tsx`, rendered before `main`) is deliberately NOT included in
+  // this targeting. Tab is already fully trapped inside the open mobile nav by `useFocusTrap`
+  // above, and `SkipNav`'s only target — `#main-content` — is itself `inert` while this is open,
+  // so activating the skip link would be a no-op; only a screen-reader virtual-cursor traversal
+  // could reach it at all. Adding `inert` here would risk it sticking on an exit path this effect
+  // doesn't cover, for a link that does nothing anyway.
+  useEffect(() => {
+    const main = document.getElementById('main-content');
+    const footer = document.querySelector('footer');
+    if (mobileOpen) {
+      main?.setAttribute('inert', '');
+      footer?.setAttribute('inert', '');
+    }
+    return () => {
+      main?.removeAttribute('inert');
+      footer?.removeAttribute('inert');
+    };
+  }, [mobileOpen]);
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-paper border-b border-grey-200">
       <div
@@ -184,7 +223,7 @@ export function Header() {
         {/* Mobile hamburger */}
         <button
           ref={toggleButtonRef}
-          className="md:hidden p-2 text-ink hover:text-brand-blue transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink"
+          className="md:hidden relative p-2 text-ink hover:text-brand-blue transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink before:absolute before:inset-[-4px] before:content-['']"
           onClick={() => setMobileOpen((v) => !v)}
           aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
           aria-expanded={mobileOpen}
@@ -199,25 +238,37 @@ export function Header() {
         {mobileOpen && (
           <motion.nav
             id="mobile-nav"
-            aria-label="Mobile navigation"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="mobile-nav-heading"
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.35, ease: [0.76, 0, 0.24, 1] }}
+            transition={{ duration: reducedMotion ? 0.01 : 0.35, ease: [0.76, 0, 0.24, 1] }}
             className="md:hidden absolute top-full left-0 right-0 overflow-hidden bg-paper border-b border-grey-200"
           >
+            {/* Screen-reader-only accessible name for the dialog. Text matches the previous
+                bare `aria-label`, so `getByLabelText('Mobile navigation')` — used throughout
+                this file's tests — still resolves via `aria-labelledby` without any test edits. */}
+            <h2 id="mobile-nav-heading" className="sr-only">
+              Mobile navigation
+            </h2>
             <ul className="flex flex-col py-3 px-6 gap-1" style={{ perspective: '1000px' }}>
               {NAV_LINKS.map(({ label, href }, i) => {
                 const isActive = href === '/' ? pathname === '/' : pathname.startsWith(href);
                 return (
                   <li key={href} style={{ perspective: '120px', perspectiveOrigin: 'bottom' }}>
                     <motion.div
-                      initial={{ opacity: 0, rotateX: 90, translateY: 40 }}
-                      animate={{ opacity: 1, rotateX: 0, translateY: 0 }}
+                      initial={
+                        reducedMotion ? { opacity: 0 } : { opacity: 0, rotateX: 90, translateY: 40 }
+                      }
+                      animate={
+                        reducedMotion ? { opacity: 1 } : { opacity: 1, rotateX: 0, translateY: 0 }
+                      }
                       exit={{ opacity: 0 }}
                       transition={{
-                        duration: 0.5,
-                        delay: 0.1 + i * 0.08,
+                        duration: reducedMotion ? 0.01 : 0.5,
+                        delay: reducedMotion ? 0 : 0.1 + i * 0.08,
                         ease: [0.215, 0.61, 0.355, 1],
                       }}
                     >
@@ -238,12 +289,16 @@ export function Header() {
               })}
               <li className="pt-2 pb-2">
                 <motion.div
-                  initial={{ opacity: 0, rotateX: 90, translateY: 40 }}
-                  animate={{ opacity: 1, rotateX: 0, translateY: 0 }}
+                  initial={
+                    reducedMotion ? { opacity: 0 } : { opacity: 0, rotateX: 90, translateY: 40 }
+                  }
+                  animate={
+                    reducedMotion ? { opacity: 1 } : { opacity: 1, rotateX: 0, translateY: 0 }
+                  }
                   exit={{ opacity: 0 }}
                   transition={{
-                    duration: 0.5,
-                    delay: 0.1 + NAV_LINKS.length * 0.08,
+                    duration: reducedMotion ? 0.01 : 0.5,
+                    delay: reducedMotion ? 0 : 0.1 + NAV_LINKS.length * 0.08,
                     ease: [0.215, 0.61, 0.355, 1],
                   }}
                 >

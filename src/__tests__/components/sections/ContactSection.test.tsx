@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import ContactSection from '@/components/sections/ContactSection';
 import { BRAND, PRODUCTS, productEnquiryLabel } from '@/constants';
-import { submitContactForm } from '@/app/actions/contact';
+import { submitContactForm, type ContactActionResult } from '@/app/actions/contact';
 
 /**
  * `react` is deliberately NOT mocked here.
@@ -454,6 +454,54 @@ describe('ContactSection', () => {
       expect(screen.getByText('Send another enquiry')).toBeTruthy();
     });
 
+    it('gives the success panel a live region that is not internally contradictory', async () => {
+      // `role="alert"` carries an IMPLICIT `aria-live="assertive"`; pairing it with an explicit
+      // `aria-live="polite"` on the same node is a conflict browsers resolve inconsistently. The
+      // panel replaces the form entirely, so the visitor needs to learn about it promptly —
+      // assertive is the deliberate choice, matching the error banner elsewhere in this form.
+      render(<ContactSection />);
+      fillForm();
+      submitForm();
+
+      const panel = await screen.findByRole('alert');
+      expect(panel.textContent).toContain('Thank You!');
+      expect(panel.getAttribute('aria-live')).toBe('assertive');
+    });
+
+    it('recovers from a rejected action call without losing the page or typed input', async () => {
+      // Distinct from a structured `{ success: false }` result: this is the RPC call to the
+      // server action failing in transit — offline, DNS blip, connection reset. Uncaught, it
+      // bubbles out of `startTransition` to the nearest error boundary and replaces the ENTIRE
+      // page. `contactAction`'s try/catch must keep it inline instead.
+      mockSubmit.mockRejectedValue(new Error('network request failed'));
+      render(<ContactSection />);
+
+      const companyName = screen.getByPlaceholderText('Company name') as HTMLInputElement;
+      fillForm();
+      fireEvent.change(companyName, { target: { value: 'Still Typing Co' } });
+      submitForm();
+
+      const banner = await screen.findByRole('alert');
+      expect(banner.textContent).toContain('Failed to send your enquiry');
+      expect(banner.textContent).toContain(BRAND.EMAIL);
+      expect(banner.textContent).toContain(BRAND.PHONE);
+
+      // The form is still mounted — same node, not a page replaced by an error boundary — and
+      // the visitor's typed value survived the failed submission.
+      expect(screen.getByPlaceholderText('Company name')).toBe(companyName);
+      expect((screen.getByPlaceholderText('Company name') as HTMLInputElement).value).toBe(
+        'Still Typing Co',
+      );
+      expect(screen.getByText('Send an Enquiry')).toBeTruthy();
+
+      // Re-enabled and able to retry.
+      const button = screen.getByRole('button', { name: /send enquiry/i });
+      expect(button.hasAttribute('disabled')).toBe(false);
+      mockSubmit.mockResolvedValue({ success: true });
+      fireEvent.click(button);
+      expect(await screen.findByText('Thank You!')).toBeTruthy();
+    });
+
     it('renders the error alert when the action reports a failure', async () => {
       mockSubmit.mockResolvedValue({ success: false, error: 'Invalid phone number.' });
       render(<ContactSection />);
@@ -464,15 +512,21 @@ describe('ContactSection', () => {
       expect(screen.getByText('Send an Enquiry')).toBeTruthy();
     });
 
-    it('renders no alert when the action fails without a message', async () => {
-      mockSubmit.mockResolvedValue({ success: false });
+    it('renders a fallback message when the action fails without one, rather than nothing', async () => {
+      // `ContactActionResult` requires `error` on every failure variant, so this shape is a
+      // compile error for any real return path — the cast simulates a malformed response
+      // crossing the server-action RPC boundary, which the type system cannot police at runtime.
+      // The old behaviour rendered no alert at all here, silently dropping the enquiry.
+      mockSubmit.mockResolvedValue({ success: false } as unknown as ContactActionResult);
       render(<ContactSection />);
       fillForm();
       submitForm();
 
-      await waitFor(() => expect(mockSubmit).toHaveBeenCalledTimes(1));
+      const banner = await screen.findByRole('alert');
+      expect(banner.textContent).toContain('Something went wrong sending your enquiry');
+      expect(banner.textContent).toContain(BRAND.EMAIL);
+      expect(banner.textContent).toContain(BRAND.PHONE);
       expect(screen.getByText('Send an Enquiry')).toBeTruthy();
-      expect(screen.queryByRole('alert')).toBeNull();
     });
 
     it('preserves typed input and node identity across an error re-render', async () => {
@@ -493,9 +547,9 @@ describe('ContactSection', () => {
     });
 
     it('disables the submit button while pending so a double click fires the action once', async () => {
-      let resolveAction: (value: { success: boolean }) => void = () => {};
+      let resolveAction: (value: ContactActionResult) => void = () => {};
       mockSubmit.mockReturnValue(
-        new Promise<{ success: boolean }>((resolve) => {
+        new Promise<ContactActionResult>((resolve) => {
           resolveAction = resolve;
         }),
       );
@@ -729,6 +783,36 @@ describe('ContactSection', () => {
 
       const detail = screen.getByPlaceholderText('Describe the product you need');
       await waitFor(() => expect(document.activeElement).toBe(detail));
+      expect(detail.getAttribute('aria-describedby')).toBe('productName-error');
+    });
+
+    it('shows the message visibly beside the Other detail input, not left under the hidden select', async () => {
+      mockSubmit.mockResolvedValue({
+        success: false,
+        error: 'Product name is required.',
+        field: 'productName',
+      });
+      render(<ContactSection />);
+      fillForm({ product: 'Other', other: '   ' });
+      submitForm();
+
+      const detail = (await screen.findByPlaceholderText(
+        'Describe the product you need',
+      )) as HTMLInputElement;
+      await waitFor(() => expect(detail.getAttribute('aria-invalid')).toBe('true'));
+
+      // Exactly one node carries the id both inputs' `aria-describedby` points at — no duplicate.
+      const messages = document.querySelectorAll('[id="productName-error"]');
+      expect(messages.length).toBe(1);
+      expect(messages[0].textContent).toBe('Product name is required.');
+
+      // It renders next to the detail input the visitor is actually looking at...
+      expect(detail.parentElement?.contains(messages[0])).toBe(true);
+      // ...not under the (now hidden) product select.
+      const select = screen.getByRole('combobox');
+      expect(select.parentElement?.contains(messages[0])).toBe(false);
+
+      // The wiring a screen-reader user depends on is untouched.
       expect(detail.getAttribute('aria-describedby')).toBe('productName-error');
     });
 
