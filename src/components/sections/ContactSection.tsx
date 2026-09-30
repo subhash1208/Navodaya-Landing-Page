@@ -13,7 +13,13 @@ import {
   User,
   Briefcase,
 } from 'lucide-react';
-import { BRAND, PRODUCT_CATEGORIES, PRODUCTS, productEnquiryLabel } from '@/constants';
+import {
+  BRAND,
+  PRODUCT_CATEGORIES,
+  PRODUCTS,
+  productEnquiryLabel,
+  productsInCategory,
+} from '@/constants';
 import { SEND_FAILED_ERROR } from '@/constants/contact';
 import { submitContactForm, type ContactActionResult } from '@/app/actions/contact';
 import { AnimateIn } from '@/components/ui/AnimateIn';
@@ -348,10 +354,12 @@ export default function ContactSection() {
                       </option>
                       {PRODUCT_CATEGORIES.map((cat) => (
                         <optgroup key={cat.id} label={cat.name}>
-                          {PRODUCTS.filter((p) => p.category.id === cat.id).map((p) => (
-                            // Two pairs of products share a `name`, so the value carries the
-                            // category too; the visible label stays `p.name` because the
-                            // enclosing optgroup already shows the category.
+                          {productsInCategory(cat.slug).map((p) => (
+                            // The value carries the category so the business can tell which
+                            // range an enquiry belongs to; the visible label stays `p.name`
+                            // because the enclosing optgroup already shows the category.
+                            // `productsInCategory` also lists the three dual-category products
+                            // under both of their optgroups, matching the catalogue listings.
                             <option key={p.id} value={productEnquiryLabel(p)}>
                               {p.name}
                             </option>

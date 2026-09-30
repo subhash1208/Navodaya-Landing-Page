@@ -6,11 +6,11 @@ import { BRAND, PRODUCTS, PRODUCT_CATEGORIES, ROUTES } from '@/constants';
 
 export const metadata: Metadata = {
   title: 'Product Catalogue',
-  description: `Browse ${PRODUCTS.length}+ hygiene and care products across ${PRODUCT_CATEGORIES.length} categories. ${BRAND.FULL_NAME}, ${BRAND.LOCATION}.`,
+  description: `Browse ${PRODUCTS.length} hygiene, housekeeping and care products across ${PRODUCT_CATEGORIES.length} categories. ${BRAND.FULL_NAME}, ${BRAND.LOCATION}.`,
   alternates: { canonical: ROUTES.PRODUCTS },
   openGraph: {
     title: `Product Catalogue | ${BRAND.NAME}`,
-    description: `Browse ${PRODUCTS.length}+ hygiene and care products across ${PRODUCT_CATEGORIES.length} categories from ${BRAND.FULL_NAME}.`,
+    description: `Browse ${PRODUCTS.length} hygiene, housekeeping and care products across ${PRODUCT_CATEGORIES.length} categories from ${BRAND.FULL_NAME}.`,
     url: ROUTES.PRODUCTS,
     type: 'website',
     locale: 'en_IN',
@@ -62,7 +62,7 @@ export default async function ProductsPage({
             Product Catalogue
           </h1>
           <p className="text-grey-500 text-lg">
-            {PRODUCTS.length}+ products across {PRODUCT_CATEGORIES.length} categories — education,
+            {PRODUCTS.length} products across {PRODUCT_CATEGORIES.length} categories — education,
             healthcare &amp; hospitality.
           </p>
         </div>

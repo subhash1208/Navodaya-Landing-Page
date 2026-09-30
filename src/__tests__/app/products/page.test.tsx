@@ -85,7 +85,7 @@ describe('ProductsPage category resolution', () => {
   });
 
   it('falls back to all for a repeated category param (array value)', async () => {
-    await renderPage({ category: ['spa-salon', 'hygiene-safety'] });
+    await renderPage({ category: ['spa-salon', 'hygiene-safety-housekeeping'] });
     expect(receivedCategory).toHaveBeenCalledWith('all');
   });
 });
@@ -96,7 +96,7 @@ describe('ProductsPage metadata', () => {
   });
 
   it('has description', () => {
-    expect(metadata.description).toContain('hygiene and care products');
+    expect(metadata.description).toContain('hygiene, housekeeping and care products');
   });
 
   it('declares /products as its canonical URL', () => {
@@ -114,7 +114,7 @@ describe('ProductsPage metadata', () => {
     expect(metadata.openGraph?.title).not.toBe(BRAND.FULL_NAME);
     expect(metadata.openGraph?.description).not.toBe(BRAND.TAGLINE);
     expect(metadata.openGraph?.title).toContain('Product Catalogue');
-    expect(metadata.openGraph?.description).toContain('hygiene and care products');
+    expect(metadata.openGraph?.description).toContain('hygiene, housekeeping and care products');
   });
 
   it('carries forward siteName, type and locale so they are not lost by the inheritance replacement', () => {

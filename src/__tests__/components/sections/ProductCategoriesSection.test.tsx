@@ -122,11 +122,16 @@ describe('ProductCategoriesSection', () => {
     expect(screen.getByText('Our Product Categories')).toBeTruthy();
   });
 
-  it('renders 3 category cards', () => {
+  it('renders 4 category cards', () => {
     render(<ProductCategoriesSection />);
-    expect(screen.getByText('Disposable Hygiene & Safety')).toBeTruthy();
+    expect(screen.getByText('Hygiene, Safety & Housekeeping')).toBeTruthy();
     expect(screen.getByText('Hotel Slippers & Guest Amenities')).toBeTruthy();
     expect(screen.getByText('Disposable Spa & Salon')).toBeTruthy();
+    // The fourth category must not be silently dropped by a grid that used to be hard-wired
+    // to three columns — that is the whole risk this assertion covers. `getByRole('heading')`
+    // rather than `getByText`, because this is the one category whose name also appears inside
+    // its (aria-hidden) typographic plate.
+    expect(screen.getByRole('heading', { name: 'Protective Packing' })).toBeTruthy();
   });
 
   it('renders product counts', () => {
@@ -149,7 +154,7 @@ describe('ProductCategoriesSection', () => {
   it('renders Browse Products links', () => {
     render(<ProductCategoriesSection />);
     const browseLinks = screen.getAllByText('Browse Products');
-    expect(browseLinks.length).toBe(3);
+    expect(browseLinks.length).toBe(4);
   });
 
   it('renders What We Supply label', () => {
@@ -183,7 +188,7 @@ describe('ProductCategoriesSection', () => {
     render(<ProductCategoriesSection />);
     // Each category card has a description
     const cards = screen.getAllByText(/Browse Products/);
-    expect(cards.length).toBe(3);
+    expect(cards.length).toBe(4);
   });
 
   it('renders category links with correct hrefs', () => {
@@ -231,22 +236,40 @@ describe('ProductCategoriesSection', () => {
     expect(container.querySelectorAll('.bg-category-hygiene').length).toBe(1);
     expect(container.querySelectorAll('.bg-category-hotel').length).toBe(1);
     expect(container.querySelectorAll('.bg-category-spa').length).toBe(1);
+    expect(container.querySelectorAll('.bg-category-packing').length).toBe(1);
   });
 
-  it('renders one specimen plate per category, pointing at the slug-derived path', () => {
+  it('renders a specimen plate for every category that has one photographed', () => {
     render(<ProductCategoriesSection />);
     const plates = screen.getAllByRole('img');
+    // Three, not four: `protective-packing` has no plate shot yet. The hygiene plate keeps its
+    // original `hygiene-safety.webp` filename even though the category slug gained
+    // `-housekeeping` — the asset was deliberately not renamed.
     expect(plates.length).toBe(3);
     expect(plates[0].getAttribute('src')).toBe('/categories/hygiene-safety.webp');
     expect(plates[1].getAttribute('src')).toBe('/categories/hotel-amenities.webp');
     expect(plates[2].getAttribute('src')).toBe('/categories/spa-salon.webp');
   });
 
+  it('gives the unphotographed category a typographic tile at the same size as a real plate', () => {
+    const { container } = render(<ProductCategoriesSection />);
+    const plateSlots = container.querySelectorAll('.aspect-\\[4\\/5\\]');
+    // Every card reserves the same box, so the row stays level whether or not a photo exists.
+    expect(plateSlots.length).toBe(4);
+
+    const tile = container.querySelector('.bg-brand-blue');
+    expect(tile).toBeTruthy();
+    expect(tile?.textContent).toBe('Protective Packing');
+    // Decorative: the <h3> beneath already names the category, so the tile must not repeat it
+    // to a screen reader.
+    expect(tile?.getAttribute('aria-hidden')).toBe('true');
+  });
+
   it('gives every plate descriptive alt text that does not merely repeat the category name', () => {
     render(<ProductCategoriesSection />);
     const plates = screen.getAllByRole('img');
     const names = [
-      'Disposable Hygiene & Safety',
+      'Hygiene, Safety & Housekeeping',
       'Hotel Slippers & Guest Amenities',
       'Disposable Spa & Salon',
     ];
@@ -262,8 +285,10 @@ describe('ProductCategoriesSection', () => {
   it('gives every plate an explicit sizes attribute and no priority hint', () => {
     render(<ProductCategoriesSection />);
     screen.getAllByRole('img').forEach((plate) => {
+      // Recomputed for the four-up grid: the cards are two-up from `sm` and four-up from `xl`,
+      // so each plate is wider in the middle range than it was under the old three-up layout.
       expect(plate.getAttribute('sizes')).toBe(
-        '(min-width: 1152px) 288px, (min-width: 640px) 25vw, calc(100vw - 7rem)',
+        '(min-width: 1280px) 288px, (min-width: 640px) 45vw, calc(100vw - 7rem)',
       );
       expect(plate.hasAttribute('priority')).toBe(false);
       expect(plate.hasAttribute('fetchpriority')).toBe(false);
@@ -279,12 +304,12 @@ describe('ProductCategoriesSection', () => {
   it('does not render a section index, and renders the total category count', () => {
     render(<ProductCategoriesSection />);
     expect(screen.queryByText('02')).toBeNull();
-    expect(screen.getByText('3 categories')).toBeTruthy();
+    expect(screen.getByText('4 categories')).toBeTruthy();
   });
 
   it('renders subheading text', () => {
     render(<ProductCategoriesSection />);
-    expect(screen.getByText(/3 focused ranges/)).toBeTruthy();
+    expect(screen.getByText(/4 focused ranges/)).toBeTruthy();
   });
 
   it('creates one tween per card inside gsap.context, scoped to the cards container', async () => {
@@ -297,7 +322,7 @@ describe('ProductCategoriesSection', () => {
     expect(mockContext).toHaveBeenCalledTimes(1);
     expect(mockContext.mock.calls[0][1]).toBe(cardsContainer);
 
-    expect(mockFromTo).toHaveBeenCalledTimes(3);
+    expect(mockFromTo).toHaveBeenCalledTimes(4);
     mockFromTo.mock.calls.forEach((call) => {
       expect(call[2]).toEqual(
         expect.objectContaining({

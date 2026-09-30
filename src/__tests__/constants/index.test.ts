@@ -3,8 +3,12 @@ import {
   PRODUCTS,
   PRODUCT_CATEGORIES,
   PRODUCT_COUNT_BY_CATEGORY,
+  SUB_CATEGORIES,
   productEnquiryLabel,
+  productsInCategory,
+  productSummary,
 } from '@/constants';
+import type { CategorySlug } from '@/types';
 
 /** Values that appear more than once, so a failure can name the offenders. */
 function duplicates(values: string[]): string[] {
@@ -26,14 +30,12 @@ describe('catalogue invariants', () => {
     expect(duplicates(PRODUCTS.map((p) => p.slug))).toEqual([]);
   });
 
-  it('has exactly two known duplicate names and no others', () => {
-    // These two pairs are deliberate — the same product exists in two categories.
-    // `productEnquiryLabel` is what disambiguates them for the contact form; a THIRD
-    // duplicate name must not appear unnoticed, hence the exact-match assertion.
-    expect(duplicates(PRODUCTS.map((p) => p.name))).toEqual([
-      'Biodegradable Shower Cap',
-      'Disposable Bouffant Cap',
-    ]);
+  it('has no duplicate product names', () => {
+    // The two deliberate duplicate pairs this assertion used to allow are gone: the client's
+    // real catalogue lists a dual-market product ONCE, with a `secondaryCategory`, rather than
+    // twice under two ids. `productEnquiryLabel` still carries the category so the business can
+    // place an enquiry, but it is no longer load-bearing for disambiguation.
+    expect(duplicates(PRODUCTS.map((p) => p.name))).toEqual([]);
   });
 
   it('gives every product a unique enquiry label', () => {
@@ -45,7 +47,7 @@ describe('catalogue invariants', () => {
     expect(productEnquiryLabel(product)).toBe(`${product.name} — ${product.category.name}`);
   });
 
-  it('points every product at one of the three category objects by identity', () => {
+  it('points every product at one of the four category objects by identity', () => {
     for (const product of PRODUCTS) {
       expect(
         PRODUCT_CATEGORIES.includes(product.category),
@@ -54,20 +56,115 @@ describe('catalogue invariants', () => {
     }
   });
 
-  it('gives every product an id, name, slug and description', () => {
-    // `material` is optional (src/types/index.ts) and is deliberately not asserted.
+  it('gives every product an id, name, slug and a displayable summary', () => {
+    // `material`, `variants`, `description` and `image` are all optional (src/types/index.ts).
+    // What has to hold is that SOMETHING renders in the card's copy slot — `productSummary`
+    // composes it, and an empty return there would ship a blank paragraph on 164 cards.
     for (const product of PRODUCTS) {
       const label = product.id || product.slug || product.name || '<unidentifiable product>';
       expect(product.id, `${label} is missing id`).toBeTruthy();
       expect(product.name, `${label} is missing name`).toBeTruthy();
       expect(product.slug, `${label} is missing slug`).toBeTruthy();
-      expect(product.description, `${label} is missing description`).toBeTruthy();
+      expect(productSummary(product), `${label} has no displayable summary`).toBeTruthy();
+      expect(productSummary(product), `${label} summary leaked undefined`).not.toContain(
+        'undefined',
+      );
+    }
+  });
+
+  it('subdivides only the hygiene category, and only into known sub-categories', () => {
+    const known = new Set(SUB_CATEGORIES.map((s) => s.slug));
+    for (const product of PRODUCTS) {
+      if (product.subCategory === undefined) continue;
+      expect(
+        product.category.slug,
+        `${product.id} carries a subCategory but is not a hygiene product`,
+      ).toBe('hygiene-safety-housekeeping');
+      expect(known.has(product.subCategory), `${product.id} has an unknown subCategory`).toBe(true);
+    }
+  });
+
+  it('gives every hygiene product a sub-category, and uses every sub-category it declares', () => {
+    // Both directions, because each failure is a different bug: a hygiene product with no
+    // sub-category would fall out of any future sub-category UX, and a declared sub-category
+    // with no products would render an empty section.
+    const hygiene = PRODUCTS.filter((p) => p.category.slug === 'hygiene-safety-housekeeping');
+    expect(hygiene.filter((p) => p.subCategory === undefined).map((p) => p.id)).toEqual([]);
+
+    const used = new Set(PRODUCTS.map((p) => p.subCategory));
+    expect(SUB_CATEGORIES.filter((s) => !used.has(s.slug)).map((s) => s.slug)).toEqual([]);
+  });
+
+  it('gives every sub-category a unique slug, a name and a description', () => {
+    expect(duplicates(SUB_CATEGORIES.map((s) => s.slug))).toEqual([]);
+    for (const sub of SUB_CATEGORIES) {
+      expect(sub.name, `${sub.slug} is missing a name`).toBeTruthy();
+      expect(sub.description, `${sub.slug} is missing a description`).toBeTruthy();
+    }
+  });
+
+  it('gives every category a plate, or omits the key entirely — never an empty string', () => {
+    // An empty string is falsy, so it would take the typographic-tile branch anyway; forbidding
+    // it keeps "not photographed yet" expressed one way only.
+    for (const category of PRODUCT_CATEGORIES) {
+      expect(category.plate, `${category.slug} has an empty plate path`).not.toBe('');
+      if (category.plate !== undefined) {
+        expect(category.plate.startsWith('/')).toBe(true);
+      }
+    }
+    expect(PRODUCT_CATEGORIES.filter((c) => c.plate === undefined).map((c) => c.slug)).toEqual([
+      'protective-packing',
+    ]);
+  });
+
+  it('prefers a real description over the composed summary when one exists', () => {
+    // No product in the client's catalogue has copy today, so this branch of `productSummary`
+    // is unreachable from the data and needs an explicit case.
+    const base = PRODUCTS[0];
+    expect(base.description).toBeUndefined();
+    expect(productSummary({ ...base, description: 'Hand-written copy.' })).toBe(
+      'Hand-written copy.',
+    );
+  });
+
+  it('keeps the bare-fallback sentence clear of the CTA phrase and the category name', () => {
+    // Both halves guard a real accessibility defect, not a style preference. `ProductCard` folds
+    // this sentence into the card link's accessible name, so reusing the "Request a Quote" verb
+    // phrase gave a product card and the page's real CTA the same accessible name (WCAG 2.4.4),
+    // and naming the category here repeated the card's own category header.
+    const bare = PRODUCTS.filter(
+      (p) => !p.description && !p.material && (p.variants?.length ?? 0) <= 1,
+    );
+    expect(bare.length).toBeGreaterThan(0);
+    for (const product of bare) {
+      const summary = productSummary(product);
+      expect(summary, `${product.slug} reuses the CTA phrase`).not.toMatch(/request a quote/i);
+      expect(summary, `${product.slug} repeats its category name`).not.toContain(
+        product.category.name,
+      );
+    }
+    expect(productSummary(bare[0])).toBe(
+      'Available for bulk supply — sizes and pricing on enquiry.',
+    );
+  });
+
+  it('lists a dual-category product under both of its categories', () => {
+    const dual = PRODUCTS.filter((p) => p.secondaryCategory !== undefined);
+    expect(dual.length).toBeGreaterThan(0);
+    for (const product of dual) {
+      const secondary = product.secondaryCategory as CategorySlug;
+      expect(secondary).not.toBe(product.category.slug);
+      expect(productsInCategory(product.category.slug)).toContain(product);
+      // The whole point of the field: it must also appear in the OTHER category's listing.
+      expect(productsInCategory(secondary)).toContain(product);
     }
   });
 
   it('derives a per-category count that matches the products in that category', () => {
     for (const category of PRODUCT_CATEGORIES) {
-      const actual = PRODUCTS.filter((p) => p.category === category).map((p) => p.id);
+      // `productsInCategory`, not `p.category === category`: the count beside each tab has to
+      // match the grid the tab shows, and the grid includes `secondaryCategory` products.
+      const actual = productsInCategory(category.slug).map((p) => p.id);
       expect(
         PRODUCT_COUNT_BY_CATEGORY[category.slug],
         `${category.slug} count disagrees with its products: ${actual.join(', ')}`,
@@ -75,13 +172,16 @@ describe('catalogue invariants', () => {
     }
   });
 
-  it('sums the derived per-category counts to the size of the catalogue', () => {
+  it('sums the derived per-category counts to the catalogue plus its dual listings', () => {
     const sum = PRODUCT_CATEGORIES.reduce((n, c) => n + PRODUCT_COUNT_BY_CATEGORY[c.slug], 0);
     const uncategorised = PRODUCTS.filter((p) => !PRODUCT_CATEGORIES.includes(p.category)).map(
       (p) => p.id,
     );
+    const dualListed = PRODUCTS.filter((p) => p.secondaryCategory !== undefined).length;
     expect(uncategorised).toEqual([]);
-    expect(sum).toBe(PRODUCTS.length);
+    // Deliberately NOT `PRODUCTS.length`: a product with a `secondaryCategory` is counted by
+    // both of its categories, because it is shown in both of their listings.
+    expect(sum).toBe(PRODUCTS.length + dualListed);
   });
 
   it('gives every category at least one product', () => {

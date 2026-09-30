@@ -54,15 +54,24 @@ export default {
           800: '#282621',
           900: '#191815',
         },
-        // Three steps along the logo's own navy -> cyan axis, replacing an electric blue, a rust
+        // Four steps along the logo's own navy -> cyan axis, replacing an electric blue, a rust
         // orange and a forest green that appeared nowhere in the logo or the brand. `hotel` is
         // the exact logo navy. Used as 2px identifier rules on light card surfaces; worst
-        // light-surface ratio is 3.28 (spa on grey-50), clearing WCAG 1.4.11's 3:1 non-text bar.
-        // Mutual separation is 1.72 / 2.11 / 3.63 so the three stay tellable apart.
+        // light-surface ratio is 3.21 (spa on grey-50), clearing WCAG 1.4.11's 3:1 non-text bar.
+        //
+        // `packing` was added when the catalogue widened from three categories to four. The light
+        // end of the axis is closed — `spa` already sits at 3.38 on paper, near the 3:1 floor, and
+        // the next step toward cyan measures 2.67 and fails — so the only room left was to extend
+        // the DARK end. Measured mutual separations are now 1.33 (packing/hygiene), 1.72
+        // (hygiene/hotel), 2.11 (hotel/spa); the 1.33 is below the 1.72 the triad used to hold as
+        // its minimum, which is unavoidable on a one-dimensional axis carrying a fourth step. If
+        // the two darkest rules prove hard to tell apart in use, the fix is to respace all four,
+        // not to add an off-axis hue.
         category: {
-          hygiene: '#00325C', // 12.48 on paper | 11.93 on grey-50 | 1.51 on ink
+          hygiene: '#00325C', // 12.28 on paper | 11.65 on grey-50 | 1.51 on ink
           hotel: '#00559A', // 7.15 on paper | 6.79 on grey-50 | 2.59 on ink — the logo navy
-          spa: '#008FD1', // 3.38 on paper (large text only) | 3.28 on grey-50 | 5.48 on ink
+          spa: '#008FD1', // 3.38 on paper (large text only) | 3.21 on grey-50 | 5.48 on ink
+          packing: '#001C33', // 16.29 on paper | 15.46 on grey-50 | 1.14 on ink
         },
       },
       fontFamily: {

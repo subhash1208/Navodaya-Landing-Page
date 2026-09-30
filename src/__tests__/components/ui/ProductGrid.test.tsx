@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { useRouter } from 'next/navigation';
 import { ALL_ID, ProductGrid } from '@/components/ui/ProductGrid';
-import { PRODUCTS } from '@/constants';
+import { PRODUCTS, productsInCategory } from '@/constants';
 
 vi.mock('next/link', () => ({
   default: ({ children, href, ...props }: any) => (
@@ -102,7 +102,7 @@ describe('ProductGrid', () => {
   it('reports the result count in the singular when one product matches', () => {
     render(<ProductGrid activeCategory={ALL_ID} />);
     const input = screen.getByLabelText('Search products');
-    fireEvent.change(input, { target: { value: 'langot' } });
+    fireEvent.change(input, { target: { value: 'surgeon' } });
     expect(screen.getByText('1 product')).toBeTruthy();
   });
 
@@ -172,6 +172,22 @@ describe('ProductGrid', () => {
     expect(tablist.querySelectorAll('.bg-ink')).toHaveLength(0);
   });
 
+  it('searches material and variant labels, not just the product name', () => {
+    render(<ProductGrid activeCategory={ALL_ID} />);
+    const input = screen.getByLabelText('Search products');
+
+    // 'ABS plastic' is a material and appears in no product NAME at all, so a hit here cannot
+    // have come from the name branch of the filter.
+    fireEvent.change(input, { target: { value: 'abs plastic' } });
+    expect(screen.getAllByRole('link').length).toBeGreaterThan(0);
+    expect(PRODUCTS.filter((p) => p.name.toLowerCase().includes('abs plastic'))).toHaveLength(0);
+
+    // '5 kg' is a variant label, likewise absent from every product name.
+    fireEvent.change(input, { target: { value: '5 kg' } });
+    expect(screen.getAllByRole('link').length).toBeGreaterThan(0);
+    expect(PRODUCTS.filter((p) => p.name.toLowerCase().includes('5 kg'))).toHaveLength(0);
+  });
+
   it('shows no results message when search has no matches', () => {
     render(<ProductGrid activeCategory={ALL_ID} />);
     const input = screen.getByLabelText('Search products');
@@ -198,7 +214,13 @@ describe('ProductGrid category prop', () => {
   it('filters to the prop category on first render, before any interaction', () => {
     render(<ProductGrid activeCategory="spa-salon" />);
 
-    const expected = PRODUCTS.filter((p) => p.category.slug === 'spa-salon');
+    // `productsInCategory` is what the grid itself filters with, so the two shower caps that
+    // carry `secondaryCategory: 'spa-salon'` are expected here even though their primary
+    // category is hotel amenities.
+    const expected = productsInCategory('spa-salon');
+    expect(expected.length).toBeGreaterThan(
+      PRODUCTS.filter((p) => p.category.slug === 'spa-salon').length,
+    );
     expect(screen.getAllByRole('link')).toHaveLength(expected.length);
     expect(screen.getByRole('tab', { selected: true }).getAttribute('id')).toBe('tab-spa-salon');
   });
@@ -212,7 +234,7 @@ describe('ProductGrid category prop', () => {
 
     rerender(<ProductGrid activeCategory="hotel-amenities" />);
 
-    const expected = PRODUCTS.filter((p) => p.category.slug === 'hotel-amenities');
+    const expected = productsInCategory('hotel-amenities');
     expect(screen.getAllByRole('link')).toHaveLength(expected.length);
     expect(screen.getByRole('tab', { selected: true }).getAttribute('id')).toBe(
       'tab-hotel-amenities',

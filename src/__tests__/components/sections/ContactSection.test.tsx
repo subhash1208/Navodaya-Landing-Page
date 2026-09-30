@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import ContactSection from '@/components/sections/ContactSection';
-import { BRAND, PRODUCTS, productEnquiryLabel } from '@/constants';
+import { BRAND, PRODUCTS, PRODUCT_CATEGORIES, productEnquiryLabel } from '@/constants';
 import { submitContactForm, type ContactActionResult } from '@/app/actions/contact';
 
 /**
@@ -260,23 +260,32 @@ describe('ContactSection', () => {
       }
     });
 
-    it('distinguishes the two duplicate-name product pairs by value', () => {
+    it('offers a dual-category product under both of its optgroups, under one enquiry label', () => {
+      // The catalogue no longer lists a dual-market product twice under two ids; it lists it
+      // once with a `secondaryCategory`. The dropdown groups by category, so such a product is
+      // findable under either heading — but it submits ONE value, naming its primary category,
+      // so the business is never asked to reconcile two labels for the same item.
       render(<ContactSection />);
       const select = screen.getByRole('combobox') as HTMLSelectElement;
-      const values = Array.from(select.querySelectorAll('option')).map((o) => o.value);
+      const dual = PRODUCTS.filter((p) => p.secondaryCategory !== undefined);
+      expect(dual.length).toBeGreaterThan(0);
 
-      const duplicatePairs = [
-        ['bio-shower-cap', 'bio-shower-spa'],
-        ['bouffant-cap', 'bouffant-spa'],
-      ];
-      for (const [a, b] of duplicatePairs) {
-        const first = PRODUCTS.find((p) => p.id === a);
-        const second = PRODUCTS.find((p) => p.id === b);
-        expect(first && second).toBeTruthy();
-        expect(first!.name).toBe(second!.name);
-        expect(productEnquiryLabel(first!)).not.toBe(productEnquiryLabel(second!));
-        expect(values).toContain(productEnquiryLabel(first!));
-        expect(values).toContain(productEnquiryLabel(second!));
+      for (const product of dual) {
+        const groups = Array.from(select.querySelectorAll('optgroup')).filter((g) =>
+          Array.from(g.querySelectorAll('option')).some((o) => o.textContent === product.name),
+        );
+        expect(groups.map((g) => g.label).sort()).toEqual(
+          [
+            product.category.name,
+            PRODUCT_CATEGORIES.find((c) => c.slug === product.secondaryCategory)!.name,
+          ].sort(),
+        );
+        const values = new Set(
+          Array.from(select.querySelectorAll('option'))
+            .filter((o) => o.textContent === product.name)
+            .map((o) => o.value),
+        );
+        expect(values).toEqual(new Set([productEnquiryLabel(product)]));
       }
     });
 
@@ -302,15 +311,13 @@ describe('ContactSection', () => {
       );
     });
 
-    it('selects the correct product of a duplicate-name pair by slug, not the other one', () => {
-      window.history.pushState({}, '', '/?product=bio-shower-spa');
+    it('pre-selects a dual-category product under its primary category', () => {
+      const dual = PRODUCTS.find((p) => p.secondaryCategory !== undefined)!;
+      window.history.pushState({}, '', `/?product=${dual.slug}`);
       render(<ContactSection />);
-      const spa = PRODUCTS.find((p) => p.slug === 'bio-shower-spa')!;
-      const cap = PRODUCTS.find((p) => p.slug === 'bio-shower-cap')!;
-      expect(spa.name).toBe(cap.name); // proves this is the duplicate-name pair
       const value = (screen.getByRole('combobox') as HTMLSelectElement).value;
-      expect(value).toBe(productEnquiryLabel(spa));
-      expect(value).not.toBe(productEnquiryLabel(cap));
+      expect(value).toBe(productEnquiryLabel(dual));
+      expect(value).toContain(dual.category.name);
     });
 
     it('leaves the placeholder selected for an unknown slug', () => {

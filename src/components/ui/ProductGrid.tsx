@@ -4,7 +4,12 @@ import { useState, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { Search, X } from 'lucide-react';
 import { cn } from '@/utils/cn';
-import { PRODUCTS, PRODUCT_CATEGORIES, PRODUCT_COUNT_BY_CATEGORY } from '@/constants';
+import {
+  PRODUCTS,
+  PRODUCT_CATEGORIES,
+  PRODUCT_COUNT_BY_CATEGORY,
+  productsInCategory,
+} from '@/constants';
 import { CATEGORY_RULE } from '@/constants/categoryRule';
 import type { CategorySlug } from '@/types';
 import { ProductCard } from './ProductCard';
@@ -81,15 +86,20 @@ export function ProductGrid({ activeCategory: categoryFromUrl }: ProductGridProp
   const filtered = useMemo(() => {
     let list = PRODUCTS;
     if (activeCategory !== ALL_ID) {
-      list = list.filter((p) => p.category.slug === activeCategory);
+      // `productsInCategory` rather than a bare `p.category.slug ===` test: three products carry a
+      // `secondaryCategory` and belong in both listings. Filtering on `category` alone would drop
+      // them from one, and the tab count beside the label — which is derived the same way — would
+      // then disagree with the grid below it.
+      list = productsInCategory(activeCategory);
     }
     if (query.trim()) {
       const q = query.toLowerCase();
       list = list.filter(
         (p) =>
           p.name.toLowerCase().includes(q) ||
-          p.description.toLowerCase().includes(q) ||
-          (p.material?.toLowerCase().includes(q) ?? false),
+          (p.description?.toLowerCase().includes(q) ?? false) ||
+          (p.material?.toLowerCase().includes(q) ?? false) ||
+          (p.variants?.some((v) => v.label.toLowerCase().includes(q)) ?? false),
       );
     }
     return list;

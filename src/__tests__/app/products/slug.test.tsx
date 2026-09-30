@@ -48,8 +48,11 @@ describe('ProductPage [slug]', () => {
   describe('generateMetadata', () => {
     it('returns metadata for valid product', async () => {
       const metadata = await generateMetadata({ params: Promise.resolve({ slug: 'surgeon-cap' }) });
-      expect(metadata.title).toBe('Disposable Surgeon Cap');
-      expect(metadata.description).toContain('Sterile disposable surgeon cap');
+      expect(metadata.title).toBe('Surgeon Cap');
+      // The client's catalogue carries no product copy, so the description is composed by
+      // `productSummary` from the data that does exist — here, the material.
+      expect(metadata.description).toContain('Non-woven construction.');
+      expect(metadata.description).not.toContain('undefined');
     });
 
     it('returns not found title for invalid slug', async () => {
@@ -102,8 +105,8 @@ describe('ProductPage [slug]', () => {
     });
 
     it('does not render material spec when product has no material', async () => {
-      // jute-slippers has no material field
-      const Page = await ProductPage({ params: Promise.resolve({ slug: 'jute-slippers' }) });
+      // face-mask carries neither `material` nor `variants` — the bare-fallback shape
+      const Page = await ProductPage({ params: Promise.resolve({ slug: 'face-mask' }) });
       const { container } = render(Page as any);
       // Should not have a Material row
       const allDts = container.querySelectorAll('dt');
@@ -130,6 +133,33 @@ describe('ProductPage [slug]', () => {
       const cards = screen.getAllByTestId('product-card');
       expect(cards.length).toBeGreaterThan(0);
       expect(cards.length).toBeLessThanOrEqual(4);
+    });
+
+    it('lists every variant a product has, and omits the block entirely when it has none', async () => {
+      const withVariants = await ProductPage({
+        params: Promise.resolve({ slug: 'shoe-cover' }),
+      });
+      const { unmount } = render(withVariants as any);
+      const product = PRODUCTS.find((p) => p.slug === 'shoe-cover')!;
+      expect(product.variants!.length).toBeGreaterThan(1);
+      expect(screen.getByText('Available Options')).toBeTruthy();
+      product.variants!.forEach((v) => expect(screen.getByText(v.label)).toBeTruthy());
+      // The variant count also reaches the spec table, so a visitor sees it twice over.
+      expect(screen.getByText(`${product.variants!.length} available`)).toBeTruthy();
+      unmount();
+
+      const without = await ProductPage({ params: Promise.resolve({ slug: 'face-mask' }) });
+      render(without as any);
+      expect(screen.queryByText('Available Options')).toBeNull();
+      expect(screen.queryByText('Options')).toBeNull();
+    });
+
+    it('never renders the literal string undefined for a product with no copy', async () => {
+      const Page = await ProductPage({ params: Promise.resolve({ slug: 'face-mask' }) });
+      const { container } = render(Page as any);
+      expect(container.textContent).not.toContain('undefined');
+      // The summary slot must still say something — an empty paragraph is the failure this guards.
+      expect(screen.getByText(/Available for bulk supply/)).toBeTruthy();
     });
 
     it('points "Request a Quote" at the homepage contact form, keyed by slug', async () => {

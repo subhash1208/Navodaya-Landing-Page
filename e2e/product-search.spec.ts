@@ -1,4 +1,11 @@
 import { test, expect, type Locator } from '@playwright/test';
+import { PRODUCTS, PRODUCT_CATEGORIES, productsInCategory } from '@/constants';
+
+// The first category tab after "All" — `ProductGrid` builds its tablist as
+// `['All Products', ...PRODUCT_CATEGORIES]`, so `tabs.nth(1)` is this one. Derived rather than
+// named, so reordering the catalogue's categories cannot silently point this spec at a
+// different tab than the one it clicks.
+const FIRST_CATEGORY = PRODUCT_CATEGORIES[0];
 
 /**
  * `/products` is server-rendered as of the `products-ssr` change: `ProductGrid` no longer calls
@@ -35,7 +42,7 @@ test.describe('Product Search & Filter', () => {
     const html = await (await request.get('/products')).text();
 
     const hrefs = new Set(html.match(/href="\/products\/[^"]+"/g) ?? []);
-    expect(hrefs.size).toBe(50);
+    expect(hrefs.size).toBe(PRODUCTS.length);
     expect(html).toContain('type="search"');
     expect(html).not.toContain('aria-busy="true"');
   });
@@ -54,7 +61,7 @@ test.describe('Product Search & Filter', () => {
       // Prove interactivity once, here, so each test below can interact without re-racing.
       await typeWhenHydrated(searchInput, 'hydration probe');
       await searchInput.fill('');
-      await expect.poll(() => page.locator('a[href^="/products/"]').count()).toBe(50);
+      await expect.poll(() => page.locator('a[href^="/products/"]').count()).toBe(PRODUCTS.length);
     });
 
     test('search input is visible', async () => {
@@ -95,7 +102,12 @@ test.describe('Product Search & Filter', () => {
       await tabs.nth(1).click();
 
       const productCards = page.locator('a[href^="/products/"]');
-      await expect.poll(() => productCards.count()).toBeLessThan(50);
+      // The exact count the tab's own label promises, not a `toBeLessThan(50)` ceiling: the
+      // largest category holds 133 of 164 products, so a ceiling that once meant "filtered"
+      // either passes vacuously or fails for the wrong reason the moment the catalogue moves.
+      await expect
+        .poll(() => productCards.count())
+        .toBe(productsInCategory(FIRST_CATEGORY.slug).length);
       expect(await productCards.count()).toBeGreaterThan(0);
 
       // The filter is now part of the URL contract the server reads back.
@@ -108,15 +120,14 @@ test.describe('Product Search & Filter', () => {
       const html = await (await request.get('/products?category=spa-salon')).text();
 
       const hrefs = new Set(html.match(/href="\/products\/[^"]+"/g) ?? []);
-      expect(hrefs.size).toBeGreaterThan(0);
-      expect(hrefs.size).toBeLessThan(50);
+      expect(hrefs.size).toBe(productsInCategory('spa-salon').length);
       expect(html).toContain('aria-labelledby="tab-spa-salon"');
     });
 
     test('result count updates on filter', async ({ page }) => {
       // The rendered card count IS the result count. The previous version matched
       // text=/\d+.*product|showing.*\d+/i, which hit both the page intro copy
-      // ("50+ products across…") and a category tab badge ("50 products") — a strict
+      // ("164 products across…") and a category tab badge ("164 products") — a strict
       // mode violation — and then silently skipped its assertions behind isVisible().
       const productCards = page.locator('a[href^="/products/"]');
       const initialCount = await productCards.count();

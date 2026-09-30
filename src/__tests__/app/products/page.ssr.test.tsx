@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import ProductsPage from '@/app/products/page';
-import { PRODUCTS, PRODUCT_CATEGORIES } from '@/constants';
+import { PRODUCTS, PRODUCT_CATEGORIES, productsInCategory } from '@/constants';
 
 /**
  * Server-rendering regression tests for the product catalogue.
@@ -72,8 +72,11 @@ describe('ProductsPage server rendering', () => {
     async (slug) => {
       const html = await renderPage({ category: slug });
 
-      const expected = PRODUCTS.filter((p) => p.category.slug === slug);
-      const excluded = PRODUCTS.filter((p) => p.category.slug !== slug);
+      // `productsInCategory`, not a bare `p.category.slug ===`: a product carrying a
+      // `secondaryCategory` belongs to two listings, and asserting on `category` alone would
+      // demand it be EXCLUDED from the very listing it is supposed to appear in.
+      const expected = productsInCategory(slug);
+      const excluded = PRODUCTS.filter((p) => !expected.includes(p));
       expect(expected.length).toBeGreaterThan(0);
 
       const hrefs = new Set(html.match(/href="\/products\/[^"]+"/g) ?? []);
@@ -95,7 +98,7 @@ describe('ProductsPage server rendering', () => {
   });
 
   it('falls back to the full catalogue for a repeated ?category= (array value)', async () => {
-    const html = await renderPage({ category: ['hygiene-safety', 'spa-salon'] });
+    const html = await renderPage({ category: ['hygiene-safety-housekeeping', 'spa-salon'] });
 
     const hrefs = new Set(html.match(/href="\/products\/[^"]+"/g) ?? []);
     expect(hrefs.size).toBe(PRODUCTS.length);

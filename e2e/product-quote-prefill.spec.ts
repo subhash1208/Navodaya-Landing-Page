@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import { PRODUCTS, productEnquiryLabel } from '@/constants';
+import { PRODUCTS, PRODUCT_CATEGORIES, productEnquiryLabel } from '@/constants';
 
 /**
  * Block until the page's scroll position has held steady for ten consecutive frames.
@@ -31,11 +31,14 @@ async function waitForScrollToSettle(page: Page) {
 // Derived from the real catalogue rather than hand-typed, so a slug or label change
 // anywhere in `src/constants/index.ts` is caught here instead of silently drifting.
 const surgeonCap = PRODUCTS.find((p) => p.slug === 'surgeon-cap')!;
-// `bio-shower-cap` and `bio-shower-spa` share the bare name "Biodegradable Shower Cap"
-// (src/constants/index.ts:326, :467) — this pair is what proves slug transport beats
-// name transport, since only the category half of `productEnquiryLabel` tells them apart.
-const bioShowerCap = PRODUCTS.find((p) => p.slug === 'bio-shower-cap')!;
-const bioShowerSpa = PRODUCTS.find((p) => p.slug === 'bio-shower-spa')!;
+// Three products carry a `secondaryCategory` and therefore appear under two `<optgroup>`
+// headings in the contact form's dropdown, while submitting ONE value naming their PRIMARY
+// category. `shower-cap` is hotel-amenities first, spa-salon second — so the two labels below
+// differ only in their category half, which is exactly what the slug has to transport.
+const dualCategory = PRODUCTS.find((p) => p.slug === 'shower-cap')!;
+const secondaryCategory = PRODUCT_CATEGORIES.find(
+  (c) => c.slug === dualCategory.secondaryCategory,
+)!;
 
 test.describe('Product Quote Prefill', () => {
   // Same lever as e2e/contact-form.spec.ts:52 — the homepage's own layout animation
@@ -65,15 +68,17 @@ test.describe('Product Quote Prefill', () => {
     });
   });
 
-  test('the duplicate-name pair resolves by slug, not by name', async ({ page }) => {
-    await page.goto(`/products/${bioShowerSpa.slug}`);
+  test('a dual-category product pre-selects under its primary category', async ({ page }) => {
+    await page.goto(`/products/${dualCategory.slug}`);
     await page.evaluate(() => sessionStorage.setItem('nv_intro_seen', '1'));
 
     await page.getByRole('link', { name: /request a quote/i }).click();
 
     const select = page.locator('#productName');
-    await expect(select).toHaveValue(productEnquiryLabel(bioShowerSpa), { timeout: 15000 });
-    await expect(select).not.toHaveValue(productEnquiryLabel(bioShowerCap));
+    await expect(select).toHaveValue(productEnquiryLabel(dualCategory), { timeout: 15000 });
+    // The same product is listed under its secondary category too, but that listing is not a
+    // separate option value — if it were, the business would receive two labels for one item.
+    await expect(select).not.toHaveValue(`${dualCategory.name} — ${secondaryCategory.name}`);
   });
 
   test('a hard load of the quote URL pre-selects the product and lands on contact', async ({

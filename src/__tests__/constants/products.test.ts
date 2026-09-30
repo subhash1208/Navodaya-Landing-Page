@@ -1,13 +1,16 @@
 import { describe, it, expect } from 'vitest';
-import { PRODUCTS, PRODUCT_CATEGORIES } from '@/constants';
+import { PRODUCTS, PRODUCT_CATEGORIES, productSummary } from '@/constants';
 
 describe('Product Data Integrity', () => {
-  it('has 51 products', () => {
-    expect(PRODUCTS.length).toBeGreaterThanOrEqual(50);
+  it('has the client catalogue in full', () => {
+    // Exact, not `>=`: this is the reconciled count from the client's spreadsheet
+    // (dev-tools/catalogue/catalogue-final.json), so a drift in either direction is a
+    // regeneration bug rather than a product launch.
+    expect(PRODUCTS.length).toBe(164);
   });
 
-  it('has 3 categories', () => {
-    expect(PRODUCT_CATEGORIES.length).toBe(3);
+  it('has 4 categories', () => {
+    expect(PRODUCT_CATEGORIES.length).toBe(4);
   });
 
   it('every product has required fields', () => {
@@ -16,7 +19,10 @@ describe('Product Data Integrity', () => {
       expect(product.slug, `${product.name} missing slug`).toBeTruthy();
       expect(product.category, `${product.name} missing category`).toBeTruthy();
       expect(product.category.id, `${product.name} missing category.id`).toBeTruthy();
-      expect(product.description, `${product.name} missing description`).toBeTruthy();
+      // `description` is deliberately NOT asserted: the client's catalogue supplies no product
+      // copy, so every product is currently without one and `productSummary()` composes the
+      // displayed sentence from the data that does exist.
+      expect(productSummary(product), `${product.name} has no displayable summary`).toBeTruthy();
     }
   });
 
