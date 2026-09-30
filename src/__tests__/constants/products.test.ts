@@ -63,3 +63,50 @@ describe('Product Data Integrity', () => {
     }
   });
 });
+
+// The photo-extraction pipeline produced 54 candidate images; a full-resolution visual audit
+// approved 42 and rejected 12. These tests lock that audit's outcome into the data layer, because
+// the rejection reason is a client requirement rather than a matter of taste.
+describe('Product photographs', () => {
+  const photographed = PRODUCTS.filter((p) => p.image);
+
+  it('carries a photograph on exactly the 42 approved products', () => {
+    // Exact, not `>=`: 42 is the approved count. A higher number means an unapproved photo was
+    // wired in; a lower one means the emitter dropped the key.
+    expect(photographed.length).toBe(42);
+  });
+
+  it('points every photograph at its own product slug under /products', () => {
+    for (const product of photographed) {
+      expect(product.image, `${product.name} has a mismatched image path`).toBe(
+        `/products/${product.slug}.webp`,
+      );
+      expect(product.slug, `${product.name} slug diverges from id`).toBe(product.id);
+    }
+  });
+
+  it('never ships a photograph for a slug the audit rejected', () => {
+    // These 12 candidates carry third-party supplier branding or are mis-mapped. The client's
+    // binding requirement is that supplier branding never appears in a product image, so a photo
+    // reappearing on any of these is a client-requirement violation, not a cosmetic regression.
+    const REJECTED = [
+      'long-wiper',
+      'double-rubber-wiper',
+      'brush-set-wooden',
+      'tiles-scrubber',
+      'cobweb-brush',
+      'sink-brush',
+      'dry-mop-refill',
+      'glass-cleaning-kit-box',
+      'steel-swing-lid-dust-bin',
+      'bucket',
+      'pedal-dust-bin',
+      'dust-pan',
+    ];
+    for (const slug of REJECTED) {
+      const product = PRODUCTS.find((p) => p.slug === slug);
+      expect(product, `rejected slug "${slug}" is not in the catalogue at all`).toBeTruthy();
+      expect(product?.image, `rejected photograph shipped for "${slug}"`).toBeUndefined();
+    }
+  });
+});

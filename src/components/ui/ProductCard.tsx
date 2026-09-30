@@ -50,11 +50,14 @@ export function ProductCard({ product, className }: ProductCardProps) {
       </div>
 
       {/*
-        Specimen plate. `product.image` is unpopulated for the entire catalogue today — photo
-        extraction is a separate stage — so the EMPTY state is the one visitors actually see and
-        is designed as the primary treatment, not an edge case: a hairline-ruled grey-50 field
-        carrying the catalogue reference in mono, which reads as a blank specimen label rather
-        than a broken image. No emoji, no "image missing" glyph.
+        Specimen plate. Part of the catalogue is photographed and the rest is not, so BOTH branches
+        ship: the photograph when `product.image` is set, and a hairline-ruled grey-50 field
+        carrying the catalogue reference in mono otherwise — a blank specimen label rather than a
+        broken image. No emoji, no "image missing" glyph. The 4:3 box is declared on the wrapper,
+        outside the branch, so a mixed grid row cannot go ragged between a photographed card and an
+        unphotographed one. `object-contain` is a correctness requirement, not a preference: every
+        photograph is a cutout that already fits its frame with margin, and `fill`'s default
+        `object-cover` would crop it.
       */}
       <div className="relative mt-5 aspect-[4/3] overflow-hidden border border-grey-200 bg-grey-50">
         {product.image ? (
@@ -63,7 +66,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
             alt={product.name}
             fill
             sizes="(min-width: 1280px) 22vw, (min-width: 1024px) 30vw, (min-width: 640px) 45vw, 90vw"
-            className="object-cover"
+            className="object-contain"
           />
         ) : (
           <span

@@ -1,23 +1,58 @@
 'use client';
 
+import Image from 'next/image';
 import { RotateCcw, ZoomIn, ZoomOut, Camera } from 'lucide-react';
 
 interface ProductViewerProps {
   productName: string;
+  /**
+   * Path to the product photograph, e.g. `/products/mop-set.webp`. Most of the catalogue has no
+   * approved photo, so the placeholder below remains the fallback rather than a dead end.
+   */
+  image?: string;
 }
 
 /**
- * 360° Product Viewer placeholder.
- * When real product photos or .glb 3D models are available:
- * - For 360° spin: replace the placeholder with an <img> sequence
- *   driven by mouse/touch drag events
- * - For true 3D: install @google/model-viewer and replace with
- *   <model-viewer src="product.glb" camera-controls auto-rotate />
+ * Product photograph, with a placeholder for the products that do not have one yet.
  *
- * Performance: hover effect is CSS-only (group-hover Tailwind classes) instead
+ * The photographed branch is a static image, not a spin: every photo is a single 4:3 cutout on the
+ * `paper` background, so the box takes the images' own 4:3 ratio and `object-contain` guarantees
+ * the cutout is never cropped. The decorative rotate/zoom/camera controls belong to the
+ * placeholder only — beside a real static photo they advertise 360° interactivity that does not
+ * exist, so they are not rendered there.
+ *
+ * When real 360° assets arrive: an <img> sequence driven by drag events, or @google/model-viewer
+ * for a true .glb.
+ *
+ * `loading="eager"` + `fetchPriority="high"` because this is the detail page's likely LCP element:
+ * it sits in the left column of an above-the-fold `lg:grid-cols-2`, and `next/image` defaults to
+ * `loading="lazy"`, which the preload scanner cannot discover until layout resolves. Per
+ * `node_modules/next/dist/docs/01-app/03-api-reference/02-components/image.md:288` these two are
+ * the recommended API over the `preload` prop — and note `priority` is DEPRECATED in Next 16
+ * (`:294`), so it is not the thing to reach for. Safe here in a way it would not be on the grid:
+ * this component renders exactly once per detail page. The same change on `ProductCard` would make
+ * 42 images eager on `/products` and is explicitly not wanted.
+ *
+ * Performance: the placeholder's hover effect is CSS-only (group-hover Tailwind classes) instead
  * of useState, eliminating re-renders on every mouse enter/leave.
  */
-export function ProductViewer({ productName }: ProductViewerProps) {
+export function ProductViewer({ productName, image }: ProductViewerProps) {
+  if (image) {
+    return (
+      <div className="relative w-full aspect-[4/3] overflow-hidden bg-grey-50 border border-grey-100">
+        <Image
+          src={image}
+          alt={productName}
+          fill
+          sizes="(min-width: 1024px) 45vw, 92vw"
+          className="object-contain"
+          loading="eager"
+          fetchPriority="high"
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="relative w-full aspect-square overflow-hidden bg-grey-50 border border-grey-100">
       {/* Placeholder content */}

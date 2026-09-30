@@ -36,6 +36,27 @@ vi.mock('next/link', () => ({
   ),
 }));
 
+/**
+ * Anchor hrefs only, with the leading `<a ` trimmed back off.
+ *
+ * These tests are about the links a crawler follows, so the match is scoped to the anchor. A bare
+ * /href="\/products\/[^"]+"/ is NOT equivalent, and the difference is not hypothetical: it returns
+ * 42 extra entries here, one per photographed product, inflating every count in this file.
+ *
+ * The cause is a test-environment artifact, and it is worth naming precisely so nobody "fixes" it
+ * in the wrong place. React 19's server renderer hoists a `<link rel="preload" as="image" href=…>`
+ * for any `<img>` it renders WITHOUT `loading="lazy"` — verified directly against react 19.2.4:
+ * `renderToStaticMarkup(<img src="/products/x.webp" sizes="90vw" />)` emits the link, and the same
+ * element with `loading="lazy"` emits no link at all. `src/__tests__/setup.ts:27-31` mocks
+ * `next/image` to a bare `React.createElement('img', props)`, which forwards only the props
+ * `ProductCard` passes and so drops the `loading="lazy"` the real component defaults to. Production
+ * is unaffected: the real `next/image` ships `loading="lazy"`, and the built `/products` HTML
+ * contains zero `href="/products/*.webp"`.
+ */
+function catalogueHrefs(html: string): Set<string> {
+  return new Set((html.match(/<a href="\/products\/[^"]+"/g) ?? []).map((m) => m.slice(3)));
+}
+
 /** Product copy reaches the HTML entity-escaped; compare like for like. */
 function escapeHtml(value: string): string {
   return value
@@ -60,7 +81,7 @@ describe('ProductsPage server rendering', () => {
   it('server-renders one catalogue link per product', async () => {
     const html = await renderPage({});
 
-    const hrefs = new Set(html.match(/href="\/products\/[^"]+"/g) ?? []);
+    const hrefs = catalogueHrefs(html);
     expect(hrefs.size).toBe(PRODUCTS.length);
     PRODUCTS.forEach((p) => expect(hrefs.has(`href="/products/${p.slug}"`)).toBe(true));
   });
@@ -86,7 +107,7 @@ describe('ProductsPage server rendering', () => {
       const excluded = PRODUCTS.filter((p) => !expected.includes(p));
       expect(expected.length).toBeGreaterThan(0);
 
-      const hrefs = new Set(html.match(/href="\/products\/[^"]+"/g) ?? []);
+      const hrefs = catalogueHrefs(html);
       expect(hrefs.size).toBe(expected.length);
       expected.forEach((p) => expect(hrefs.has(`href="/products/${p.slug}"`)).toBe(true));
       excluded.forEach((p) => expect(hrefs.has(`href="/products/${p.slug}"`)).toBe(false));
@@ -98,7 +119,7 @@ describe('ProductsPage server rendering', () => {
   it('falls back to the full catalogue for an unknown ?category=', async () => {
     const html = await renderPage({ category: 'not-a-real-category' });
 
-    const hrefs = new Set(html.match(/href="\/products\/[^"]+"/g) ?? []);
+    const hrefs = catalogueHrefs(html);
     expect(hrefs.size).toBe(PRODUCTS.length);
     expect(html).toContain('aria-labelledby="tab-all"');
     expect(html).not.toContain('No products found');
@@ -107,7 +128,7 @@ describe('ProductsPage server rendering', () => {
   it('falls back to the full catalogue for a repeated ?category= (array value)', async () => {
     const html = await renderPage({ category: ['hygiene-safety-housekeeping', 'spa-salon'] });
 
-    const hrefs = new Set(html.match(/href="\/products\/[^"]+"/g) ?? []);
+    const hrefs = catalogueHrefs(html);
     expect(hrefs.size).toBe(PRODUCTS.length);
     expect(html).toContain('aria-labelledby="tab-all"');
   });
@@ -151,7 +172,7 @@ describe('ProductsPage sub-category server rendering', () => {
       const expected = productsInSubCategory(slug);
       expect(expected.length).toBeGreaterThan(0);
 
-      const hrefs = new Set(html.match(/href="\/products\/[^"]+"/g) ?? []);
+      const hrefs = catalogueHrefs(html);
       expect(hrefs.size).toBe(expected.length);
       expected.forEach((p) => expect(hrefs.has(`href="/products/${p.slug}"`)).toBe(true));
     },
@@ -178,7 +199,7 @@ describe('ProductsPage sub-category server rendering', () => {
   it('ignores an unknown ?sub= and renders the whole category', async () => {
     const html = await renderPage({ category: SUB_CATEGORY_PARENT, sub: 'not-a-real-subcategory' });
 
-    const hrefs = new Set(html.match(/href="\/products\/[^"]+"/g) ?? []);
+    const hrefs = catalogueHrefs(html);
     expect(hrefs.size).toBe(productsInCategory(SUB_CATEGORY_PARENT).length);
     expect(html).not.toContain('No products found');
   });
@@ -188,7 +209,7 @@ describe('ProductsPage sub-category server rendering', () => {
     // pairing would render a guaranteed-empty grid off a hand-edited address bar.
     const html = await renderPage({ category: 'spa-salon', sub: 'air-care' });
 
-    const hrefs = new Set(html.match(/href="\/products\/[^"]+"/g) ?? []);
+    const hrefs = catalogueHrefs(html);
     expect(hrefs.size).toBe(productsInCategory('spa-salon').length);
     expect(html).toContain('aria-labelledby="tab-spa-salon"');
     expect(html).not.toContain('aria-label="Refine by sub-category"');
@@ -197,7 +218,7 @@ describe('ProductsPage sub-category server rendering', () => {
   it('ignores a ?sub= with no ?category= at all', async () => {
     const html = await renderPage({ sub: 'air-care' });
 
-    const hrefs = new Set(html.match(/href="\/products\/[^"]+"/g) ?? []);
+    const hrefs = catalogueHrefs(html);
     expect(hrefs.size).toBe(PRODUCTS.length);
     expect(html).toContain('aria-labelledby="tab-all"');
   });
@@ -208,7 +229,7 @@ describe('ProductsPage sub-category server rendering', () => {
       sub: ['air-care', 'tissues-paper'],
     });
 
-    const hrefs = new Set(html.match(/href="\/products\/[^"]+"/g) ?? []);
+    const hrefs = catalogueHrefs(html);
     expect(hrefs.size).toBe(productsInCategory(SUB_CATEGORY_PARENT).length);
   });
 });

@@ -50,7 +50,11 @@ export interface ProductItem {
    * separate client-facing task. Render `productSummary()` rather than this field directly.
    */
   description?: string;
-  /** Reserved for the photo-extraction stage. Unpopulated today, so cards must render a placeholder. */
+  /**
+   * Path to the product photograph under `public/`, e.g. `/products/mop-set.webp`. Populated for
+   * the photographed subset only — most of the catalogue has no approved photo yet — so every
+   * consumer must keep the typographic placeholder as its fallback.
+   */
   image?: string;
   slug: string;
 }

@@ -14,6 +14,9 @@
  *
  * No product carries a `description`: the client's catalogue supplies none and writing 164 is a
  * separate task. Render `productSummary()` from `src/constants` instead of the raw field.
+ *
+ * `image` is present on the photographed subset only, set by
+ * `dev-tools/catalogue/_populate_images.py`. Products without one render a typographic placeholder.
  */
 import type { ProductItem } from '@/types';
 import {
@@ -663,6 +666,7 @@ export const PRODUCTS: ProductItem[] = [
     slug: 'mop-set',
     category: CATEGORY_HYGIENE_SAFETY_HOUSEKEEPING,
     subCategory: 'mops-brooms-wipers',
+    image: '/products/mop-set.webp',
     variants: [
       {
         label: 'Red Handle — Screw Socket',
@@ -796,6 +800,7 @@ export const PRODUCTS: ProductItem[] = [
     slug: 'bathroom-wiper',
     category: CATEGORY_HYGIENE_SAFETY_HOUSEKEEPING,
     subCategory: 'mops-brooms-wipers',
+    image: '/products/bathroom-wiper.webp',
   },
   {
     id: 'kitchen-wiper',
@@ -810,6 +815,7 @@ export const PRODUCTS: ProductItem[] = [
     slug: 'glass-wiper',
     category: CATEGORY_HYGIENE_SAFETY_HOUSEKEEPING,
     subCategory: 'mops-brooms-wipers',
+    image: '/products/glass-wiper.webp',
     variants: [
       {
         label: 'Standard',
@@ -924,6 +930,7 @@ export const PRODUCTS: ProductItem[] = [
     slug: 'round-brush',
     category: CATEGORY_HYGIENE_SAFETY_HOUSEKEEPING,
     subCategory: 'brushes-scrubbers-cloths',
+    image: '/products/round-brush.webp',
     variants: [
       {
         label: 'Standard',
@@ -939,6 +946,7 @@ export const PRODUCTS: ProductItem[] = [
     slug: 'hockey-brush',
     category: CATEGORY_HYGIENE_SAFETY_HOUSEKEEPING,
     subCategory: 'brushes-scrubbers-cloths',
+    image: '/products/hockey-brush.webp',
     variants: [
       {
         label: 'Single',
@@ -954,6 +962,7 @@ export const PRODUCTS: ProductItem[] = [
     slug: 'bottle-brush',
     category: CATEGORY_HYGIENE_SAFETY_HOUSEKEEPING,
     subCategory: 'brushes-scrubbers-cloths',
+    image: '/products/bottle-brush.webp',
   },
   {
     id: 'carpet-brush',
@@ -1032,6 +1041,7 @@ export const PRODUCTS: ProductItem[] = [
     category: CATEGORY_HYGIENE_SAFETY_HOUSEKEEPING,
     subCategory: 'brushes-scrubbers-cloths',
     material: 'Iron',
+    image: '/products/cloth-brush-iron.webp',
   },
   {
     id: 'wc-brush-with-container',
@@ -1039,6 +1049,7 @@ export const PRODUCTS: ProductItem[] = [
     slug: 'wc-brush-with-container',
     category: CATEGORY_HYGIENE_SAFETY_HOUSEKEEPING,
     subCategory: 'brushes-scrubbers-cloths',
+    image: '/products/wc-brush-with-container.webp',
   },
   {
     id: 'green-scrubber',
@@ -1046,6 +1057,7 @@ export const PRODUCTS: ProductItem[] = [
     slug: 'green-scrubber',
     category: CATEGORY_HYGIENE_SAFETY_HOUSEKEEPING,
     subCategory: 'brushes-scrubbers-cloths',
+    image: '/products/green-scrubber.webp',
     variants: [
       {
         label: '3 x 4 — Green',
@@ -1075,6 +1087,7 @@ export const PRODUCTS: ProductItem[] = [
     slug: 'sponge-with-scrubber',
     category: CATEGORY_HYGIENE_SAFETY_HOUSEKEEPING,
     subCategory: 'brushes-scrubbers-cloths',
+    image: '/products/sponge-with-scrubber.webp',
   },
   {
     id: 'power-scrubber',
@@ -1105,6 +1118,7 @@ export const PRODUCTS: ProductItem[] = [
     category: CATEGORY_HYGIENE_SAFETY_HOUSEKEEPING,
     subCategory: 'brushes-scrubbers-cloths',
     material: 'Nylon',
+    image: '/products/nylon-scrubber.webp',
     variants: [
       {
         label: '1000',
@@ -1123,6 +1137,7 @@ export const PRODUCTS: ProductItem[] = [
     slug: 'check-cloth',
     category: CATEGORY_HYGIENE_SAFETY_HOUSEKEEPING,
     subCategory: 'brushes-scrubbers-cloths',
+    image: '/products/check-cloth.webp',
     variants: [
       {
         label: '13 x 23',
@@ -1151,6 +1166,7 @@ export const PRODUCTS: ProductItem[] = [
     slug: 'glass-cleaning-cloth',
     category: CATEGORY_HYGIENE_SAFETY_HOUSEKEEPING,
     subCategory: 'brushes-scrubbers-cloths',
+    image: '/products/glass-cleaning-cloth.webp',
     variants: [
       {
         label: '20 x 20',
@@ -1210,6 +1226,7 @@ export const PRODUCTS: ProductItem[] = [
     slug: 'mop-cloth-6-yarn-jumbo',
     category: CATEGORY_HYGIENE_SAFETY_HOUSEKEEPING,
     subCategory: 'mops-brooms-wipers',
+    image: '/products/mop-cloth-6-yarn-jumbo.webp',
     variants: [
       {
         label: '22 x 22',
@@ -1227,6 +1244,7 @@ export const PRODUCTS: ProductItem[] = [
     slug: 'yellow-cloth',
     category: CATEGORY_HYGIENE_SAFETY_HOUSEKEEPING,
     subCategory: 'brushes-scrubbers-cloths',
+    image: '/products/yellow-cloth.webp',
     variants: [
       {
         label: 'Medium — Yellow',
@@ -1261,6 +1279,7 @@ export const PRODUCTS: ProductItem[] = [
     slug: 'air-revitaliser',
     category: CATEGORY_HYGIENE_SAFETY_HOUSEKEEPING,
     subCategory: 'air-care',
+    image: '/products/air-revitaliser.webp',
   },
   {
     id: 'automatic-air-freshener-refill',
@@ -1275,6 +1294,7 @@ export const PRODUCTS: ProductItem[] = [
     slug: 'caddy-basket',
     category: CATEGORY_HYGIENE_SAFETY_HOUSEKEEPING,
     subCategory: 'equipment-accessories',
+    image: '/products/caddy-basket.webp',
   },
   {
     id: 'caution-sign-board',
@@ -1282,6 +1302,7 @@ export const PRODUCTS: ProductItem[] = [
     slug: 'caution-sign-board',
     category: CATEGORY_HYGIENE_SAFETY_HOUSEKEEPING,
     subCategory: 'equipment-accessories',
+    image: '/products/caution-sign-board.webp',
     variants: [
       {
         label: 'CIP',
@@ -1300,6 +1321,7 @@ export const PRODUCTS: ProductItem[] = [
     slug: 'floor-scraper-handle',
     category: CATEGORY_HYGIENE_SAFETY_HOUSEKEEPING,
     subCategory: 'equipment-accessories',
+    image: '/products/floor-scraper-handle.webp',
   },
   {
     id: 'glass-applicator-35-cm',
@@ -1307,6 +1329,7 @@ export const PRODUCTS: ProductItem[] = [
     slug: 'glass-applicator-35-cm',
     category: CATEGORY_HYGIENE_SAFETY_HOUSEKEEPING,
     subCategory: 'mops-brooms-wipers',
+    image: '/products/glass-applicator-35-cm.webp',
   },
   {
     id: 'glass-scraper',
@@ -1345,6 +1368,7 @@ export const PRODUCTS: ProductItem[] = [
     slug: 'm-fold-tissue-dispenser',
     category: CATEGORY_HYGIENE_SAFETY_HOUSEKEEPING,
     subCategory: 'dispensers-washroom',
+    image: '/products/m-fold-tissue-dispenser.webp',
     variants: [
       {
         label: 'Small',
@@ -1368,6 +1392,7 @@ export const PRODUCTS: ProductItem[] = [
     slug: 'twin-bucket-portable',
     category: CATEGORY_HYGIENE_SAFETY_HOUSEKEEPING,
     subCategory: 'equipment-accessories',
+    image: '/products/twin-bucket-portable.webp',
   },
   {
     id: 'soap-dispenser',
@@ -1375,6 +1400,7 @@ export const PRODUCTS: ProductItem[] = [
     slug: 'soap-dispenser',
     category: CATEGORY_HYGIENE_SAFETY_HOUSEKEEPING,
     subCategory: 'dispensers-washroom',
+    image: '/products/soap-dispenser.webp',
     variants: [
       {
         label: '500 ML',
@@ -1400,6 +1426,7 @@ export const PRODUCTS: ProductItem[] = [
     slug: 'automatic-soap-dispenser',
     category: CATEGORY_HYGIENE_SAFETY_HOUSEKEEPING,
     subCategory: 'dispensers-washroom',
+    image: '/products/automatic-soap-dispenser.webp',
   },
   {
     id: 'stainless-steel-soap-dispenser',
@@ -1408,6 +1435,7 @@ export const PRODUCTS: ProductItem[] = [
     category: CATEGORY_HYGIENE_SAFETY_HOUSEKEEPING,
     subCategory: 'dispensers-washroom',
     material: 'Stainless steel',
+    image: '/products/stainless-steel-soap-dispenser.webp',
     variants: [
       {
         label: '500 ML',
@@ -1429,6 +1457,7 @@ export const PRODUCTS: ProductItem[] = [
     slug: 'telescopic-pole',
     category: CATEGORY_HYGIENE_SAFETY_HOUSEKEEPING,
     subCategory: 'equipment-accessories',
+    image: '/products/telescopic-pole.webp',
     variants: [
       {
         label: '4 m',
@@ -1451,6 +1480,7 @@ export const PRODUCTS: ProductItem[] = [
     category: CATEGORY_HYGIENE_SAFETY_HOUSEKEEPING,
     subCategory: 'dispensers-washroom',
     material: 'Stainless steel',
+    image: '/products/stainless-steel-tissue-roll-holder.webp',
   },
   {
     id: 'wringer-trolley',
@@ -1458,6 +1488,7 @@ export const PRODUCTS: ProductItem[] = [
     slug: 'wringer-trolley',
     category: CATEGORY_HYGIENE_SAFETY_HOUSEKEEPING,
     subCategory: 'equipment-accessories',
+    image: '/products/wringer-trolley.webp',
     variants: [
       {
         label: '20 L — Yellow',
@@ -1481,6 +1512,7 @@ export const PRODUCTS: ProductItem[] = [
     category: CATEGORY_HYGIENE_SAFETY_HOUSEKEEPING,
     subCategory: 'dust-bins-waste',
     material: 'Steel',
+    image: '/products/steel-pedal-dust-bin.webp',
     variants: [
       {
         label: '7 x 10',
@@ -1503,6 +1535,7 @@ export const PRODUCTS: ProductItem[] = [
     category: CATEGORY_HYGIENE_SAFETY_HOUSEKEEPING,
     subCategory: 'dust-bins-waste',
     material: 'Steel',
+    image: '/products/steel-perforated-dust-bin.webp',
     variants: [
       {
         label: '7 x 10',
@@ -1546,6 +1579,7 @@ export const PRODUCTS: ProductItem[] = [
     slug: 'wheeled-dust-bin',
     category: CATEGORY_HYGIENE_SAFETY_HOUSEKEEPING,
     subCategory: 'dust-bins-waste',
+    image: '/products/wheeled-dust-bin.webp',
     variants: [
       {
         label: '120 L — Blue',
@@ -1727,6 +1761,7 @@ export const PRODUCTS: ProductItem[] = [
     slug: 'plain-dust-bin',
     category: CATEGORY_HYGIENE_SAFETY_HOUSEKEEPING,
     subCategory: 'dust-bins-waste',
+    image: '/products/plain-dust-bin.webp',
     variants: [
       {
         label: 'Small',
@@ -1809,6 +1844,7 @@ export const PRODUCTS: ProductItem[] = [
     slug: 'dry-mop-set',
     category: CATEGORY_HYGIENE_SAFETY_HOUSEKEEPING,
     subCategory: 'mops-brooms-wipers',
+    image: '/products/dry-mop-set.webp',
     variants: [
       {
         label: '18 inch — Grey',
@@ -1862,6 +1898,7 @@ export const PRODUCTS: ProductItem[] = [
     slug: 'dry-mop-frame',
     category: CATEGORY_HYGIENE_SAFETY_HOUSEKEEPING,
     subCategory: 'mops-brooms-wipers',
+    image: '/products/dry-mop-frame.webp',
     variants: [
       {
         label: '24 inch — Blue',
@@ -1879,6 +1916,7 @@ export const PRODUCTS: ProductItem[] = [
     slug: 'feather-duster',
     category: CATEGORY_HYGIENE_SAFETY_HOUSEKEEPING,
     subCategory: 'brushes-scrubbers-cloths',
+    image: '/products/feather-duster.webp',
     variants: [
       {
         label: 'With cap',
@@ -1980,6 +2018,7 @@ export const PRODUCTS: ProductItem[] = [
     slug: 'lobby-dust-pan',
     category: CATEGORY_HYGIENE_SAFETY_HOUSEKEEPING,
     subCategory: 'equipment-accessories',
+    image: '/products/lobby-dust-pan.webp',
   },
   {
     id: 'car-duster-long',
@@ -2023,6 +2062,7 @@ export const PRODUCTS: ProductItem[] = [
     slug: 'automatic-air-freshener-dispenser',
     category: CATEGORY_HYGIENE_SAFETY_HOUSEKEEPING,
     subCategory: 'dispensers-washroom',
+    image: '/products/automatic-air-freshener-dispenser.webp',
   },
   {
     id: 'microfibre-wet-and-dry-mop-refill',
@@ -2031,6 +2071,7 @@ export const PRODUCTS: ProductItem[] = [
     category: CATEGORY_HYGIENE_SAFETY_HOUSEKEEPING,
     subCategory: 'equipment-accessories',
     material: 'Microfibre',
+    image: '/products/microfibre-wet-and-dry-mop-refill.webp',
   },
   {
     id: 'kentucky-microfibre-wet-mop-refill',
@@ -2039,6 +2080,7 @@ export const PRODUCTS: ProductItem[] = [
     category: CATEGORY_HYGIENE_SAFETY_HOUSEKEEPING,
     subCategory: 'equipment-accessories',
     material: 'Microfibre',
+    image: '/products/kentucky-microfibre-wet-mop-refill.webp',
   },
   {
     id: 'coconut-fibre-broom',
@@ -2055,6 +2097,7 @@ export const PRODUCTS: ProductItem[] = [
     category: CATEGORY_HYGIENE_SAFETY_HOUSEKEEPING,
     subCategory: 'personal-protection',
     material: 'Rubber',
+    image: '/products/rubber-hand-gloves.webp',
   },
   {
     id: 'mug',
@@ -2202,6 +2245,7 @@ export const PRODUCTS: ProductItem[] = [
     slug: 'urinal-screen',
     category: CATEGORY_HYGIENE_SAFETY_HOUSEKEEPING,
     subCategory: 'air-care',
+    image: '/products/urinal-screen.webp',
   },
   {
     id: 'parking-brush-set-24-inch',
@@ -2209,6 +2253,7 @@ export const PRODUCTS: ProductItem[] = [
     slug: 'parking-brush-set-24-inch',
     category: CATEGORY_HYGIENE_SAFETY_HOUSEKEEPING,
     subCategory: 'mops-brooms-wipers',
+    image: '/products/parking-brush-set-24-inch.webp',
   },
   {
     id: 'jute-slipper',

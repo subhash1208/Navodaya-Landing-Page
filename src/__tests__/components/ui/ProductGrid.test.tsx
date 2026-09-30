@@ -73,7 +73,12 @@ describe('ProductGrid', () => {
   it('renders no photo placeholder', () => {
     const { container } = render(<ProductGrid activeCategory={ALL_ID} />);
     expect(screen.queryByText(/photo coming soon/i)).toBeNull();
-    expect(container.querySelector('img')).toBeNull();
+    // Part of the catalogue is photographed now, so `no img at all` is no longer the invariant.
+    // What must still hold: every image in the grid is a real catalogue photograph served from
+    // /products/, never an apologetic placeholder graphic.
+    const images = Array.from(container.querySelectorAll('img'));
+    expect(images.length).toBeGreaterThan(0);
+    images.forEach((img) => expect(img.getAttribute('src')).toMatch(/^\/products\/.+\.webp$/));
   });
 
   it('renders search input', () => {

@@ -106,7 +106,7 @@ export default async function ProductPage({ params }: PageProps) {
         <div className="grid lg:grid-cols-2 gap-12 mb-16">
           {/* Left — 360° viewer */}
           <div>
-            <ProductViewer productName={product.name} />
+            <ProductViewer productName={product.name} image={product.image} />
           </div>
 
           {/* Right — product info */}
