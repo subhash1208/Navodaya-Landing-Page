@@ -250,9 +250,6 @@ export default function ContactSection() {
           {/* Left — info */}
           <AnimateIn direction="right" className="text-ink">
             <div className="flex items-baseline gap-5 border-t border-grey-200 pt-8">
-              <span aria-hidden="true" className="font-mono text-label text-grey-500">
-                05
-              </span>
               <span className="font-mono text-label uppercase text-grey-500">Get in Touch</span>
             </div>
             <h2 id="contact-heading" className="mt-6 font-display text-heading-1 text-brand-blue">

@@ -276,9 +276,9 @@ describe('ProductCategoriesSection', () => {
     expect(section).toBeTruthy();
   });
 
-  it('renders the section index and the total category count', () => {
+  it('does not render a section index, and renders the total category count', () => {
     render(<ProductCategoriesSection />);
-    expect(screen.getByText('02')).toBeTruthy();
+    expect(screen.queryByText('02')).toBeNull();
     expect(screen.getByText('3 categories')).toBeTruthy();
   });
 

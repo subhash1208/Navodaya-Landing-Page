@@ -199,10 +199,10 @@ describe('WhyUsSection', () => {
     expect(section).toBeTruthy();
   });
 
-  it('renders a mono index for the section and for every row', () => {
+  it('does not render a mono index for the section or for any row', () => {
     render(<WhyUsSection />);
     ['01', '02', '03', '04'].forEach((index) => {
-      expect(screen.getAllByText(index).length).toBeGreaterThan(0);
+      expect(screen.queryByText(index)).toBeNull();
     });
   });
 
@@ -210,5 +210,15 @@ describe('WhyUsSection', () => {
     const { container } = render(<WhyUsSection />);
     const rows = container.querySelectorAll('.why-card.border-t.border-grey-100');
     expect(rows.length).toBe(4);
+  });
+
+  it('renders rows as a single-column layout, not a two-column grid', () => {
+    const { container } = render(<WhyUsSection />);
+    const rows = container.querySelectorAll('.why-card');
+    expect(rows.length).toBe(4);
+    rows.forEach((row) => {
+      const className = row.getAttribute('class') ?? '';
+      expect(className).not.toContain('grid');
+    });
   });
 });

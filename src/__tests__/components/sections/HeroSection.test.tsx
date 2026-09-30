@@ -130,12 +130,12 @@ describe('HeroSection', () => {
     expect(plate.getAttribute('sizes')).toBe('(max-width: 767px) 0px, 400px');
   });
 
-  it('renders the specimen plate caption and index numeral', () => {
+  it('renders the specimen plate caption without an index numeral', () => {
     render(<HeroSection />);
     expect(screen.getByText('Branded Paper Cup')).toBeTruthy();
     expect(screen.getByText('Hotel Amenities')).toBeTruthy();
     expect(screen.getByText('Specimen')).toBeTruthy();
-    expect(screen.getByText('01').getAttribute('aria-hidden')).toBe('true');
+    expect(screen.queryByText('01')).toBeNull();
   });
 
   it('exposes no interactive control around the specimen plate', () => {

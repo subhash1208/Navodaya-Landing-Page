@@ -210,9 +210,9 @@ describe('AboutSection', () => {
     expect(line).toBeTruthy();
   });
 
-  it('renders the section index number', () => {
+  it('does not render a section index number', () => {
     render(<AboutSection />);
-    expect(screen.getByText('01')).toBeTruthy();
+    expect(screen.queryByText('01')).toBeNull();
   });
 
   it('renders text and stats columns', () => {

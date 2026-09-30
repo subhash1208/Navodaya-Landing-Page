@@ -149,9 +149,9 @@ describe('ContactSection', () => {
     expect(screen.getByText('Get in Touch')).toBeTruthy();
   });
 
-  it('renders the section index and mono field labels', () => {
+  it('does not render a section index, and renders mono field labels', () => {
     render(<ContactSection />);
-    expect(screen.getByText('05')).toBeTruthy();
+    expect(screen.queryByText('05')).toBeNull();
     expect(screen.getByText('Message').className).toContain('font-mono');
   });
 

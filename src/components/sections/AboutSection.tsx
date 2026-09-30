@@ -215,12 +215,9 @@ export default function AboutSection() {
         {/* Asymmetric editorial split — title hard left, mission offset right and lower */}
         <div className="grid grid-cols-1 gap-8 pt-8 mb-16 md:grid-cols-12 md:gap-12">
           <div className="md:col-span-5">
-            <span aria-hidden="true" className="font-mono text-label text-grey-500">
-              01
-            </span>
             <span
               ref={labelRef}
-              className="block mt-5 font-mono text-label uppercase text-grey-500 scroll-animate-up"
+              className="block font-mono text-label uppercase text-grey-500 scroll-animate-up"
             >
               Who We Are
             </span>

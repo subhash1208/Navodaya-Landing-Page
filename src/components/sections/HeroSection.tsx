@@ -228,10 +228,7 @@ export default function HeroSection() {
             transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
             className="w-full max-w-[400px] border border-grey-200 bg-paper p-6"
           >
-            <div className="flex items-baseline justify-between gap-4 mb-6">
-              <span aria-hidden="true" className="font-mono text-label text-grey-500">
-                01
-              </span>
+            <div className="mb-6">
               <span className="font-mono text-label uppercase text-grey-500">Specimen</span>
             </div>
 

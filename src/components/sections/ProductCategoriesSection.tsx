@@ -94,9 +94,6 @@ export default function ProductCategoriesSection() {
           <div className="border-t border-grey-200 pt-8 mb-12">
             <div className="flex flex-wrap items-baseline justify-between gap-4">
               <div className="flex items-baseline gap-5">
-                <span aria-hidden="true" className="font-mono text-label text-grey-500">
-                  02
-                </span>
                 <div>
                   <span className="block font-mono text-label uppercase text-grey-500">
                     What We Supply
