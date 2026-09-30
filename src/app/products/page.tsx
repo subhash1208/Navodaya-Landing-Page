@@ -1,8 +1,18 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
-import { ALL_ID, ProductGrid, type TabId } from '@/components/ui/ProductGrid';
-import { BRAND, PRODUCTS, PRODUCT_CATEGORIES, ROUTES } from '@/constants';
+import { ProductGrid, type TabId } from '@/components/ui/ProductGrid';
+import {
+  ALL_ID,
+  BRAND,
+  PRODUCTS,
+  PRODUCT_CATEGORIES,
+  ROUTES,
+  SUB_CATEGORIES,
+  SUB_CATEGORY_PARENT,
+  SUB_PARAM,
+} from '@/constants';
+import type { SubCategorySlug } from '@/types';
 
 export const metadata: Metadata = {
   title: 'Product Catalogue',
@@ -31,12 +41,36 @@ function resolveCategory(raw: string | string[] | undefined): TabId {
   return match ? match.slug : ALL_ID;
 }
 
+/**
+ * Resolve `?sub=` against the real sub-category slugs.
+ *
+ * Resolved here rather than in the grid for the same reason `?category=` is: a `?sub=` link has
+ * to be filtered in the HTML the server sends, or a crawler and a no-JS visitor both see the
+ * whole 133-product category instead of the slice the URL asked for.
+ *
+ * Three inputs are rejected identically, to the unfiltered category rather than an empty grid or
+ * a throw: an unknown slug, a repeated param (which arrives as an array), and — the one specific
+ * to this axis — a perfectly valid slug paired with any category other than the one it
+ * subdivides. That last pairing describes a filter that cannot match a single product, so
+ * honouring it would render a guaranteed-empty page off a hand-edited address bar.
+ */
+function resolveSubCategory(
+  raw: string | string[] | undefined,
+  category: TabId,
+): SubCategorySlug | null {
+  if (category !== SUB_CATEGORY_PARENT) return null;
+  const match = typeof raw === 'string' ? SUB_CATEGORIES.find((s) => s.slug === raw) : undefined;
+  return match ? match.slug : null;
+}
+
 export default async function ProductsPage({
   searchParams,
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const activeCategory = resolveCategory((await searchParams).category);
+  const params = await searchParams;
+  const activeCategory = resolveCategory(params.category);
+  const activeSubCategory = resolveSubCategory(params[SUB_PARAM], activeCategory);
 
   return (
     <div className="min-h-screen bg-grey-50">
@@ -70,7 +104,7 @@ export default async function ProductsPage({
 
       {/* Catalogue */}
       <div className="container mx-auto py-10">
-        <ProductGrid activeCategory={activeCategory} />
+        <ProductGrid activeCategory={activeCategory} activeSubCategory={activeSubCategory} />
       </div>
     </div>
   );

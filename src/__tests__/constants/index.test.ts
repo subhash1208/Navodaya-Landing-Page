@@ -3,9 +3,12 @@ import {
   PRODUCTS,
   PRODUCT_CATEGORIES,
   PRODUCT_COUNT_BY_CATEGORY,
+  PRODUCT_COUNT_BY_SUB_CATEGORY,
   SUB_CATEGORIES,
+  SUB_CATEGORY_PARENT,
   productEnquiryLabel,
   productsInCategory,
+  productsInSubCategory,
   productSummary,
 } from '@/constants';
 import type { CategorySlug } from '@/types';
@@ -100,6 +103,39 @@ describe('catalogue invariants', () => {
     for (const sub of SUB_CATEGORIES) {
       expect(sub.name, `${sub.slug} is missing a name`).toBeTruthy();
       expect(sub.description, `${sub.slug} is missing a description`).toBeTruthy();
+    }
+  });
+
+  it('names the subdivided category rather than leaving it hand-typed at each use site', () => {
+    expect(SUB_CATEGORY_PARENT).toBe('hygiene-safety-housekeeping');
+    expect(PRODUCT_CATEGORIES.some((c) => c.slug === SUB_CATEGORY_PARENT)).toBe(true);
+  });
+
+  it('agrees between the derived sub-category counts and the products themselves', () => {
+    for (const sub of SUB_CATEGORIES) {
+      const actual = productsInSubCategory(sub.slug).map((p) => p.id);
+      expect(
+        PRODUCT_COUNT_BY_SUB_CATEGORY[sub.slug],
+        `${sub.slug} count disagrees with its products: ${actual.join(', ')}`,
+      ).toBe(actual.length);
+      expect(
+        PRODUCT_COUNT_BY_SUB_CATEGORY[sub.slug],
+        `${sub.slug} has no products`,
+      ).toBeGreaterThan(0);
+    }
+  });
+
+  it('sums the sub-category counts to exactly the subdivided category', () => {
+    // No `secondaryCategory` equivalent on this axis — a product carries at most one
+    // sub-category — so unlike the per-category sum above, this one must match exactly.
+    const sum = SUB_CATEGORIES.reduce((n, s) => n + PRODUCT_COUNT_BY_SUB_CATEGORY[s.slug], 0);
+    expect(sum).toBe(PRODUCTS.filter((p) => p.category.slug === SUB_CATEGORY_PARENT).length);
+  });
+
+  it('returns only products of the requested sub-category', () => {
+    for (const sub of SUB_CATEGORIES) {
+      const wrong = productsInSubCategory(sub.slug).filter((p) => p.subCategory !== sub.slug);
+      expect(wrong.map((p) => p.id)).toEqual([]);
     }
   });
 

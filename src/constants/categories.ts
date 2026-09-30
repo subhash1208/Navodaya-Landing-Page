@@ -1,4 +1,4 @@
-import type { ProductCategory, SubCategory } from '@/types';
+import type { CategorySlug, ProductCategory, SubCategory } from '@/types';
 
 /**
  * The four top-level categories, each exported by name as well as through the array.
@@ -53,6 +53,35 @@ export const PRODUCT_CATEGORIES: ProductCategory[] = [
   CATEGORY_SPA_SALON,
   CATEGORY_PROTECTIVE_PACKING,
 ];
+
+/**
+ * The catalogue's "no category filter" tab id, and the query-string key for the sub-category
+ * refinement.
+ *
+ * **Both live here, and not in `ProductGrid.tsx`, because that file carries `'use client'`.** Every
+ * export of a `'use client'` module is a client *entry point* — "the components exported from such
+ * a file serve as entry points to the client"
+ * (`node_modules/next/dist/docs/01-app/03-api-reference/01-directives/use-client.md:10`) — so in the
+ * RSC graph the server does not get the value, it gets a `registerClientReference` stub that throws
+ * when called. `SUB_PARAM` was declared in the grid and read on the server as `params[SUB_PARAM]`;
+ * that coerced the stub *function* to a property key no query string can carry, so `?sub=` resolved
+ * to `null` for every visitor, crawler and bookmark. `ALL_ID` was only ever handed straight back as
+ * a prop, so it round-tripped through the flight payload and happened to work — an accident one
+ * refactor away from the same fault. A plain module both graphs can read removes the whole class.
+ *
+ * `'sub'` is short because it sits beside `category=` in the same query string.
+ */
+export const ALL_ID = 'all';
+export const SUB_PARAM = 'sub';
+
+/**
+ * The one category `SUB_CATEGORIES` subdivides.
+ *
+ * Named rather than hand-typed at each site: the products page resolves `?sub=` against it, the
+ * grid gates its refinement row on it, and both of their specs assert against it. Three literal
+ * copies of the slug would be three places to miss if the subdivided category ever changes.
+ */
+export const SUB_CATEGORY_PARENT: CategorySlug = CATEGORY_HYGIENE_SAFETY_HOUSEKEEPING.slug;
 
 /**
  * Subdivisions of `hygiene-safety-housekeeping` — the only category large enough to need them

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import ProductsPage, { metadata } from '@/app/products/page';
-import { BRAND, PRODUCT_CATEGORIES } from '@/constants';
+import { BRAND, PRODUCT_CATEGORIES, SUB_CATEGORIES, SUB_CATEGORY_PARENT } from '@/constants';
 
 vi.mock('next/link', () => ({
   default: ({ children, href, ...props }: any) => (
@@ -15,14 +15,31 @@ vi.mock('lucide-react', () => ({
   ChevronRight: (props: any) => <svg data-testid="chevron-right" {...props} />,
 }));
 
-// The grid has its own spec; here it is a probe for the one thing this page now decides — which
-// category it resolved out of `?category=` and handed down. `ALL_ID` is re-exported because the
-// page imports the real constant at runtime.
+// The grid has its own spec; here it is a probe for the two things this page decides — which
+// category and which sub-category it resolved out of the query string and handed down.
+//
+// The mock supplies `ProductGrid` alone. `ALL_ID` and `SUB_PARAM` used to be re-stated here too,
+// because the page imported them from this module — they now come from `@/constants`, which is
+// deliberately NOT mocked, so the page reads the real `'all'` and `'sub'` throughout. That move is
+// the fix for a production defect: every export of a `'use client'` module is a client reference
+// stub on the server, so `params[SUB_PARAM]` was indexing with a function and `?sub=` never
+// resolved. See the note on their declaration in `src/constants/categories.ts`.
+//
+// A literal rather than `importOriginal`: the real module imports `Search` and `X` from
+// `lucide-react`, which the mock two blocks up narrows to `ChevronRight` alone — so spreading the
+// actual module in would fail on a missing icon export, not on anything this file is testing.
 const receivedCategory = vi.fn();
+const receivedSubCategory = vi.fn();
 vi.mock('@/components/ui/ProductGrid', () => ({
-  ALL_ID: 'all',
-  ProductGrid: ({ activeCategory }: { activeCategory: string }) => {
+  ProductGrid: ({
+    activeCategory,
+    activeSubCategory,
+  }: {
+    activeCategory: string;
+    activeSubCategory: string | null;
+  }) => {
     receivedCategory(activeCategory);
+    receivedSubCategory(activeSubCategory);
     return <div data-testid="product-grid">{activeCategory}</div>;
   },
 }));
@@ -87,6 +104,49 @@ describe('ProductsPage category resolution', () => {
   it('falls back to all for a repeated category param (array value)', async () => {
     await renderPage({ category: ['spa-salon', 'hygiene-safety-housekeeping'] });
     expect(receivedCategory).toHaveBeenCalledWith('all');
+  });
+});
+
+describe('ProductsPage sub-category resolution', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('passes null when no sub-category is given', async () => {
+    await renderPage({ category: SUB_CATEGORY_PARENT });
+    expect(receivedSubCategory).toHaveBeenCalledWith(null);
+  });
+
+  it.each(SUB_CATEGORIES.map((s) => s.slug))(
+    'passes through the %s slug under its own category',
+    async (slug) => {
+      await renderPage({ category: SUB_CATEGORY_PARENT, sub: slug });
+      expect(receivedSubCategory).toHaveBeenCalledWith(slug);
+    },
+  );
+
+  it('ignores a sub-category slug that is not in the catalogue', async () => {
+    await renderPage({ category: SUB_CATEGORY_PARENT, sub: 'air-cair' });
+    expect(receivedSubCategory).toHaveBeenCalledWith(null);
+  });
+
+  it('ignores a repeated sub param (array value)', async () => {
+    await renderPage({ category: SUB_CATEGORY_PARENT, sub: ['air-care', 'tissues-paper'] });
+    expect(receivedSubCategory).toHaveBeenCalledWith(null);
+  });
+
+  it('ignores a real slug paired with a category that does not subdivide', async () => {
+    // `air-care` subdivides hygiene, not spa-salon. Honouring the pairing would filter a category
+    // in which no product can carry that sub-category, i.e. a guaranteed-empty grid.
+    await renderPage({ category: 'spa-salon', sub: 'air-care' });
+    expect(receivedCategory).toHaveBeenCalledWith('spa-salon');
+    expect(receivedSubCategory).toHaveBeenCalledWith(null);
+  });
+
+  it('ignores a sub param with no category at all', async () => {
+    await renderPage({ sub: 'air-care' });
+    expect(receivedCategory).toHaveBeenCalledWith('all');
+    expect(receivedSubCategory).toHaveBeenCalledWith(null);
   });
 });
 

@@ -1,7 +1,7 @@
-import type { ProductItem, CategorySlug, NavLink } from '@/types';
+import type { ProductItem, CategorySlug, SubCategorySlug, NavLink } from '@/types';
 // Value imports as well as the re-exports below: `export … from` creates no local binding, and
 // the derived helpers at the foot of this file need to read both arrays.
-import { PRODUCT_CATEGORIES } from './categories';
+import { PRODUCT_CATEGORIES, SUB_CATEGORIES } from './categories';
 import { PRODUCTS } from './products';
 
 // ─── Brand ───────────────────────────────────────────────────────────────────
@@ -61,8 +61,11 @@ export const NAV_LINKS: NavLink[] = [
 // (2400+ generated lines). Re-exported here so every existing `from '@/constants'` import site
 // keeps working. The module graph stays acyclic: categories <- products <- index.
 export {
+  ALL_ID,
+  SUB_PARAM,
   PRODUCT_CATEGORIES,
   SUB_CATEGORIES,
+  SUB_CATEGORY_PARENT,
   CATEGORY_HYGIENE_SAFETY_HOUSEKEEPING,
   CATEGORY_HOTEL_AMENITIES,
   CATEGORY_SPA_SALON,
@@ -88,6 +91,22 @@ export function productsInCategory(slug: CategorySlug): ProductItem[] {
 export const PRODUCT_COUNT_BY_CATEGORY = Object.fromEntries(
   PRODUCT_CATEGORIES.map((c) => [c.slug, productsInCategory(c.slug).length]),
 ) as Record<CategorySlug, number>;
+
+/**
+ * Every product in one subdivision of `hygiene-safety-housekeeping`.
+ *
+ * Deliberately simpler than `productsInCategory` above, and the difference is not an oversight:
+ * `subCategory` has no secondary axis. A product carries at most one, and only products of the
+ * subdivided category carry one at all, so there is nothing here to double-count.
+ */
+export function productsInSubCategory(slug: SubCategorySlug): ProductItem[] {
+  return PRODUCTS.filter((p) => p.subCategory === slug);
+}
+
+/** How many products each sub-category holds. Derived, so it can never drift from PRODUCTS. */
+export const PRODUCT_COUNT_BY_SUB_CATEGORY = Object.fromEntries(
+  SUB_CATEGORIES.map((s) => [s.slug, productsInSubCategory(s.slug).length]),
+) as Record<SubCategorySlug, number>;
 
 /**
  * A unique, human-readable identifier for a product.
