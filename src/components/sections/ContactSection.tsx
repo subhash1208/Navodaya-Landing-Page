@@ -257,7 +257,8 @@ export default function ContactSection() {
             </h2>
             <p className="mt-4 mb-10 max-w-lg text-body-lg text-grey-600">
               Tell us what you need and we&apos;ll get back to you with pricing and availability. We
-              work with hotels, hospitals, spas, salons, and industries across India.
+              work with hotels, hospitals, spas, salons, educational institutions, and industries
+              across India.
             </p>
 
             <div className="flex flex-col gap-4">

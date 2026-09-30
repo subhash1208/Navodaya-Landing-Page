@@ -12,7 +12,13 @@ export default function ProductsError({ error, reset }: ErrorProps) {
   return (
     <div className="min-h-[60vh] flex items-center justify-center px-4">
       <div className="text-center max-w-sm">
-        <AlertTriangle className="w-12 h-12 text-amber-400 mx-auto mb-4" aria-hidden="true" />
+        {/*
+          `amber-400` is not a SEALED palette token (tailwind.config.ts has no amber/warning
+          scale) and the element is `aria-hidden`, purely decorative. `grey-400` matches the
+          muted-decorative-icon convention already used for the Search/X icons in
+          ProductGrid.tsx and clears the 3:1 WCAG 1.4.11 non-text floor on paper (3.28:1).
+        */}
+        <AlertTriangle className="w-12 h-12 text-grey-400 mx-auto mb-4" aria-hidden="true" />
         <h2 className="text-xl font-bold text-brand-blue mb-2">Something went wrong</h2>
         <p className="text-sm text-grey-500 mb-6">
           {error.message || 'Failed to load the product catalogue. Please try again.'}
