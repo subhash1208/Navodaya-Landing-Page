@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ChevronRight, MessageSquare, Package, Tag, ArrowLeft } from 'lucide-react';
+import { ChevronRight, Package, Tag, ArrowLeft } from 'lucide-react';
 import { PRODUCTS, ROUTES, BRAND, productSummary, productsInCategory } from '@/constants';
 import { ProductViewer } from '@/components/ui/ProductViewer';
+import { ProductOptions } from '@/components/ui/ProductOptions';
 import { ProductCard } from '@/components/ui/ProductCard';
 
 interface PageProps {
@@ -59,12 +60,9 @@ export default async function ProductPage({ params }: PageProps) {
     { label: 'Availability', value: 'Bulk Orders Welcome', icon: Package },
   ];
 
-  // The slug, not the name: the destination rebuilds the select's option value with
-  // `productEnquiryLabel`, which names the product's PRIMARY category — and the three
-  // dual-category products are listed under both of their optgroups carrying that same
-  // primary-category value. A bare name cannot say which of the two ranges is primary, so it
-  // could not be resolved back to a matching option. It also needs no URL encoding.
-  const quoteUrl = `/?product=${product.slug}#contact`;
+  // `quoteUrl` is no longer built here: the link's `variant` parameter depends on what the visitor
+  // picks in `ProductOptions`, so the CTA moved inside that client component along with the chips
+  // it shares state with. This page stays a Server Component.
 
   return (
     <div className="min-h-screen bg-grey-50">
@@ -124,67 +122,50 @@ export default async function ProductPage({ params }: PageProps) {
               {productSummary(product)}
             </p>
 
-            {/* Available options — the catalogue's real variant data, when a product has any */}
-            {variants.length > 0 && (
-              <div className="mb-8">
-                <h2 className="text-xs font-semibold uppercase tracking-wider text-grey-600 mb-3">
-                  Available Options
+            {/*
+              Option selector + quote CTA. One client boundary, chosen because those two are the
+              only things on this page that share state — the CTA's `href` carries whatever the
+              visitor picked. Everything visually between them is handed through as `children` and
+              stays server-rendered.
+            */}
+            <ProductOptions
+              slug={product.slug}
+              variants={product.variants}
+              optionAxes={product.optionAxes}
+              secondaryAction={
+                <Link
+                  href={`${ROUTES.PRODUCTS}?category=${product.category.slug}`}
+                  className="inline-flex items-center justify-center gap-2 px-6 py-3.5 border-2 border-grey-200 text-grey-600 font-semibold text-sm hover:border-ink hover:text-ink transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink min-h-[44px]"
+                >
+                  <ArrowLeft className="w-4 h-4" aria-hidden="true" />
+                  More in Category
+                </Link>
+              }
+            >
+              {/* Specs table */}
+              <div className="bg-grey-100 p-5 mb-8 border border-grey-200">
+                <h2 className="text-xs font-semibold uppercase tracking-wider text-grey-600 mb-4">
+                  Product Specifications
                 </h2>
-                <ul className="flex flex-wrap gap-2">
-                  {variants.map((v) => (
-                    <li
-                      key={v.label}
-                      className="border border-grey-200 bg-paper px-3 py-1.5 font-mono text-xs text-grey-600"
-                    >
-                      {v.label}
-                    </li>
+                <dl className="space-y-3">
+                  {specs.map(({ label, value }) => (
+                    <div key={label} className="flex items-start justify-between gap-4 text-sm">
+                      <dt className="text-grey-600 font-medium shrink-0">{label}</dt>
+                      <dd className="text-ink font-semibold text-right">{value}</dd>
+                    </div>
                   ))}
-                </ul>
+                </dl>
               </div>
-            )}
 
-            {/* Specs table */}
-            <div className="bg-grey-100 p-5 mb-8 border border-grey-200">
-              <h2 className="text-xs font-semibold uppercase tracking-wider text-grey-600 mb-4">
-                Product Specifications
-              </h2>
-              <dl className="space-y-3">
-                {specs.map(({ label, value }) => (
-                  <div key={label} className="flex items-start justify-between gap-4 text-sm">
-                    <dt className="text-grey-600 font-medium shrink-0">{label}</dt>
-                    <dd className="text-ink font-semibold text-right">{value}</dd>
-                  </div>
-                ))}
-              </dl>
-            </div>
-
-            {/* Pricing note */}
-            <div className="bg-grey-50 border border-grey-200 p-4 mb-8">
-              <p className="text-sm text-brand-blue font-medium mb-1">Pricing on Request</p>
-              <p className="text-xs text-grey-500 leading-relaxed">
-                We offer flexible B2B pricing based on order quantity and requirements. Contact us
-                for a custom quote tailored to your business.
-              </p>
-            </div>
-
-            {/* CTAs */}
-            <div className="flex flex-col sm:flex-row gap-3 mt-auto">
-              <Link
-                href={quoteUrl}
-                className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-brand-blue text-paper font-semibold text-sm hover:bg-brand-blue/90 hover:-translate-y-0.5 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-2 focus-visible:ring-offset-paper min-h-[44px]"
-                data-cursor-invert
-              >
-                <MessageSquare className="w-4 h-4" aria-hidden="true" />
-                Request a Quote
-              </Link>
-              <Link
-                href={`${ROUTES.PRODUCTS}?category=${product.category.slug}`}
-                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 border-2 border-grey-200 text-grey-600 font-semibold text-sm hover:border-ink hover:text-ink transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink min-h-[44px]"
-              >
-                <ArrowLeft className="w-4 h-4" aria-hidden="true" />
-                More in Category
-              </Link>
-            </div>
+              {/* Pricing note */}
+              <div className="bg-grey-50 border border-grey-200 p-4 mb-8">
+                <p className="text-sm text-brand-blue font-medium mb-1">Pricing on Request</p>
+                <p className="text-xs text-grey-500 leading-relaxed">
+                  We offer flexible B2B pricing based on order quantity and requirements. Contact us
+                  for a custom quote tailored to your business.
+                </p>
+              </div>
+            </ProductOptions>
           </div>
         </div>
 

@@ -19,6 +19,12 @@ export function ProductCard({ product, className }: ProductCardProps) {
     .join('');
   const reference = `${categoryCode}-${product.slug}`;
   const variantCount = product.variants?.length ?? 0;
+  // A product carries `variants` OR `optionAxes`, never both. Variants are named SKUs, so a count
+  // is honest; axes are independent dimensions whose combinations the source never asserted as
+  // stocked, so the axis NAMES are shown instead — multiplying their values together would
+  // re-fabricate the crossed variants the data model deliberately dropped.
+  const axisNames = product.optionAxes?.map((axis) => axis.name) ?? [];
+  const optionsValue = variantCount > 1 ? String(variantCount) : axisNames.join(', ');
 
   return (
     <Link
@@ -82,7 +88,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
 
       <p className="mt-3 text-body-sm text-grey-600 line-clamp-3">{productSummary(product)}</p>
 
-      {(product.material || variantCount > 1) && (
+      {(product.material || optionsValue) && (
         <dl className="mt-5 border-t border-grey-100 pt-3 font-mono text-data text-grey-500">
           {product.material && (
             <div className="flex gap-2">
@@ -90,10 +96,10 @@ export function ProductCard({ product, className }: ProductCardProps) {
               <dd>{product.material}</dd>
             </div>
           )}
-          {variantCount > 1 && (
+          {optionsValue && (
             <div className="flex gap-2">
               <dt>Options:</dt>
-              <dd>{variantCount}</dd>
+              <dd>{optionsValue}</dd>
             </div>
           )}
         </dl>

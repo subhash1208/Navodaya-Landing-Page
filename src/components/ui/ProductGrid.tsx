@@ -235,7 +235,12 @@ export function ProductGrid({
           p.name.toLowerCase().includes(q) ||
           (p.description?.toLowerCase().includes(q) ?? false) ||
           (p.material?.toLowerCase().includes(q) ?? false) ||
-          (p.variants?.some((v) => v.label.toLowerCase().includes(q)) ?? false),
+          (p.variants?.some((v) => v.label.toLowerCase().includes(q)) ?? false) ||
+          // A product carries `variants` OR `optionAxes`, never both, so this clause is the only
+          // thing that makes the four axis products searchable by their own option names. Without
+          // it, "lavender" — a fragrance the catalogue genuinely lists — returns "No products
+          // found" on the site's only discovery surface.
+          (p.optionAxes?.some((a) => a.values.some((v) => v.toLowerCase().includes(q))) ?? false),
       );
     }
     return list;

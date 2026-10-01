@@ -175,6 +175,7 @@ export default function ContactSection() {
   const [productChoice, setProductChoice] = useState('');
   const sectionRef = useRef<HTMLElement>(null);
   const lastMoveRef = useRef(0);
+  const messageRef = useRef<HTMLTextAreaElement>(null);
 
   const showSuccess = state?.success === true && !dismissed;
   const isOther = productChoice === OTHER_VALUE;
@@ -203,11 +204,26 @@ export default function ContactSection() {
     // rendering for the same reason `useSearchParams` was removed from `/products` (see
     // `ProductGrid.tsx`). The slug is validated against `PRODUCTS`; anything unmatched leaves the
     // select at its blank placeholder exactly as today.
-    const slug = new URLSearchParams(window.location.search).get('product');
-    if (!slug) return;
-    const product = PRODUCTS.find((p) => p.slug === slug);
-    if (!product) return;
-    setProductChoice(productEnquiryLabel(product));
+    const params = new URLSearchParams(window.location.search);
+    const slug = params.get('product');
+    const product = slug ? PRODUCTS.find((p) => p.slug === slug) : undefined;
+    if (product) setProductChoice(productEnquiryLabel(product));
+
+    // `variant` carries the option the visitor picked on the product page — a SKU label, or the
+    // chosen axis values joined. It lands in the message rather than a dedicated field on purpose:
+    // a new field would mean changing `ContactFormData`, `FIELD_LIMITS`, the server action and the
+    // email body, and `src/app/actions/contact.ts` is a `'use server'` module where every export
+    // must be an async function. A labelled line in the message is editable, deletable, and already
+    // reaches the business inbox.
+    const variant = params.get('variant');
+    const field = messageRef.current;
+    // Written imperatively because the textarea is uncontrolled — React 19 resets an uncontrolled
+    // form when an action completes, which is why this form is dispatched from `onSubmit` rather
+    // than `action=` (see `handleAction`), and a `value` prop here would undo that. The emptiness
+    // check is what keeps the prefill from ever overwriting something a visitor has typed.
+    if (variant && field && !field.value) {
+      field.value = `Option requested: ${variant}`;
+    }
   }, []);
 
   const handleAction = useCallback(
@@ -509,6 +525,7 @@ export default function ContactSection() {
                   <textarea
                     id="message"
                     name="message"
+                    ref={messageRef}
                     rows={3}
                     maxLength={FIELD_MAX_LENGTHS.message}
                     placeholder="Tell us more about your requirements..."

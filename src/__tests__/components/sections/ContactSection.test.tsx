@@ -365,6 +365,48 @@ describe('ContactSection', () => {
     });
   });
 
+  describe('prefill from ?variant=', () => {
+    const message = () => screen.getByPlaceholderText(/Tell us more/) as HTMLTextAreaElement;
+
+    afterEach(() => {
+      window.history.pushState({}, '', '/');
+    });
+
+    it('writes the chosen option into the message as an editable line', () => {
+      window.history.pushState({}, '', '/?product=surgeon-cap&variant=500+ML+%C2%B7+Lavender');
+      render(<ContactSection />);
+      expect(message().value).toBe('Option requested: 500 ML · Lavender');
+    });
+
+    it('prefills the message even when the product slug does not resolve', () => {
+      window.history.pushState({}, '', '/?product=not-a-real-product&variant=Rose');
+      render(<ContactSection />);
+      expect(message().value).toBe('Option requested: Rose');
+      expect((screen.getByRole('combobox') as HTMLSelectElement).value).toBe('');
+    });
+
+    it('leaves the message empty when the parameter is absent', () => {
+      window.history.pushState({}, '', '/?product=surgeon-cap');
+      render(<ContactSection />);
+      expect(message().value).toBe('');
+    });
+
+    it('leaves the message empty when the parameter is present but empty', () => {
+      window.history.pushState({}, '', '/?product=surgeon-cap&variant=');
+      render(<ContactSection />);
+      expect(message().value).toBe('');
+    });
+
+    it('does not clobber what the visitor types over the prefill on a later render', () => {
+      window.history.pushState({}, '', '/?product=surgeon-cap&variant=Rose');
+      render(<ContactSection />);
+      fireEvent.change(message(), { target: { value: 'We need 400 units by Friday.' } });
+      // Any state change re-renders the form; the prefill must not run again and overwrite this.
+      fireEvent.change(screen.getByRole('combobox'), { target: { value: 'Other' } });
+      expect(message().value).toBe('We need 400 units by Friday.');
+    });
+  });
+
   describe('"Other" free-text detail', () => {
     it('is hidden until Other is selected and disappears again afterwards', () => {
       render(<ContactSection />);
