@@ -68,15 +68,6 @@
   .font-display {
     font-family: var(--font-display);
   }
-
-  /* Scrollbar hide */
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
-  }
 }
 
 /* ─── Custom cursor ─────────────────────────────────────────────────────────── */
@@ -261,28 +252,6 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
-  }
-}
-
-/* ─── Graph product label fade-in (synced with spiral animation) ─────────────── */
-@keyframes labelFadeInRight {
-  from {
-    opacity: 0;
-    transform: translateY(-50%) scale(0.85);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(-50%) scale(1);
-  }
-}
-@keyframes labelFadeInLeft {
-  from {
-    opacity: 0;
-    transform: translate(-100%, -50%) scale(0.85);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-100%, -50%) scale(1);
   }
 }
 

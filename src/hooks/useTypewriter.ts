@@ -58,6 +58,7 @@ export function useTypewriter({
 
     let i = 0;
     let typeTimer: ReturnType<typeof setTimeout>;
+    let cursorHideTimer: ReturnType<typeof setTimeout>;
 
     const startTimer = setTimeout(() => {
       const type = () => {
@@ -69,7 +70,7 @@ export function useTypewriter({
           setIsDone(true);
           onCompleteRef.current?.();
           // Blink cursor twice then hide
-          setTimeout(() => setShowCursor(false), 800);
+          cursorHideTimer = setTimeout(() => setShowCursor(false), 800);
         }
       };
       type();
@@ -78,6 +79,7 @@ export function useTypewriter({
     return () => {
       clearTimeout(startTimer);
       clearTimeout(typeTimer);
+      clearTimeout(cursorHideTimer);
     };
   }, [text, speed, startDelay, enabled]);
 

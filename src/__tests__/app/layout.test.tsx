@@ -163,4 +163,8 @@ describe('metadata', () => {
     // own `images` key (next/dist/lib/metadata/resolve-metadata.js:138,627).
     expect(Object.prototype.hasOwnProperty.call(metadata.twitter ?? {}, 'images')).toBe(false);
   });
+
+  it('sets openGraph.url so og:url is emitted (it is not auto-derived from metadataBase)', () => {
+    expect(metadata.openGraph?.url).toBe('/');
+  });
 });

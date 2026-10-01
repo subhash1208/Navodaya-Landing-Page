@@ -45,7 +45,7 @@ describe('ProductCategoriesSection server rendering', () => {
     const html = renderToStaticMarkup(<ProductCategoriesSection />);
 
     expect(html).toContain(
-      'Three focused ranges covering every hygiene and care need across industries.',
+      `${PRODUCT_CATEGORIES.length} focused ranges covering every hygiene and care need across industries.`,
     );
   });
 

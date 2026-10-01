@@ -118,14 +118,12 @@ export default function Footer() {
           <p className="text-xs text-grey-400">
             &copy; {new Date().getFullYear()} {BRAND.FULL_NAME}. All rights reserved.
           </p>
-          <a
-            href={`https://${BRAND.WEBSITE}`}
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            href={ROUTES.HOME}
             className="relative text-xs text-grey-400 hover:text-paper transition-colors duration-150 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-cyan rounded before:absolute before:inset-x-[-14px] before:inset-y-[-5px] before:content-['']"
           >
             {BRAND.WEBSITE}
-          </a>
+          </Link>
         </div>
       </div>
     </footer>

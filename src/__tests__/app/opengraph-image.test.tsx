@@ -52,10 +52,10 @@ describe('opengraph-image generation', () => {
     Image();
     const html = renderToStaticMarkup(captured.element as ReactElement);
     // Raw HTML, not JSX text — React HTML-escapes `&` to `&amp;` when it serialises
-    // BRAND.FULL_NAME's own literal ampersand, so the containment check must expect the
-    // escaped form rather than the source string verbatim.
+    // BRAND.FULL_NAME's and BRAND.TAGLINE's own literal ampersands, so the containment
+    // check must expect the escaped form rather than the source string verbatim.
     expect(html).toContain(BRAND.FULL_NAME.replace('&', '&amp;'));
-    expect(html).toContain(BRAND.TAGLINE);
+    expect(html).toContain(BRAND.TAGLINE.replace('&', '&amp;'));
     expect(html).toContain(BRAND.WEBSITE.toUpperCase());
     expect(html).toContain('background-color:#FAF8F2');
     expect(html).toContain('color:#0C0B08');

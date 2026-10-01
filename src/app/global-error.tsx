@@ -66,7 +66,11 @@ export default function GlobalError({
               style={{
                 fontFamily: 'ui-monospace, SFMono-Regular, monospace',
                 fontSize: '0.75rem',
-                color: '#8E897C',
+                // grey-400 (#8E897C) on paper (#FAF8F2) measures 3.28:1 at 12px normal weight,
+                // below the 4.5:1 WCAG 1.4.3 threshold for normal text. grey-600 (#524E46) is
+                // 7.79:1 on the same ground (documented in tailwind.config.ts), clearing it
+                // comfortably — matches the ratio already used for the paragraph above.
+                color: '#524E46',
                 margin: '0 0 1.5rem',
               }}
             >

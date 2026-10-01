@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, act } from '@testing-library/react';
 import HeroSection from '@/components/sections/HeroSection';
-import { PRODUCTS } from '@/constants';
+import { BRAND, PRODUCTS } from '@/constants';
 
 vi.mock('motion/react', () => {
   // The component per tag is CACHED. A bare `get` handler returns a fresh function on every
@@ -130,12 +130,12 @@ describe('HeroSection', () => {
     expect(plate.getAttribute('sizes')).toBe('(max-width: 767px) 0px, 400px');
   });
 
-  it('renders the specimen plate caption and index numeral', () => {
+  it('renders the specimen plate caption without an index numeral', () => {
     render(<HeroSection />);
     expect(screen.getByText('Branded Paper Cup')).toBeTruthy();
     expect(screen.getByText('Hotel Amenities')).toBeTruthy();
     expect(screen.getByText('Specimen')).toBeTruthy();
-    expect(screen.getByText('01').getAttribute('aria-hidden')).toBe('true');
+    expect(screen.queryByText('01')).toBeNull();
   });
 
   it('exposes no interactive control around the specimen plate', () => {
@@ -153,7 +153,7 @@ describe('HeroSection', () => {
 
   it('renders badge text', () => {
     render(<HeroSection />);
-    expect(screen.getByText(/Your Trusted Partner in Progress and Care/)).toBeTruthy();
+    expect(screen.getByText(BRAND.TAGLINE)).toBeTruthy();
   });
 
   it('keeps hero content visible immediately when prefers-reduced-motion is set', () => {

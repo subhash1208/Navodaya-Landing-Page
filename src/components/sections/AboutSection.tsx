@@ -215,12 +215,9 @@ export default function AboutSection() {
         {/* Asymmetric editorial split — title hard left, mission offset right and lower */}
         <div className="grid grid-cols-1 gap-8 pt-8 mb-16 md:grid-cols-12 md:gap-12">
           <div className="md:col-span-5">
-            <span aria-hidden="true" className="font-mono text-label text-grey-500">
-              01
-            </span>
             <span
               ref={labelRef}
-              className="block mt-5 font-mono text-label uppercase text-grey-500 scroll-animate-up"
+              className="block font-mono text-label uppercase text-grey-500 scroll-animate-up"
             >
               Who We Are
             </span>
@@ -247,13 +244,12 @@ export default function AboutSection() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-12 items-center">
             <div ref={textColRef} className="scroll-animate-left">
               <p className="text-body text-grey-600 mb-4">
-                Navodaya Industries &amp; Care Kits is a Hyderabad based startup established in
-                2025, specializing in B2B housekeeping supplies, institutional hygiene products,
-                protective packaging covers, and customized care kit solutions. We serve
-                organizations across the education, healthcare, and hospitality sectors, combining
-                reliable product sourcing with manufacturing capabilities to deliver quality
-                solutions, efficient procurement, and dependable service to our institutional
-                customers.
+                {BRAND.FULL_NAME} is a Hyderabad based startup established in 2025, specializing in
+                B2B housekeeping supplies, institutional hygiene products, protective packaging
+                covers, and customized care kit solutions. We serve organizations across the
+                education, healthcare, and hospitality sectors, combining reliable product sourcing
+                with manufacturing capabilities to deliver quality solutions, efficient procurement,
+                and dependable service to our institutional customers.
               </p>
               <p className="text-body text-grey-600">
                 Our approach is simple: understand what businesses need, source the best products,

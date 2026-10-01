@@ -21,9 +21,9 @@ describe('TestimonialMarquee', () => {
     ).toBeTruthy();
   });
 
-  it('renders the section index number', () => {
+  it('does not render a section index number', () => {
     render(<TestimonialMarquee />);
-    expect(screen.getByText('04')).toBeTruthy();
+    expect(screen.queryByText('04')).toBeNull();
   });
 
   it('renders testimonial rows', () => {

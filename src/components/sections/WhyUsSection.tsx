@@ -184,9 +184,6 @@ export default function WhyUsSection() {
         <div className="border-t border-grey-200">
           <div className="flex flex-col gap-4 py-8 md:flex-row md:items-baseline md:justify-between">
             <div className="flex items-baseline gap-5">
-              <span aria-hidden="true" className="font-mono text-label text-grey-500">
-                03
-              </span>
               <h2
                 ref={headingRef}
                 id="why-us-heading"
@@ -208,14 +205,8 @@ export default function WhyUsSection() {
           </p>
 
           <div ref={cardsRef} className="scroll-stagger">
-            {REASONS.map(({ icon: Icon, title, description }, i) => (
-              <div
-                key={title}
-                className="why-card grid grid-cols-[2.5rem_1fr] items-start gap-x-5 border-t border-grey-100 py-8 scroll-animate-up"
-              >
-                <span aria-hidden="true" className="pt-1 font-mono text-label text-grey-500">
-                  {String(i + 1).padStart(2, '0')}
-                </span>
+            {REASONS.map(({ icon: Icon, title, description }) => (
+              <div key={title} className="why-card border-t border-grey-100 py-8 scroll-animate-up">
                 <div>
                   <div className="flex items-center gap-3">
                     <Icon className="why-icon w-4 h-4 text-grey-400" aria-hidden="true" />

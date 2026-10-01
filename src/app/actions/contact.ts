@@ -2,17 +2,27 @@
 
 import { Resend } from 'resend';
 import { BRAND } from '@/constants';
+import { FALLBACK_CONTACT, SEND_FAILED_ERROR } from '@/constants/contact';
 import type { ContactFormData } from '@/types';
 
 /** The field whose value the visitor must fix, matching both the form `name` and the input `id`. */
 export type ContactFieldName = keyof ContactFormData;
 
-export interface ContactActionResult {
-  success: boolean;
-  error?: string;
-  /** Present on validation failures so the client can mark and focus the offending input. */
-  field?: ContactFieldName;
-}
+/**
+ * A discriminated union rather than `{ success: boolean; error?: string }`: the earlier shape let
+ * `success: false` carry no `error`, which rendered nothing at all client-side and dropped an
+ * enquiry with zero signal to the visitor (see `ContactSection.tsx`'s error banner). Every failure
+ * variant here is required to carry a message, so a future return path that forgets one is a
+ * compile error instead of a silently swallowed lead.
+ */
+export type ContactActionResult =
+  | { success: true }
+  | {
+      success: false;
+      error: string;
+      /** Present on validation failures so the client can mark and focus the offending input. */
+      field?: ContactFieldName;
+    };
 
 /**
  * The enquiry plus the honeypot. `honeypot` is deliberately NOT on `ContactFormData` — it is not
@@ -39,14 +49,7 @@ const SENTINEL_API_KEY = 'your_resend_api_key_here';
  */
 const DEFAULT_FROM = `${BRAND.NAME} Website <onboarding@resend.dev>`;
 
-/**
- * Every failure path hands the visitor a way to reach the business anyway. A lead that picks up
- * the phone is not a lost lead; a lead told "something went wrong" and nothing else is.
- */
-const FALLBACK_CONTACT = `please email us directly at ${BRAND.EMAIL} or call ${BRAND.PHONE}`;
-
 const MISCONFIGURED_ERROR = `We could not send your enquiry — our email service is not configured. Sorry about that: ${FALLBACK_CONTACT}.`;
-const SEND_FAILED_ERROR = `Failed to send your enquiry. Please try again, or ${FALLBACK_CONTACT}.`;
 const RATE_LIMITED_ERROR = `You have sent several enquiries in the last few minutes. Please give us a little time to reply, or ${FALLBACK_CONTACT}.`;
 
 /**

@@ -12,13 +12,22 @@ export default function RootError({ error, reset }: ErrorProps) {
   return (
     <div className="min-h-[60vh] flex items-center justify-center px-4">
       <div className="text-center max-w-sm">
-        <AlertTriangle className="w-12 h-12 text-amber-400 mx-auto mb-4" aria-hidden="true" />
+        {/*
+          `amber-400` is not a SEALED palette token (tailwind.config.ts has no amber/warning
+          scale) and the element is `aria-hidden`, purely decorative. `grey-400` matches the
+          muted-decorative-icon convention already used for the Search/X icons in
+          ProductGrid.tsx and clears the 3:1 WCAG 1.4.11 non-text floor on paper (3.28:1).
+        */}
+        <AlertTriangle className="w-12 h-12 text-grey-400 mx-auto mb-4" aria-hidden="true" />
         <h2 className="text-xl font-bold text-brand-blue mb-2">Something went wrong</h2>
         <p className="text-sm text-grey-500 mb-6">
           {error.message || 'An unexpected error occurred. Please try again.'}
         </p>
         {error.digest ? (
-          <p className="font-mono text-xs text-grey-400 mb-6">Reference: {error.digest}</p>
+          // grey-400 (#8E897C) on paper (#FAF8F2) is 3.28:1 at text-xs (12px) normal weight,
+          // below the 4.5:1 WCAG 1.4.3 threshold. grey-600 (#524E46) is 7.79:1 on the same
+          // ground (documented in tailwind.config.ts), clearing it comfortably.
+          <p className="font-mono text-xs text-grey-600 mb-6">Reference: {error.digest}</p>
         ) : null}
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <button

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterAll } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import { Header } from '@/components/layout/Header';
 
 vi.mock('motion/react', () => {
@@ -28,7 +28,18 @@ vi.mock('motion/react', () => {
                 viewport,
                 ...rest
               } = props;
-              return <div data-testid={`motion-${key}`} {...rest} />;
+              // `initial`/`animate`/`transition` are surfaced as data attributes rather than
+              // dropped — they are exactly the props the reduced-motion gate decides, so a mock
+              // that discarded them could not tell a gated animation from an ungated one.
+              return (
+                <div
+                  data-testid={`motion-${key}`}
+                  data-initial={JSON.stringify(initial ?? null)}
+                  data-animate={JSON.stringify(animate ?? null)}
+                  data-transition={JSON.stringify(transition ?? null)}
+                  {...rest}
+                />
+              );
             };
             cache.set(key, component);
           }
@@ -373,5 +384,146 @@ describe('Header', () => {
 
     expect(screen.getByTestId('header-bar').className).toContain('h-16');
     expect(screen.getByTestId('header-bar').className).not.toContain('h-20');
+  });
+
+  it('expands the hamburger button hit area to 44x44 without a wrapper or changing the icon', () => {
+    render(<Header />);
+    const btn = screen.getByLabelText('Open menu');
+    // 8px padding + 20px icon + 8px padding = 36px visible box; a -4px inset on all sides of
+    // the invisible `::before` grows the tappable area by 4px per edge, to the 44px floor.
+    expect(btn.className).toContain('relative');
+    expect(btn.className).toContain('p-2');
+    expect(btn.className).toContain('before:inset-[-4px]');
+    expect(btn.className).toContain("before:content-['']");
+    // The icon itself is untouched.
+    expect(screen.getByTestId('menu-icon').getAttribute('class')).toContain('w-5');
+    expect(screen.getByTestId('menu-icon').getAttribute('class')).toContain('h-5');
+
+    fireEvent.click(btn);
+    expect(screen.getByLabelText('Close menu')).toBeTruthy();
+    fireEvent.click(screen.getByLabelText('Close menu'));
+    expect(screen.getByLabelText('Open menu')).toBeTruthy();
+  });
+
+  it('gives the open mobile nav dialog semantics with a resolvable accessible name', () => {
+    render(<Header />);
+    fireEvent.click(screen.getByLabelText('Open menu'));
+
+    // `getByRole('dialog', { name })` resolves the accessible name via `aria-labelledby`,
+    // proving the heading — not a bare `aria-label` — is what names the dialog.
+    const dialog = screen.getByRole('dialog', { name: 'Mobile navigation' });
+    expect(dialog.getAttribute('aria-modal')).toBe('true');
+    expect(dialog.getAttribute('id')).toBe('mobile-nav');
+
+    const heading = screen.getByText('Mobile navigation');
+    expect(heading.tagName).toBe('H2');
+    expect(dialog.getAttribute('aria-labelledby')).toBe(heading.id);
+  });
+
+  it('inerts the page background while the mobile menu is open and lifts it on close', () => {
+    const main = document.createElement('main');
+    main.id = 'main-content';
+    document.body.appendChild(main);
+    const footer = document.createElement('footer');
+    document.body.appendChild(footer);
+
+    try {
+      render(<Header />);
+      expect(main.hasAttribute('inert')).toBe(false);
+      expect(footer.hasAttribute('inert')).toBe(false);
+
+      fireEvent.click(screen.getByLabelText('Open menu'));
+      expect(main.hasAttribute('inert')).toBe(true);
+      expect(footer.hasAttribute('inert')).toBe(true);
+
+      fireEvent.click(screen.getByLabelText('Close menu'));
+      expect(main.hasAttribute('inert')).toBe(false);
+      expect(footer.hasAttribute('inert')).toBe(false);
+    } finally {
+      document.body.removeChild(main);
+      document.body.removeChild(footer);
+    }
+  });
+
+  it('never leaves the background inerted after unmount while the menu was open', () => {
+    const main = document.createElement('main');
+    main.id = 'main-content';
+    document.body.appendChild(main);
+
+    try {
+      const { unmount } = render(<Header />);
+      fireEvent.click(screen.getByLabelText('Open menu'));
+      expect(main.hasAttribute('inert')).toBe(true);
+
+      unmount();
+      expect(main.hasAttribute('inert')).toBe(false);
+    } finally {
+      document.body.removeChild(main);
+    }
+  });
+
+  describe('prefers-reduced-motion', () => {
+    function setReducedMotion(reduce: boolean) {
+      vi.mocked(window.matchMedia).mockImplementation((query: string) => ({
+        matches: reduce && query === '(prefers-reduced-motion: reduce)',
+        media: query,
+        onchange: null,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      }));
+    }
+
+    it('still opens, remains fully usable, and closes correctly when reduced motion is requested', () => {
+      setReducedMotion(true);
+      render(<Header />);
+
+      fireEvent.click(screen.getByLabelText('Open menu'));
+
+      // The critical assertion: the menu is not merely present but genuinely usable — every
+      // link renders and is reachable.
+      const mobileNav = screen.getByLabelText('Mobile navigation');
+      const links = mobileNav.querySelectorAll('a');
+      expect(links.length).toBeGreaterThan(0);
+      expect(within(mobileNav).getByText('Home')).toBeTruthy();
+      expect(within(mobileNav).getAllByText('Get a Quote').length).toBeGreaterThan(0);
+
+      // Shortened to near-instant rather than skipped outright — a literal 0 can skip
+      // `transitionend` in some browsers, which `AnimatePresence` relies on to unmount.
+      const navMotion = screen.getByTestId('motion-nav');
+      expect(JSON.parse(navMotion.getAttribute('data-transition') ?? 'null').duration).toBe(0.01);
+
+      // The rotateX/translateY entrance — the vestibular-motion-triggering part — is dropped
+      // in favour of a plain opacity fade, per Motion's own reduced-motion guidance.
+      const linkMotions = screen.getAllByTestId('motion-div');
+      const firstLinkMotion = linkMotions[0];
+      expect(JSON.parse(firstLinkMotion.getAttribute('data-initial') ?? 'null')).toEqual({
+        opacity: 0,
+      });
+      expect(JSON.parse(firstLinkMotion.getAttribute('data-animate') ?? 'null')).toEqual({
+        opacity: 1,
+      });
+
+      fireEvent.click(screen.getByLabelText('Close menu'));
+      expect(screen.queryByLabelText('Mobile navigation')).toBeNull();
+    });
+
+    it('plays the full entrance transform when reduced motion is not requested', () => {
+      setReducedMotion(false);
+      render(<Header />);
+      fireEvent.click(screen.getByLabelText('Open menu'));
+
+      const navMotion = screen.getByTestId('motion-nav');
+      expect(JSON.parse(navMotion.getAttribute('data-transition') ?? 'null').duration).toBe(0.35);
+
+      const firstLinkMotion = screen.getAllByTestId('motion-div')[0];
+      expect(JSON.parse(firstLinkMotion.getAttribute('data-initial') ?? 'null')).toEqual({
+        opacity: 0,
+        rotateX: 90,
+        translateY: 40,
+      });
+    });
   });
 });

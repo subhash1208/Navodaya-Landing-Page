@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ChevronRight, MessageSquare, Package, Tag, ArrowLeft } from 'lucide-react';
-import { PRODUCTS, ROUTES, BRAND } from '@/constants';
+import { PRODUCTS, ROUTES, BRAND, productSummary, productsInCategory } from '@/constants';
 import { ProductViewer } from '@/components/ui/ProductViewer';
 import { ProductCard } from '@/components/ui/ProductCard';
 
@@ -20,13 +20,19 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const product = PRODUCTS.find((p) => p.slug === slug);
   if (!product) return { title: 'Product Not Found' };
 
+  // `productSummary` rather than `product.description`: the client's catalogue supplies no
+  // product copy, so the raw field is `undefined` for all of them and would stringify into the
+  // meta description as the literal word "undefined".
+  const summary = productSummary(product);
+
   return {
     title: product.name,
-    description: `${product.description} — ${product.category.name}. Request a quote from ${BRAND.FULL_NAME}, ${BRAND.LOCATION}.`,
+    description: `${summary} Request a quote from ${BRAND.NAME}.`,
     alternates: { canonical: ROUTES.PRODUCT(slug) },
     openGraph: {
       title: `${product.name} | ${BRAND.NAME}`,
-      description: product.description,
+      description: summary,
+      url: ROUTES.PRODUCT(slug),
     },
   };
 }
@@ -37,19 +43,28 @@ export default async function ProductPage({ params }: PageProps) {
 
   if (!product) notFound();
 
-  // Related: same category, exclude current, max 4
-  const related = PRODUCTS.filter(
-    (p) => p.category.id === product.category.id && p.slug !== slug,
-  ).slice(0, 4);
+  // Related: same category, exclude current, max 4. Goes through `productsInCategory` so the
+  // three products with a `secondaryCategory` appear alongside both of their ranges.
+  const related = productsInCategory(product.category.slug)
+    .filter((p) => p.slug !== slug)
+    .slice(0, 4);
 
+  const variants = product.variants ?? [];
   const specs = [
     { label: 'Category', value: product.category.name, icon: Tag },
     ...(product.material ? [{ label: 'Material', value: product.material, icon: Package }] : []),
-    { label: 'Type', value: 'Disposable / Single-use', icon: Package },
-    { label: 'Availability', value: 'In Stock — Bulk Orders Welcome', icon: Package },
+    ...(variants.length > 1
+      ? [{ label: 'Options', value: `${variants.length} available`, icon: Package }]
+      : []),
+    { label: 'Availability', value: 'Bulk Orders Welcome', icon: Package },
   ];
 
-  const quoteUrl = `/?product=${encodeURIComponent(product.name)}#contact`;
+  // The slug, not the name: the destination rebuilds the select's option value with
+  // `productEnquiryLabel`, which names the product's PRIMARY category — and the three
+  // dual-category products are listed under both of their optgroups carrying that same
+  // primary-category value. A bare name cannot say which of the two ranges is primary, so it
+  // could not be resolved back to a matching option. It also needs no URL encoding.
+  const quoteUrl = `/?product=${product.slug}#contact`;
 
   return (
     <div className="min-h-screen bg-grey-50">
@@ -91,21 +106,42 @@ export default async function ProductPage({ params }: PageProps) {
         <div className="grid lg:grid-cols-2 gap-12 mb-16">
           {/* Left — 360° viewer */}
           <div>
-            <ProductViewer productName={product.name} />
+            <ProductViewer productName={product.name} image={product.image} />
           </div>
 
           {/* Right — product info */}
           <div className="flex flex-col">
             {/* Category badge */}
             <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-brand-blue bg-grey-50 border border-grey-200 px-3 py-1.5 rounded-full self-start mb-4">
-              {product.category.icon} {product.category.name}
+              {product.category.name}
             </span>
 
             <h1 className="text-[clamp(1.5rem,3vw,2rem)] font-bold text-brand-blue mb-4 leading-tight">
               {product.name}
             </h1>
 
-            <p className="text-grey-500 leading-relaxed mb-8 text-base">{product.description}</p>
+            <p className="text-grey-500 leading-relaxed mb-8 text-base">
+              {productSummary(product)}
+            </p>
+
+            {/* Available options — the catalogue's real variant data, when a product has any */}
+            {variants.length > 0 && (
+              <div className="mb-8">
+                <h2 className="text-xs font-semibold uppercase tracking-wider text-grey-600 mb-3">
+                  Available Options
+                </h2>
+                <ul className="flex flex-wrap gap-2">
+                  {variants.map((v) => (
+                    <li
+                      key={v.label}
+                      className="border border-grey-200 bg-paper px-3 py-1.5 font-mono text-xs text-grey-600"
+                    >
+                      {v.label}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             {/* Specs table */}
             <div className="bg-grey-100 p-5 mb-8 border border-grey-200">

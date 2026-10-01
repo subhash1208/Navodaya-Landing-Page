@@ -103,6 +103,36 @@ describe('useTypewriter', () => {
     expect(result.current.showCursor).toBe(false);
   });
 
+  it('clears the cursor-hide timer on unmount, so it never fires against a torn-down component', () => {
+    // Regression test for the untracked delete/cursor-hide-phase setTimeout: unmounting between
+    // typing finishing and the 800ms cursor-hide delay must not let that timer's setShowCursor
+    // callback run after teardown. If the timer were left untracked, clearTimeout in cleanup
+    // would have nothing to clear and this would throw an "update on an unmounted component"
+    // warning/act violation against the buggy code.
+    const { result, unmount } = renderHook(() =>
+      useTypewriter({ text: 'A', speed: 40, startDelay: 100 }),
+    );
+
+    act(() => {
+      vi.advanceTimersByTime(100);
+    }); // start
+    act(() => {
+      vi.advanceTimersByTime(40);
+    }); // done typing — cursor-hide timer is now scheduled
+
+    expect(result.current.showCursor).toBe(true);
+
+    unmount();
+
+    // Advancing timers past the 800ms cursor-hide delay after unmount must not throw and must
+    // not be observable — the timer was cleared, not merely orphaned.
+    expect(() => {
+      act(() => {
+        vi.advanceTimersByTime(800);
+      });
+    }).not.toThrow();
+  });
+
   it('shows full text immediately when prefers-reduced-motion', () => {
     vi.mocked(window.matchMedia).mockImplementation((query: string) => ({
       matches: query === '(prefers-reduced-motion: reduce)',
