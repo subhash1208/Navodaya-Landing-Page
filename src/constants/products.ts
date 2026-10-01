@@ -157,96 +157,14 @@ export const PRODUCTS: ProductItem[] = [
     slug: 'air-freshener-concentrate',
     category: CATEGORY_HYGIENE_SAFETY_HOUSEKEEPING,
     subCategory: 'air-care',
-    variants: [
+    optionAxes: [
       {
-        label: '500 ML — Lavender',
-        size: '500 ML',
-        fragrance: 'Lavender',
+        name: 'Size',
+        values: ['500 ML', '1 L', '5 L'],
       },
       {
-        label: '500 ML — Lily',
-        size: '500 ML',
-        fragrance: 'Lily',
-      },
-      {
-        label: '500 ML — Sandal',
-        size: '500 ML',
-        fragrance: 'Sandal',
-      },
-      {
-        label: '500 ML — Blossom',
-        size: '500 ML',
-        fragrance: 'Blossom',
-      },
-      {
-        label: '500 ML — Jasmine',
-        size: '500 ML',
-        fragrance: 'Jasmine',
-      },
-      {
-        label: '500 ML — Citrus',
-        size: '500 ML',
-        fragrance: 'Citrus',
-      },
-      {
-        label: '1 L — Lavender',
-        size: '1 L',
-        fragrance: 'Lavender',
-      },
-      {
-        label: '1 L — Lily',
-        size: '1 L',
-        fragrance: 'Lily',
-      },
-      {
-        label: '1 L — Sandal',
-        size: '1 L',
-        fragrance: 'Sandal',
-      },
-      {
-        label: '1 L — Blossom',
-        size: '1 L',
-        fragrance: 'Blossom',
-      },
-      {
-        label: '1 L — Jasmine',
-        size: '1 L',
-        fragrance: 'Jasmine',
-      },
-      {
-        label: '1 L — Citrus',
-        size: '1 L',
-        fragrance: 'Citrus',
-      },
-      {
-        label: '5 L — Lavender',
-        size: '5 L',
-        fragrance: 'Lavender',
-      },
-      {
-        label: '5 L — Lily',
-        size: '5 L',
-        fragrance: 'Lily',
-      },
-      {
-        label: '5 L — Sandal',
-        size: '5 L',
-        fragrance: 'Sandal',
-      },
-      {
-        label: '5 L — Blossom',
-        size: '5 L',
-        fragrance: 'Blossom',
-      },
-      {
-        label: '5 L — Jasmine',
-        size: '5 L',
-        fragrance: 'Jasmine',
-      },
-      {
-        label: '5 L — Citrus',
-        size: '5 L',
-        fragrance: 'Citrus',
+        name: 'Fragrance',
+        values: ['Lavender', 'Lily', 'Sandal', 'Blossom', 'Jasmine', 'Citrus'],
       },
     ],
   },
@@ -346,51 +264,14 @@ export const PRODUCTS: ProductItem[] = [
     slug: 'hand-wash',
     category: CATEGORY_HYGIENE_SAFETY_HOUSEKEEPING,
     subCategory: 'cleaning-chemicals',
-    variants: [
+    optionAxes: [
       {
-        label: '500 ML — Peach',
-        size: '500 ML',
-        fragrance: 'Peach',
+        name: 'Size',
+        values: ['500 ML', '1 L', '5 L'],
       },
       {
-        label: '500 ML — Lemon',
-        size: '500 ML',
-        fragrance: 'Lemon',
-      },
-      {
-        label: '500 ML — Blossom',
-        size: '500 ML',
-        fragrance: 'Blossom',
-      },
-      {
-        label: '1 L — Peach',
-        size: '1 L',
-        fragrance: 'Peach',
-      },
-      {
-        label: '1 L — Lemon',
-        size: '1 L',
-        fragrance: 'Lemon',
-      },
-      {
-        label: '1 L — Blossom',
-        size: '1 L',
-        fragrance: 'Blossom',
-      },
-      {
-        label: '5 L — Peach',
-        size: '5 L',
-        fragrance: 'Peach',
-      },
-      {
-        label: '5 L — Lemon',
-        size: '5 L',
-        fragrance: 'Lemon',
-      },
-      {
-        label: '5 L — Blossom',
-        size: '5 L',
-        fragrance: 'Blossom',
+        name: 'Fragrance',
+        values: ['Peach', 'Lemon', 'Blossom'],
       },
     ],
   },
@@ -455,66 +336,14 @@ export const PRODUCTS: ProductItem[] = [
     slug: 'floor-cleaner',
     category: CATEGORY_HYGIENE_SAFETY_HOUSEKEEPING,
     subCategory: 'cleaning-chemicals',
-    variants: [
+    optionAxes: [
       {
-        label: '500 ML — Jasmine',
-        size: '500 ML',
-        fragrance: 'Jasmine',
+        name: 'Size',
+        values: ['500 ML', '1 L', '5 L'],
       },
       {
-        label: '500 ML — Rose',
-        size: '500 ML',
-        fragrance: 'Rose',
-      },
-      {
-        label: '500 ML — Sandal',
-        size: '500 ML',
-        fragrance: 'Sandal',
-      },
-      {
-        label: '500 ML — Citrus',
-        size: '500 ML',
-        fragrance: 'Citrus',
-      },
-      {
-        label: '1 L — Jasmine',
-        size: '1 L',
-        fragrance: 'Jasmine',
-      },
-      {
-        label: '1 L — Rose',
-        size: '1 L',
-        fragrance: 'Rose',
-      },
-      {
-        label: '1 L — Sandal',
-        size: '1 L',
-        fragrance: 'Sandal',
-      },
-      {
-        label: '1 L — Citrus',
-        size: '1 L',
-        fragrance: 'Citrus',
-      },
-      {
-        label: '5 L — Jasmine',
-        size: '5 L',
-        fragrance: 'Jasmine',
-      },
-      {
-        label: '5 L — Rose',
-        size: '5 L',
-        fragrance: 'Rose',
-      },
-      {
-        label: '5 L — Sandal',
-        size: '5 L',
-        fragrance: 'Sandal',
-      },
-      {
-        label: '5 L — Citrus',
-        size: '5 L',
-        fragrance: 'Citrus',
+        name: 'Fragrance',
+        values: ['Jasmine', 'Rose', 'Sandal', 'Citrus'],
       },
     ],
   },
@@ -562,66 +391,14 @@ export const PRODUCTS: ProductItem[] = [
     slug: 'herbal-deodoriser-phenyl',
     category: CATEGORY_HYGIENE_SAFETY_HOUSEKEEPING,
     subCategory: 'cleaning-chemicals',
-    variants: [
+    optionAxes: [
       {
-        label: '1 L — Rose',
-        size: '1 L',
-        fragrance: 'Rose',
+        name: 'Size',
+        values: ['1 L', '5 L'],
       },
       {
-        label: '1 L — Jasmine',
-        size: '1 L',
-        fragrance: 'Jasmine',
-      },
-      {
-        label: '1 L — Lemon',
-        size: '1 L',
-        fragrance: 'Lemon',
-      },
-      {
-        label: '1 L — Mogra',
-        size: '1 L',
-        fragrance: 'Mogra',
-      },
-      {
-        label: '1 L — White',
-        size: '1 L',
-        fragrance: 'White',
-      },
-      {
-        label: '1 L — White SPL',
-        size: '1 L',
-        fragrance: 'White SPL',
-      },
-      {
-        label: '5 L — Rose',
-        size: '5 L',
-        fragrance: 'Rose',
-      },
-      {
-        label: '5 L — Jasmine',
-        size: '5 L',
-        fragrance: 'Jasmine',
-      },
-      {
-        label: '5 L — Lemon',
-        size: '5 L',
-        fragrance: 'Lemon',
-      },
-      {
-        label: '5 L — Mogra',
-        size: '5 L',
-        fragrance: 'Mogra',
-      },
-      {
-        label: '5 L — White',
-        size: '5 L',
-        fragrance: 'White',
-      },
-      {
-        label: '5 L — White SPL',
-        size: '5 L',
-        fragrance: 'White SPL',
+        name: 'Fragrance',
+        values: ['Rose', 'Jasmine', 'Lemon', 'Mogra', 'White', 'White SPL'],
       },
     ],
   },

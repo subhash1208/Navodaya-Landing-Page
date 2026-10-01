@@ -64,6 +64,74 @@ describe('Product Data Integrity', () => {
   });
 });
 
+// The client's spreadsheet listed sizes in one column and fragrances in another for four cleaning
+// chemicals. The build script used to multiply the two columns together, inventing 51 size/fragrance
+// SKUs the client never quoted — on a site whose entire purpose is taking quote requests. Those four
+// products now carry `optionAxes` (independent dimensions) instead of `variants` (named SKUs).
+describe('Product option axes', () => {
+  const AXIS_SLUGS = [
+    'air-freshener-concentrate',
+    'hand-wash',
+    'floor-cleaner',
+    'herbal-deodoriser-phenyl',
+  ];
+  const withAxes = PRODUCTS.filter((p) => p.optionAxes);
+
+  it('never carries both variants and optionAxes, because crossing the axes back into variants is the fabrication this split removed', () => {
+    // DO NOT DELETE AS REDUNDANT. `variants` is a closed list of SKUs the supplier named;
+    // `optionAxes` are dimensions whose combinations the source never asserted as stocked. A
+    // product holding both means someone re-derived one from the other, which is exactly how the
+    // 51 fabricated size/fragrance combinations got into the catalogue the first time.
+    const both = PRODUCTS.filter((p) => p.variants && p.optionAxes);
+    expect(
+      both.map((p) => p.slug),
+      'product carries variants AND optionAxes',
+    ).toEqual([]);
+  });
+
+  it('carries axes on exactly the four products whose source listed two separate attribute columns', () => {
+    expect(withAxes.map((p) => p.slug).sort()).toEqual([...AXIS_SLUGS].sort());
+  });
+
+  it('gives every axis a name and at least two distinct values', () => {
+    for (const product of withAxes) {
+      expect(product.optionAxes?.length, `${product.name} has no axes`).toBeGreaterThanOrEqual(2);
+      for (const axis of product.optionAxes ?? []) {
+        expect(axis.name, `${product.name} has an unnamed axis`).toBeTruthy();
+        // Fewer than two values is not an axis — it is a fixed property of the product and
+        // belongs in `notes`, the same rule the build script applies to one-element `variants`.
+        expect(
+          axis.values.length,
+          `${product.name} axis "${axis.name}" has fewer than 2 values`,
+        ).toBeGreaterThanOrEqual(2);
+        expect(
+          new Set(axis.values).size,
+          `${product.name} axis "${axis.name}" has duplicate values`,
+        ).toBe(axis.values.length);
+        for (const value of axis.values) {
+          expect(value, `${product.name} axis "${axis.name}" has an empty value`).toBeTruthy();
+        }
+      }
+    }
+  });
+
+  it('leaves the four axis-carrying products with no variants at all', () => {
+    for (const slug of AXIS_SLUGS) {
+      const product = PRODUCTS.find((p) => p.slug === slug);
+      expect(product, `${slug} is not in the catalogue`).toBeTruthy();
+      expect(product?.variants, `${slug} still carries crossed variants`).toBeUndefined();
+    }
+  });
+
+  it('holds 212 real variants across 65 products, down from the 263 that included the fabrications', () => {
+    // Exact, not `>=`: 212 is what the supplier's delimited cells actually listed. A rise means a
+    // cross-product has been reintroduced somewhere; a fall means a real option was dropped.
+    const variantCarrying = PRODUCTS.filter((p) => p.variants);
+    expect(variantCarrying.length).toBe(65);
+    expect(variantCarrying.reduce((total, p) => total + (p.variants?.length ?? 0), 0)).toBe(212);
+  });
+});
+
 // The photo-extraction pipeline produced 54 candidate images; a full-resolution visual audit
 // approved 42 and rejected 12. These tests lock that audit's outcome into the data layer, because
 // the rejection reason is a client requirement rather than a matter of taste.
