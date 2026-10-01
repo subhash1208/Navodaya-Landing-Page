@@ -178,3 +178,137 @@ describe('Product photographs', () => {
     }
   });
 });
+
+// The product page renders two selector rows: a primary `model` row, and a `colour` row narrowed
+// by the model chosen. These tests lock the decomposition that makes that possible — it was
+// recovered by `dev-tools/catalogue/_models.py` from labels that had already been composed, so a
+// regression here is silent in the UI (a chip row simply goes empty or shows a nonsense value).
+describe('Variant selection axes', () => {
+  const VARIANTS = PRODUCTS.flatMap((p) => (p.variants ?? []).map((v) => ({ p, v })));
+
+  const matrix = (slug: string) => {
+    const product = PRODUCTS.find((p) => p.slug === slug);
+    expect(product?.variants, `${slug} has no variants`).toBeTruthy();
+    const byModel = new Map<string, string[]>();
+    for (const variant of product!.variants!) {
+      const colours = byModel.get(variant.model) ?? [];
+      if (variant.colour) colours.push(variant.colour);
+      byModel.set(variant.model, colours);
+    }
+    return byModel;
+  };
+
+  it('gives every variant a non-empty model, because the primary selector row must never be empty', () => {
+    // This is the whole premise of the two-axis UI. A variant with no model would render a
+    // product whose first chip row is blank and therefore unselectable — so `model` is required
+    // on `ProductVariant` rather than optional, and this asserts the data honours that.
+    expect(VARIANTS.length).toBe(212);
+    for (const { p, v } of VARIANTS) {
+      expect(typeof v.model, `${p.slug} / "${v.label}" has a non-string model`).toBe('string');
+      expect(v.model.trim(), `${p.slug} / "${v.label}" has an empty model`).not.toBe('');
+    }
+  });
+
+  it('never stores a colour outside the literal-colour vocabulary the source records', () => {
+    // The decomposition splits labels on an em-dash, so the failure mode is a non-colour word
+    // landing in `colour` — a finish ("Printed"), a shape ("Wide"), a capacity ("35 cm"). None of
+    // those may ever reach the colour swatch row, so the vocabulary is closed, not a `>=` check.
+    const VOCABULARY = ['Black', 'Blue', 'Green', 'Grey', 'Maroon', 'Red', 'White', 'Yellow'];
+    const seen = new Set<string>();
+    for (const { p, v } of VARIANTS) {
+      if (!v.colour) continue;
+      expect(VOCABULARY, `${p.slug} / "${v.label}" stores a non-colour as colour`).toContain(
+        v.colour,
+      );
+      seen.add(v.colour);
+    }
+    expect([...seen].sort()).toEqual(VOCABULARY);
+  });
+
+  it('splits exactly 60 of the 212 variants onto a colour axis', () => {
+    // Exact, not `>=`. A rise means a word was promoted into `colour` that the source never called
+    // a colour; a fall means a real colour option stopped reaching the swatch row.
+    expect(VARIANTS.filter(({ v }) => v.colour).length).toBe(60);
+    expect(VARIANTS.filter(({ v }) => !v.colour).length).toBe(152);
+  });
+
+  it('keeps a colour word inside the model when the model is named after one', () => {
+    // "Blue Bell" is a broom model, not a blue broom. A naive first-word rule extracts `Blue` and
+    // produces a one-swatch colour row the supplier never offered — this is the guard against it.
+    const blueBell = PRODUCTS.find((p) => p.slug === 'broom')?.variants?.find(
+      (v) => v.label === 'Blue Bell',
+    );
+    expect(blueBell?.model).toBe('Blue Bell');
+    expect(blueBell?.colour).toBeUndefined();
+  });
+
+  it('reproduces the client-verified mop-set model x colour matrix exactly', () => {
+    // mop-set is the only product whose labels put the colour LEFT of the dash, and its 11 labels
+    // were hand-composed from catalogue photographs rather than recovered from a source column —
+    // so no rule derives them and `_models.py` carries an explicit table. This is that table's
+    // acceptance test. Note `Slim Head` has NO colour: its label reads "Printed Handle", and
+    // `Printed` is a finish, not a colour.
+    expect(Object.fromEntries(matrix('mop-set'))).toEqual({
+      'Screw Socket': ['Red'],
+      'Metal Band': ['Blue'],
+      'Screw Hub': ['Blue'],
+      Elephant: [],
+      'Slim Head': [],
+      'Wide Clamp — Looped Yarn, Heavy Duty': [],
+      'Coarse Twist': ['Maroon'],
+      'Disc Fitting': ['Blue'],
+      'Clamp Fitting': ['Blue'],
+      'Butterfly Jumbo': [],
+      Eagle: [],
+    });
+  });
+
+  it('recovers the two clean capacity x colour grids the source really does stock', () => {
+    const FOUR = ['Blue', 'Green', 'Red', 'Yellow'];
+    expect(Object.fromEntries(matrix('wheeled-dust-bin'))).toEqual({
+      '120 L': FOUR,
+      '240 L': FOUR,
+    });
+    expect(Object.fromEntries(matrix('pedal-dust-bin'))).toEqual({
+      '15 L': FOUR,
+      '20 L': FOUR,
+      '30 L': FOUR,
+      '45 L': FOUR,
+      // Two source rows state a size word and neither a capacity nor a colour. They are real rows,
+      // so they survive as colourless models rather than being quietly folded into the grid above.
+      Small: [],
+      Medium: [],
+    });
+  });
+
+  it('preserves the swing-lid orphan rather than deduplicating it into the 60 L grid', () => {
+    // The source carries an unexplained colourless 60 L row alongside a full 60 L four-colour set.
+    // Merging them would be a judgement the source does not support, so it stays a distinct model.
+    expect(Object.fromEntries(matrix('swing-lid-dust-bin'))).toEqual({
+      '60 L': ['Blue', 'Green', 'Red', 'Yellow'],
+      '30 L': [],
+      '60 L (no colour stated)': [],
+    });
+  });
+
+  it('falls back to the label as the model wherever the source named no model', () => {
+    // Seven broom models, all bare supplier words with no colour and no dash. The honest primary
+    // axis value is the label itself — this is the third and most common derivation rule.
+    expect([...matrix('broom').keys()]).toEqual([
+      'Hunter',
+      'Blue Bell',
+      'XL',
+      'Lily',
+      'Jumbo',
+      'Daisy',
+      'Dolly',
+    ]);
+  });
+
+  it('ships no per-variant photograph yet, so the UI must keep its placeholder branch', () => {
+    // The `image` slot exists so real photographs drop in without a second schema change. Until
+    // they do, every variant renders a named placeholder — a photo appearing here before the UI
+    // stage is ready would be an invented path, which the pipeline is forbidden to produce.
+    expect(VARIANTS.filter(({ v }) => v.image).length).toBe(0);
+  });
+});

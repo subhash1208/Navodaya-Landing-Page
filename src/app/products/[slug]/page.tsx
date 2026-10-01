@@ -3,8 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ChevronRight, Package, Tag, ArrowLeft } from 'lucide-react';
 import { PRODUCTS, ROUTES, BRAND, productSummary, productsInCategory } from '@/constants';
-import { ProductViewer } from '@/components/ui/ProductViewer';
-import { ProductOptions } from '@/components/ui/ProductOptions';
+import { ProductConfigurator } from '@/components/ui/ProductConfigurator';
 import { ProductCard } from '@/components/ui/ProductCard';
 
 interface PageProps {
@@ -100,74 +99,69 @@ export default async function ProductPage({ params }: PageProps) {
       </div>
 
       <div className="container mx-auto py-10">
-        {/* Main product layout */}
-        <div className="grid lg:grid-cols-2 gap-12 mb-16">
-          {/* Left — 360° viewer */}
-          <div>
-            <ProductViewer productName={product.name} image={product.image} />
-          </div>
+        {/*
+          Main product layout. The grid itself lives inside `ProductConfigurator` because the
+          selection now drives BOTH columns — the photograph on the left and the option rows plus
+          the quote CTA on the right. Everything textual is handed through as server-rendered nodes
+          (`header`, `children`, `secondaryAction`), so this file stays an async Server Component
+          and none of this markup is compiled into the client bundle.
+        */}
+        <ProductConfigurator
+          slug={product.slug}
+          productName={product.name}
+          image={product.image}
+          variants={product.variants}
+          optionAxes={product.optionAxes}
+          header={
+            <>
+              {/* Category badge */}
+              <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-brand-blue bg-grey-50 border border-grey-200 px-3 py-1.5 rounded-full self-start mb-4">
+                {product.category.name}
+              </span>
 
-          {/* Right — product info */}
-          <div className="flex flex-col">
-            {/* Category badge */}
-            <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-brand-blue bg-grey-50 border border-grey-200 px-3 py-1.5 rounded-full self-start mb-4">
-              {product.category.name}
-            </span>
+              <h1 className="text-[clamp(1.5rem,3vw,2rem)] font-bold text-brand-blue mb-4 leading-tight">
+                {product.name}
+              </h1>
 
-            <h1 className="text-[clamp(1.5rem,3vw,2rem)] font-bold text-brand-blue mb-4 leading-tight">
-              {product.name}
-            </h1>
-
-            <p className="text-grey-500 leading-relaxed mb-8 text-base">
-              {productSummary(product)}
-            </p>
-
-            {/*
-              Option selector + quote CTA. One client boundary, chosen because those two are the
-              only things on this page that share state — the CTA's `href` carries whatever the
-              visitor picked. Everything visually between them is handed through as `children` and
-              stays server-rendered.
-            */}
-            <ProductOptions
-              slug={product.slug}
-              variants={product.variants}
-              optionAxes={product.optionAxes}
-              secondaryAction={
-                <Link
-                  href={`${ROUTES.PRODUCTS}?category=${product.category.slug}`}
-                  className="inline-flex items-center justify-center gap-2 px-6 py-3.5 border-2 border-grey-200 text-grey-600 font-semibold text-sm hover:border-ink hover:text-ink transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink min-h-[44px]"
-                >
-                  <ArrowLeft className="w-4 h-4" aria-hidden="true" />
-                  More in Category
-                </Link>
-              }
+              <p className="text-grey-500 leading-relaxed mb-8 text-base">
+                {productSummary(product)}
+              </p>
+            </>
+          }
+          secondaryAction={
+            <Link
+              href={`${ROUTES.PRODUCTS}?category=${product.category.slug}`}
+              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 border-2 border-grey-200 text-grey-600 font-semibold text-sm hover:border-ink hover:text-ink transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink min-h-[44px]"
             >
-              {/* Specs table */}
-              <div className="bg-grey-100 p-5 mb-8 border border-grey-200">
-                <h2 className="text-xs font-semibold uppercase tracking-wider text-grey-600 mb-4">
-                  Product Specifications
-                </h2>
-                <dl className="space-y-3">
-                  {specs.map(({ label, value }) => (
-                    <div key={label} className="flex items-start justify-between gap-4 text-sm">
-                      <dt className="text-grey-600 font-medium shrink-0">{label}</dt>
-                      <dd className="text-ink font-semibold text-right">{value}</dd>
-                    </div>
-                  ))}
-                </dl>
-              </div>
-
-              {/* Pricing note */}
-              <div className="bg-grey-50 border border-grey-200 p-4 mb-8">
-                <p className="text-sm text-brand-blue font-medium mb-1">Pricing on Request</p>
-                <p className="text-xs text-grey-500 leading-relaxed">
-                  We offer flexible B2B pricing based on order quantity and requirements. Contact us
-                  for a custom quote tailored to your business.
-                </p>
-              </div>
-            </ProductOptions>
+              <ArrowLeft className="w-4 h-4" aria-hidden="true" />
+              More in Category
+            </Link>
+          }
+        >
+          {/* Specs table */}
+          <div className="bg-grey-100 p-5 mb-8 border border-grey-200">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-grey-600 mb-4">
+              Product Specifications
+            </h2>
+            <dl className="space-y-3">
+              {specs.map(({ label, value }) => (
+                <div key={label} className="flex items-start justify-between gap-4 text-sm">
+                  <dt className="text-grey-600 font-medium shrink-0">{label}</dt>
+                  <dd className="text-ink font-semibold text-right">{value}</dd>
+                </div>
+              ))}
+            </dl>
           </div>
-        </div>
+
+          {/* Pricing note */}
+          <div className="bg-grey-50 border border-grey-200 p-4 mb-8">
+            <p className="text-sm text-brand-blue font-medium mb-1">Pricing on Request</p>
+            <p className="text-xs text-grey-500 leading-relaxed">
+              We offer flexible B2B pricing based on order quantity and requirements. Contact us for
+              a custom quote tailored to your business.
+            </p>
+          </div>
+        </ProductConfigurator>
 
         {/* Related products */}
         {related.length > 0 && (

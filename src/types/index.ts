@@ -15,18 +15,46 @@ export interface ContactFormData {
 // Products
 
 /**
- * One purchasable option of a product — a pack size, a colour, a fragrance, or a material.
+ * One purchasable option of a product — a model, a pack size, a colour, a fragrance, or a
+ * material.
  *
- * `label` is the only guaranteed key and is the pre-composed human-readable form (e.g.
- * `'500 ML — Lavender'`); the other four are the dimensions that label was built from and are
- * present only when the source catalogue recorded them.
+ * `label` is the pre-composed human-readable form (e.g. `'500 ML — Lavender'`); the other keys
+ * are the dimensions that label was built from. Two of them are the selection axes the product
+ * page renders, and the rest are present only when the source catalogue recorded them.
+ *
+ * The UI derives its two rows from exactly two fields, so populate accordingly:
+ * primary axis = `model`; secondary axis = `colour ?? fragrance`; and the colours offered for a
+ * selected model are the distinct `colour` values across the variants sharing that `model`.
  */
 export interface ProductVariant {
+  /** Pre-composed display string. Never derived from the fields below — it is the source of truth. */
   label: string;
-  size?: string;
+  /**
+   * Primary selection axis — the model, fitting, capacity or size the buyer picks first.
+   *
+   * REQUIRED, not optional, and that is the whole point: the product page's primary selector row
+   * must never be empty, so there is no such thing as a variant with nothing to pick. Where the
+   * source named no model at all, this is the `label` verbatim — `Elephant` is stored as
+   * `model: 'Elephant'` with no `colour`, which the UI renders as a one-chip row with no colour
+   * row beneath it. Populated by `dev-tools/catalogue/_models.py`; never hand-written.
+   */
+  model: string;
+  /**
+   * Secondary selection axis, narrowed by the selected `model`. Absent when the source named no
+   * colour, so a model with no colours correctly offers no colour choice rather than an empty row.
+   * Only ever a literal colour the source recorded — a finish (`Printed`) or a shape word (`Wide`)
+   * is never promoted into this field.
+   */
   colour?: string;
+  size?: string;
   fragrance?: string;
   material?: string;
+  /**
+   * Per-variant photograph under `public/`. Currently absent on every variant — no per-variant
+   * photos exist yet — so the UI must render a named placeholder whenever it is missing. The key
+   * is declared now so real photographs drop in later without a second schema change.
+   */
+  image?: string;
 }
 
 /**

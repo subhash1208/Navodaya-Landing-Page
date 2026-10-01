@@ -80,7 +80,10 @@ describe('ProductCard', () => {
     const noCopy: ProductItem = {
       ...mockProduct,
       description: undefined,
-      variants: [{ label: 'Small' }, { label: 'Large' }],
+      variants: [
+        { label: 'Small', model: 'Small' },
+        { label: 'Large', model: 'Large' },
+      ],
     };
     render(<ProductCard product={noCopy} />);
     expect(screen.getByText('Non-woven construction. Available in 2 options.')).toBeTruthy();
@@ -107,14 +110,22 @@ describe('ProductCard', () => {
 
   it('reports a variant count only when there is a real choice to make', () => {
     const { unmount } = render(
-      <ProductCard product={{ ...mockProduct, variants: [{ label: 'A' }, { label: 'B' }] }} />,
+      <ProductCard
+        product={{
+          ...mockProduct,
+          variants: [
+            { label: 'A', model: 'A' },
+            { label: 'B', model: 'B' },
+          ],
+        }}
+      />,
     );
     expect(screen.getByText('Options:')).toBeTruthy();
     expect(screen.getByText('2')).toBeTruthy();
     unmount();
 
     // A single variant is not a choice — two products in the catalogue have exactly one.
-    render(<ProductCard product={{ ...mockProduct, variants: [{ label: 'A' }] }} />);
+    render(<ProductCard product={{ ...mockProduct, variants: [{ label: 'A', model: 'A' }] }} />);
     expect(screen.queryByText('Options:')).toBeNull();
   });
 
