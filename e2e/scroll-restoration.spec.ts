@@ -312,3 +312,144 @@ test.describe('In-page anchors still arrive', () => {
     await expectAnchorAtViewportTop(page, '#main-content');
   });
 });
+
+/**
+ * FAULT C — Lenis reasserts a stale scroll target one frame after the router's reset.
+ *
+ * Distinct from faults A and B above, and not a regression of either: the router's write DOES
+ * happen and DOES commit. Instrumenting `window.scrollTo` / `Element.prototype.scrollTop` across a
+ * card click from a *still-gliding* `/products` recorded this exact sequence —
+ *
+ *   scrollTo({top: 4990.03, behavior: 'instant'})  @y=4989   <- Lenis lerping toward 5000
+ *   scrollTop = 0 on <HTML>                        @y=1271   <- the router's reset; the page IS at 0
+ *   scrollTo({top: 4994.65, behavior: 'instant'})  @y=0      <- Lenis reasserts, next frame
+ *   scrollTo({top: 5000,    behavior: 'instant'})  @y=1271   <- settles at the new page's clamped max
+ *
+ * Lenis keeps `targetScroll`/`animatedScroll` in its own state, independent of the DOM, and its raf
+ * loop runs off the GSAP ticker — a different loop from the router's. A programmatic write it did
+ * not make is only adopted through the async native `scroll` event, which it ignores while it is
+ * itself animating. So an in-flight glide survives the navigation and wins the frame after.
+ *
+ * The trigger is the glide, NOT the product: the symptom appears only when the visitor clicks while
+ * wheel momentum is still unwinding (lerp 0.1 ≈ 1-2s after the last wheel tick). What varies per
+ * product is only the MAGNITUDE — the stale target is clamped to the destination's own maximum
+ * scroll, so a short product page shows a small offset and a tall one shows a large one. Clicking
+ * after the glide settles has always worked, which is why every other case in this file passes.
+ *
+ * Fixed by `stopInertiaOnNavigate: true` in src/components/ui/LenisProvider.tsx.
+ *
+ * The click is dispatched through `HTMLElement.click()` rather than `locator.click()` on purpose.
+ * Playwright's actionability wait requires the element to be stable for two consecutive frames,
+ * which a glide cannot satisfy — so a normal click would wait the momentum out and test the case
+ * that was never broken.
+ */
+test.describe('Scroll restoration when clicked mid-glide', () => {
+  test.use({ viewport: { width: 1280, height: 844 } });
+
+  test('product card clicked while /products is still gliding lands at the top', async ({
+    page,
+  }, testInfo) => {
+    // Structurally inapplicable to the `mobile` project rather than tolerated there: mobile WebKit
+    // has no `mouse.wheel` at all, and the fault needs Lenis-driven inertia to be in flight.
+    // `LenisProvider` leaves `syncTouch` at its default `false`, so touch scrolling is native and
+    // carries nothing for Lenis to reassert — there is no fault on that input path to assert on.
+    test.skip(
+      testInfo.project.name === 'mobile',
+      'mouse.wheel is unsupported in mobile WebKit; touch scrolling is native (syncTouch: false)',
+    );
+
+    await page.goto('/products');
+    await page.evaluate(() => sessionStorage.setItem('nv_intro_seen', '1'));
+    await page.reload();
+    await expect(page.locator('h1')).toBeVisible();
+    await page.waitForLoadState('networkidle');
+    await settledScrollY(page);
+
+    // Start the glide, then click into it before it has unwound.
+    await page.mouse.move(640, 400);
+    await page.mouse.wheel(0, 5000);
+
+    // Click from inside a frame where the offset is DEMONSTRABLY still moving, rather than after a
+    // fixed delay. The weaker premise — "the offset is past the fold" — is satisfied just as well
+    // by a native wheel jump, which lands instantly and leaves nothing in flight to race; that made
+    // the case pass for the wrong reason on roughly half of its runs. Waiting for a frame-to-frame
+    // delta past the fold pins the real precondition, and the budget turns "the glide never
+    // happened" into a loud failure instead of a silent green.
+    const clickedAt = await page.evaluate(
+      () =>
+        new Promise<number>((resolve, reject) => {
+          const link = document.querySelector<HTMLAnchorElement>('a[href="/products/mop-set"]');
+          if (!link) {
+            reject(new Error('no link to /products/mop-set on /products'));
+            return;
+          }
+          let previous = window.scrollY;
+          let budget = 360;
+          const tick = () => {
+            const y = window.scrollY;
+            if (y !== previous && y > 500) {
+              link.click();
+              resolve(Math.round(y));
+              return;
+            }
+            previous = y;
+            if (budget-- <= 0) {
+              reject(new Error(`scroll never moved past the fold in flight (settled at ${y})`));
+              return;
+            }
+            requestAnimationFrame(tick);
+          };
+          requestAnimationFrame(tick);
+        }),
+    );
+
+    await expect(page).toHaveURL('/products/mop-set');
+    await expect(page.locator('h1')).toBeVisible();
+
+    await expectLandedAtTop(page, '/products mid-glide', clickedAt);
+  });
+
+  /**
+   * The control. Same click, same depth, but after the momentum has unwound — the path that has
+   * always worked. Pinned so a fix for the case above cannot be "corrected" into breaking it.
+   */
+  test('product card clicked after the glide settles lands at the top', async ({ page }) => {
+    await page.goto('/products');
+    await page.evaluate(() => sessionStorage.setItem('nv_intro_seen', '1'));
+    await page.reload();
+    await expect(page.locator('h1')).toBeVisible();
+    await page.waitForLoadState('networkidle');
+
+    const link = page.locator('a[href="/products/mop-set"]').first();
+    await link.scrollIntoViewIfNeeded();
+    const settled = await settledScrollY(page);
+
+    await link.click();
+    await expect(page).toHaveURL('/products/mop-set');
+    await expect(page.locator('h1')).toBeVisible();
+
+    await expectLandedAtTop(page, '/products settled', settled);
+  });
+
+  /**
+   * `stopInertiaOnNavigate` fires on a same-host, DIFFERENT-pathname link — which the product
+   * page's quote CTA (`/?product=<slug>#contact`) is, hash and all. The reset must not eat the
+   * hash scroll that follows it, so this pins arrival at `#contact` rather than at the top.
+   * Covers the one navigation on the site that changes pathname and carries a hash.
+   */
+  test('quote CTA from a product page still lands on #contact', async ({ page }) => {
+    await page.goto('/products/mop-set');
+    await page.evaluate(() => sessionStorage.setItem('nv_intro_seen', '1'));
+    await page.reload();
+    await expect(page.locator('h1')).toBeVisible();
+
+    await page
+      .getByRole('link', { name: /request a quote/i })
+      .first()
+      .click();
+    await expect(page).toHaveURL(/#contact$/);
+    await page.waitForLoadState('networkidle');
+
+    await expectAnchorAtViewportTop(page, '#contact');
+  });
+});
