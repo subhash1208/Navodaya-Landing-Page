@@ -169,11 +169,19 @@ export default function ProductCategoriesSection() {
                     </span>
                   )}
                 </div>
-                <div className="flex items-start justify-between gap-3 mb-3">
-                  <h3 className="text-heading-2 text-ink">{category.name}</h3>
-                  <span className="shrink-0 pt-1 font-mono text-data text-grey-500">
+                {/*
+                  Count above the name, on its own line, rather than beside it. The two previously
+                  shared one `justify-between` row with `shrink-0` on the count — and an <h3>
+                  cannot shrink below its longest word, so `Hygiene, Safety & Housekeeping` held
+                  `Housekeeping` at full width in a four-up column and pushed `133 products`
+                  clean out past the card border. Stacking cannot overflow at any column width,
+                  and matches the label-above-title pattern the section header already uses.
+                */}
+                <div className="mb-3">
+                  <span className="block font-mono text-data text-grey-500">
                     {PRODUCT_COUNT_BY_CATEGORY[category.slug]} products
                   </span>
+                  <h3 className="mt-2 text-heading-2 text-ink">{category.name}</h3>
                 </div>
                 <p className="text-body text-grey-600 mb-7 flex-1">{category.description}</p>
                 <Link

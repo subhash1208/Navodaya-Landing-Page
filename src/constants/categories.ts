@@ -42,8 +42,7 @@ export const CATEGORY_PROTECTIVE_PACKING: ProductCategory = {
   id: 'protective-packing',
   name: 'Protective Packing',
   slug: 'protective-packing',
-  description:
-    'Films, foams, wraps and liners that protect goods in storage and transit. No specimen plate has been photographed yet, so this category renders a typographic tile.',
+  description: 'Films, foams, wraps and liners that protect goods in storage and transit.',
   // `plate` deliberately omitted — no photograph exists. See ProductCategoriesSection.tsx.
 };
 
