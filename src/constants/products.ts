@@ -17,6 +17,12 @@
  *
  * `image` is present on the photographed subset only, set by
  * `dev-tools/catalogue/_populate_images.py`. Products without one render a typographic placeholder.
+ *
+ * Every variant carries a required `model` — the primary selection axis — derived by
+ * `dev-tools/catalogue/_models.py`. `colour` is the secondary axis and is present only where the
+ * source recorded one, so a model with no colour correctly offers no colour choice. No variant
+ * carries an `image` yet: the key exists so per-variant photographs drop in without a second
+ * schema change.
  */
 import type { ProductItem } from '@/types';
 import {
@@ -111,10 +117,12 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: 'LDPE',
+        model: 'LDPE',
         material: 'LDPE',
       },
       {
         label: 'Non-woven',
+        model: 'Non-woven',
         material: 'Non-woven',
       },
     ],
@@ -157,96 +165,14 @@ export const PRODUCTS: ProductItem[] = [
     slug: 'air-freshener-concentrate',
     category: CATEGORY_HYGIENE_SAFETY_HOUSEKEEPING,
     subCategory: 'air-care',
-    variants: [
+    optionAxes: [
       {
-        label: '500 ML — Lavender',
-        size: '500 ML',
-        fragrance: 'Lavender',
+        name: 'Size',
+        values: ['500 ML', '1 L', '5 L'],
       },
       {
-        label: '500 ML — Lily',
-        size: '500 ML',
-        fragrance: 'Lily',
-      },
-      {
-        label: '500 ML — Sandal',
-        size: '500 ML',
-        fragrance: 'Sandal',
-      },
-      {
-        label: '500 ML — Blossom',
-        size: '500 ML',
-        fragrance: 'Blossom',
-      },
-      {
-        label: '500 ML — Jasmine',
-        size: '500 ML',
-        fragrance: 'Jasmine',
-      },
-      {
-        label: '500 ML — Citrus',
-        size: '500 ML',
-        fragrance: 'Citrus',
-      },
-      {
-        label: '1 L — Lavender',
-        size: '1 L',
-        fragrance: 'Lavender',
-      },
-      {
-        label: '1 L — Lily',
-        size: '1 L',
-        fragrance: 'Lily',
-      },
-      {
-        label: '1 L — Sandal',
-        size: '1 L',
-        fragrance: 'Sandal',
-      },
-      {
-        label: '1 L — Blossom',
-        size: '1 L',
-        fragrance: 'Blossom',
-      },
-      {
-        label: '1 L — Jasmine',
-        size: '1 L',
-        fragrance: 'Jasmine',
-      },
-      {
-        label: '1 L — Citrus',
-        size: '1 L',
-        fragrance: 'Citrus',
-      },
-      {
-        label: '5 L — Lavender',
-        size: '5 L',
-        fragrance: 'Lavender',
-      },
-      {
-        label: '5 L — Lily',
-        size: '5 L',
-        fragrance: 'Lily',
-      },
-      {
-        label: '5 L — Sandal',
-        size: '5 L',
-        fragrance: 'Sandal',
-      },
-      {
-        label: '5 L — Blossom',
-        size: '5 L',
-        fragrance: 'Blossom',
-      },
-      {
-        label: '5 L — Jasmine',
-        size: '5 L',
-        fragrance: 'Jasmine',
-      },
-      {
-        label: '5 L — Citrus',
-        size: '5 L',
-        fragrance: 'Citrus',
+        name: 'Fragrance',
+        values: ['Lavender', 'Lily', 'Sandal', 'Blossom', 'Jasmine', 'Citrus'],
       },
     ],
   },
@@ -273,14 +199,17 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: '500 ML',
+        model: '500 ML',
         size: '500 ML',
       },
       {
         label: '1 L',
+        model: '1 L',
         size: '1 L',
       },
       {
         label: '5 L',
+        model: '5 L',
         size: '5 L',
       },
     ],
@@ -294,10 +223,12 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: '500 ML',
+        model: '500 ML',
         size: '500 ML',
       },
       {
         label: '5 L',
+        model: '5 L',
         size: '5 L',
       },
     ],
@@ -311,10 +242,12 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: '500 ML',
+        model: '500 ML',
         size: '500 ML',
       },
       {
         label: '5 L',
+        model: '5 L',
         size: '5 L',
       },
     ],
@@ -328,14 +261,17 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: '500 ML',
+        model: '500 ML',
         size: '500 ML',
       },
       {
         label: '1 L',
+        model: '1 L',
         size: '1 L',
       },
       {
         label: '5 L',
+        model: '5 L',
         size: '5 L',
       },
     ],
@@ -346,51 +282,14 @@ export const PRODUCTS: ProductItem[] = [
     slug: 'hand-wash',
     category: CATEGORY_HYGIENE_SAFETY_HOUSEKEEPING,
     subCategory: 'cleaning-chemicals',
-    variants: [
+    optionAxes: [
       {
-        label: '500 ML — Peach',
-        size: '500 ML',
-        fragrance: 'Peach',
+        name: 'Size',
+        values: ['500 ML', '1 L', '5 L'],
       },
       {
-        label: '500 ML — Lemon',
-        size: '500 ML',
-        fragrance: 'Lemon',
-      },
-      {
-        label: '500 ML — Blossom',
-        size: '500 ML',
-        fragrance: 'Blossom',
-      },
-      {
-        label: '1 L — Peach',
-        size: '1 L',
-        fragrance: 'Peach',
-      },
-      {
-        label: '1 L — Lemon',
-        size: '1 L',
-        fragrance: 'Lemon',
-      },
-      {
-        label: '1 L — Blossom',
-        size: '1 L',
-        fragrance: 'Blossom',
-      },
-      {
-        label: '5 L — Peach',
-        size: '5 L',
-        fragrance: 'Peach',
-      },
-      {
-        label: '5 L — Lemon',
-        size: '5 L',
-        fragrance: 'Lemon',
-      },
-      {
-        label: '5 L — Blossom',
-        size: '5 L',
-        fragrance: 'Blossom',
+        name: 'Fragrance',
+        values: ['Peach', 'Lemon', 'Blossom'],
       },
     ],
   },
@@ -403,14 +302,17 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: '500 ML',
+        model: '500 ML',
         size: '500 ML',
       },
       {
         label: '1 L',
+        model: '1 L',
         size: '1 L',
       },
       {
         label: '5 L',
+        model: '5 L',
         size: '5 L',
       },
     ],
@@ -424,10 +326,12 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: '1 L',
+        model: '1 L',
         size: '1 L',
       },
       {
         label: '5 L',
+        model: '5 L',
         size: '5 L',
       },
     ],
@@ -441,10 +345,12 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: '1 L',
+        model: '1 L',
         size: '1 L',
       },
       {
         label: '5 L',
+        model: '5 L',
         size: '5 L',
       },
     ],
@@ -455,66 +361,14 @@ export const PRODUCTS: ProductItem[] = [
     slug: 'floor-cleaner',
     category: CATEGORY_HYGIENE_SAFETY_HOUSEKEEPING,
     subCategory: 'cleaning-chemicals',
-    variants: [
+    optionAxes: [
       {
-        label: '500 ML — Jasmine',
-        size: '500 ML',
-        fragrance: 'Jasmine',
+        name: 'Size',
+        values: ['500 ML', '1 L', '5 L'],
       },
       {
-        label: '500 ML — Rose',
-        size: '500 ML',
-        fragrance: 'Rose',
-      },
-      {
-        label: '500 ML — Sandal',
-        size: '500 ML',
-        fragrance: 'Sandal',
-      },
-      {
-        label: '500 ML — Citrus',
-        size: '500 ML',
-        fragrance: 'Citrus',
-      },
-      {
-        label: '1 L — Jasmine',
-        size: '1 L',
-        fragrance: 'Jasmine',
-      },
-      {
-        label: '1 L — Rose',
-        size: '1 L',
-        fragrance: 'Rose',
-      },
-      {
-        label: '1 L — Sandal',
-        size: '1 L',
-        fragrance: 'Sandal',
-      },
-      {
-        label: '1 L — Citrus',
-        size: '1 L',
-        fragrance: 'Citrus',
-      },
-      {
-        label: '5 L — Jasmine',
-        size: '5 L',
-        fragrance: 'Jasmine',
-      },
-      {
-        label: '5 L — Rose',
-        size: '5 L',
-        fragrance: 'Rose',
-      },
-      {
-        label: '5 L — Sandal',
-        size: '5 L',
-        fragrance: 'Sandal',
-      },
-      {
-        label: '5 L — Citrus',
-        size: '5 L',
-        fragrance: 'Citrus',
+        name: 'Fragrance',
+        values: ['Jasmine', 'Rose', 'Sandal', 'Citrus'],
       },
     ],
   },
@@ -527,10 +381,12 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: '1 L',
+        model: '1 L',
         size: '1 L',
       },
       {
         label: '5 L',
+        model: '5 L',
         size: '5 L',
       },
     ],
@@ -544,14 +400,17 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: '500 ML',
+        model: '500 ML',
         size: '500 ML',
       },
       {
         label: '1 L',
+        model: '1 L',
         size: '1 L',
       },
       {
         label: '5 L',
+        model: '5 L',
         size: '5 L',
       },
     ],
@@ -562,66 +421,14 @@ export const PRODUCTS: ProductItem[] = [
     slug: 'herbal-deodoriser-phenyl',
     category: CATEGORY_HYGIENE_SAFETY_HOUSEKEEPING,
     subCategory: 'cleaning-chemicals',
-    variants: [
+    optionAxes: [
       {
-        label: '1 L — Rose',
-        size: '1 L',
-        fragrance: 'Rose',
+        name: 'Size',
+        values: ['1 L', '5 L'],
       },
       {
-        label: '1 L — Jasmine',
-        size: '1 L',
-        fragrance: 'Jasmine',
-      },
-      {
-        label: '1 L — Lemon',
-        size: '1 L',
-        fragrance: 'Lemon',
-      },
-      {
-        label: '1 L — Mogra',
-        size: '1 L',
-        fragrance: 'Mogra',
-      },
-      {
-        label: '1 L — White',
-        size: '1 L',
-        fragrance: 'White',
-      },
-      {
-        label: '1 L — White SPL',
-        size: '1 L',
-        fragrance: 'White SPL',
-      },
-      {
-        label: '5 L — Rose',
-        size: '5 L',
-        fragrance: 'Rose',
-      },
-      {
-        label: '5 L — Jasmine',
-        size: '5 L',
-        fragrance: 'Jasmine',
-      },
-      {
-        label: '5 L — Lemon',
-        size: '5 L',
-        fragrance: 'Lemon',
-      },
-      {
-        label: '5 L — Mogra',
-        size: '5 L',
-        fragrance: 'Mogra',
-      },
-      {
-        label: '5 L — White',
-        size: '5 L',
-        fragrance: 'White',
-      },
-      {
-        label: '5 L — White SPL',
-        size: '5 L',
-        fragrance: 'White SPL',
+        name: 'Fragrance',
+        values: ['Rose', 'Jasmine', 'Lemon', 'Mogra', 'White', 'White SPL'],
       },
     ],
   },
@@ -634,10 +441,12 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: '1 L',
+        model: '1 L',
         size: '1 L',
       },
       {
         label: '5 L',
+        model: '5 L',
         size: '5 L',
       },
     ],
@@ -652,10 +461,12 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: '10 g',
+        model: '10 g',
         size: '10 g',
       },
       {
         label: '20 g',
+        model: '20 g',
         size: '20 g',
       },
     ],
@@ -670,36 +481,53 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: 'Red Handle — Screw Socket',
+        model: 'Screw Socket',
+        colour: 'Red',
       },
       {
         label: 'Blue Handle — Metal Band',
+        model: 'Metal Band',
+        colour: 'Blue',
       },
       {
         label: 'Blue Yarn — Screw Hub',
+        model: 'Screw Hub',
+        colour: 'Blue',
       },
       {
         label: 'Elephant',
+        model: 'Elephant',
       },
       {
         label: 'Printed Handle — Slim Head',
+        model: 'Slim Head',
       },
       {
         label: 'Wide Clamp — Looped Yarn, Heavy Duty',
+        model: 'Wide Clamp — Looped Yarn, Heavy Duty',
       },
       {
         label: 'Maroon Handle — Coarse Twist',
+        model: 'Coarse Twist',
+        colour: 'Maroon',
       },
       {
         label: 'Blue Handle — Disc Fitting',
+        model: 'Disc Fitting',
+        colour: 'Blue',
       },
       {
         label: 'Blue Handle — Clamp Fitting',
+        model: 'Clamp Fitting',
+        colour: 'Blue',
       },
       {
         label: 'Butterfly Jumbo',
+        model: 'Butterfly Jumbo',
       },
       {
         label: 'Eagle',
+        model: 'Eagle',
       },
     ],
   },
@@ -727,24 +555,31 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: 'Hunter',
+        model: 'Hunter',
       },
       {
         label: 'Blue Bell',
+        model: 'Blue Bell',
       },
       {
         label: 'XL',
+        model: 'XL',
       },
       {
         label: 'Lily',
+        model: 'Lily',
       },
       {
         label: 'Jumbo',
+        model: 'Jumbo',
       },
       {
         label: 'Daisy',
+        model: 'Daisy',
       },
       {
         label: 'Dolly',
+        model: 'Dolly',
       },
     ],
   },
@@ -757,9 +592,11 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: 'Plain',
+        model: 'Plain',
       },
       {
         label: 'With brush',
+        model: 'With brush',
       },
     ],
   },
@@ -772,18 +609,23 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: 'Small',
+        model: 'Small',
       },
       {
         label: 'Medium',
+        model: 'Medium',
       },
       {
         label: 'Large',
+        model: 'Large',
       },
       {
         label: 'Extra Large',
+        model: 'Extra Large',
       },
       {
         label: 'Jumbo',
+        model: 'Jumbo',
       },
     ],
   },
@@ -819,9 +661,11 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: 'Standard',
+        model: 'Standard',
       },
       {
         label: 'Squeeze type — 35 cm',
+        model: 'Squeeze type — 35 cm',
       },
     ],
   },
@@ -834,14 +678,17 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: '16 inch',
+        model: '16 inch',
         size: '16 inch',
       },
       {
         label: '21 inch',
+        model: '21 inch',
         size: '21 inch',
       },
       {
         label: '24 inch',
+        model: '24 inch',
         size: '24 inch',
       },
     ],
@@ -863,6 +710,7 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: '400 g',
+        model: '400 g',
         size: '400 g',
       },
     ],
@@ -876,14 +724,17 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: '60 g',
+        model: '60 g',
         size: '60 g',
       },
       {
         label: '120 g',
+        model: '120 g',
         size: '120 g',
       },
       {
         label: '180 g',
+        model: '180 g',
         size: '180 g',
       },
     ],
@@ -904,21 +755,25 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: '90 g — White',
+        model: '90 g',
         size: '90 g',
         colour: 'White',
       },
       {
         label: '200 g — White',
+        model: '200 g',
         size: '200 g',
         colour: 'White',
       },
       {
         label: '450 g — White',
+        model: '450 g',
         size: '450 g',
         colour: 'White',
       },
       {
         label: '900 g — White',
+        model: '900 g',
         size: '900 g',
         colour: 'White',
       },
@@ -934,9 +789,11 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: 'Standard',
+        model: 'Standard',
       },
       {
         label: 'Big',
+        model: 'Big',
       },
     ],
   },
@@ -950,9 +807,11 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: 'Single',
+        model: 'Single',
       },
       {
         label: 'Double',
+        model: 'Double',
       },
     ],
   },
@@ -973,9 +832,11 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: 'Standard',
+        model: 'Standard',
       },
       {
         label: 'Wooden, hard bristle',
+        model: 'Wooden, hard bristle',
       },
     ],
   },
@@ -988,9 +849,11 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: 'Ringed',
+        model: 'Ringed',
       },
       {
         label: 'Round',
+        model: 'Round',
       },
     ],
   },
@@ -1003,18 +866,22 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: '1 inch',
+        model: '1 inch',
         size: '1 inch',
       },
       {
         label: '2 inch',
+        model: '2 inch',
         size: '2 inch',
       },
       {
         label: '3 inch',
+        model: '3 inch',
         size: '3 inch',
       },
       {
         label: '4 inch',
+        model: '4 inch',
         size: '4 inch',
       },
     ],
@@ -1061,21 +928,25 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: '3 x 4 — Green',
+        model: '3 x 4',
         size: '3 x 4',
         colour: 'Green',
       },
       {
         label: '4 x 6 — Green',
+        model: '4 x 6',
         size: '4 x 6',
         colour: 'Green',
       },
       {
         label: '5-in-1 pack — Green',
+        model: '5-in-1 pack',
         size: '5-in-1 pack',
         colour: 'Green',
       },
       {
         label: '10-in-1 pack — Green',
+        model: '10-in-1 pack',
         size: '10-in-1 pack',
         colour: 'Green',
       },
@@ -1105,9 +976,11 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: 'Square',
+        model: 'Square',
       },
       {
         label: 'Iron',
+        model: 'Iron',
       },
     ],
   },
@@ -1122,12 +995,15 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: '1000',
+        model: '1000',
       },
       {
         label: '2000',
+        model: '2000',
       },
       {
         label: '3000',
+        model: '3000',
       },
     ],
   },
@@ -1141,14 +1017,17 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: '13 x 23',
+        model: '13 x 23',
         size: '13 x 23',
       },
       {
         label: '16 x 26',
+        model: '16 x 26',
         size: '16 x 26',
       },
       {
         label: '18 x 28',
+        model: '18 x 28',
         size: '18 x 28',
       },
     ],
@@ -1170,10 +1049,12 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: '20 x 20',
+        model: '20 x 20',
         size: '20 x 20',
       },
       {
         label: '23 x 23',
+        model: '23 x 23',
         size: '23 x 23',
       },
     ],
@@ -1188,33 +1069,40 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: '40 x 40, 600 GSM (2-in-1)',
+        model: '40 x 40, 600 GSM (2-in-1)',
         size: '40 x 40, 600 GSM',
       },
       {
         label: '40 x 40, 400 GSM',
+        model: '40 x 40, 400 GSM',
         size: '40 x 40, 400 GSM',
       },
       {
         label: '40 x 60, 400 GSM',
+        model: '40 x 60, 400 GSM',
         size: '40 x 60, 400 GSM',
       },
       {
         label: '40 x 40, 280 GSM — Red',
+        model: '40 x 40, 280 GSM',
         size: '40 x 40, 280 GSM',
         colour: 'Red',
       },
       {
         label: '40 x 40, 280 GSM — Blue',
+        model: '40 x 40, 280 GSM',
         size: '40 x 40, 280 GSM',
         colour: 'Blue',
       },
       {
         label: '40 x 40, 280 GSM — Green',
+        model: '40 x 40, 280 GSM',
         size: '40 x 40, 280 GSM',
         colour: 'Green',
       },
       {
         label: '40 x 40, 280 GSM — Yellow',
+        model: '40 x 40, 280 GSM',
         size: '40 x 40, 280 GSM',
         colour: 'Yellow',
       },
@@ -1230,10 +1118,12 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: '22 x 22',
+        model: '22 x 22',
         size: '22 x 22',
       },
       {
         label: '30 x 30',
+        model: '30 x 30',
         size: '30 x 30',
       },
     ],
@@ -1248,11 +1138,13 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: 'Medium — Yellow',
+        model: 'Medium',
         size: 'Medium',
         colour: 'Yellow',
       },
       {
         label: 'Big — Yellow',
+        model: 'Big',
         size: 'Big',
         colour: 'Yellow',
       },
@@ -1267,9 +1159,11 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: '3-piece pack',
+        model: '3-piece pack',
       },
       {
         label: '5-piece pack',
+        model: '5-piece pack',
       },
     ],
   },
@@ -1306,12 +1200,15 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: 'CIP',
+        model: 'CIP',
       },
       {
         label: 'WF',
+        model: 'WF',
       },
       {
         label: 'WIP',
+        model: 'WIP',
       },
     ],
   },
@@ -1354,10 +1251,12 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: '4 inch',
+        model: '4 inch',
         size: '4 inch',
       },
       {
         label: 'Big',
+        model: 'Big',
         size: 'Big',
       },
     ],
@@ -1372,9 +1271,11 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: 'Small',
+        model: 'Small',
       },
       {
         label: 'Big',
+        model: 'Big',
       },
     ],
   },
@@ -1404,18 +1305,22 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: '500 ML',
+        model: '500 ML',
         size: '500 ML',
       },
       {
         label: '600 ML',
+        model: '600 ML',
         size: '600 ML',
       },
       {
         label: '800 ML',
+        model: '800 ML',
         size: '800 ML',
       },
       {
         label: '1000 ML',
+        model: '1000 ML',
         size: '1000 ML',
       },
     ],
@@ -1439,14 +1344,17 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: '500 ML',
+        model: '500 ML',
         size: '500 ML',
       },
       {
         label: '800 ML',
+        model: '800 ML',
         size: '800 ML',
       },
       {
         label: '1000 ML',
+        model: '1000 ML',
         size: '1000 ML',
       },
     ],
@@ -1461,14 +1369,17 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: '4 m',
+        model: '4 m',
         size: '4 m',
       },
       {
         label: '6 m',
+        model: '6 m',
         size: '6 m',
       },
       {
         label: '9 m',
+        model: '9 m',
         size: '9 m',
       },
     ],
@@ -1492,15 +1403,18 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: '20 L — Yellow',
+        model: '20 L',
         size: '20 L',
         colour: 'Yellow',
       },
       {
         label: '40 L, double bucket',
+        model: '40 L, double bucket',
         size: '40 L',
       },
       {
         label: '40 L, 3 bucket',
+        model: '40 L, 3 bucket',
         size: '40 L',
       },
     ],
@@ -1516,14 +1430,17 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: '7 x 10',
+        model: '7 x 10',
         size: '7 x 10',
       },
       {
         label: '8 x 12',
+        model: '8 x 12',
         size: '8 x 12',
       },
       {
         label: '10 x 14',
+        model: '10 x 14',
         size: '10 x 14',
       },
     ],
@@ -1539,14 +1456,17 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: '7 x 10',
+        model: '7 x 10',
         size: '7 x 10',
       },
       {
         label: '8 x 12',
+        model: '8 x 12',
         size: '8 x 12',
       },
       {
         label: '10 x 14',
+        model: '10 x 14',
         size: '10 x 14',
       },
     ],
@@ -1561,14 +1481,17 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: '12 x 24',
+        model: '12 x 24',
         size: '12 x 24',
       },
       {
         label: '12 x 28',
+        model: '12 x 28',
         size: '12 x 28',
       },
       {
         label: '14 x 28',
+        model: '14 x 28',
         size: '14 x 28',
       },
     ],
@@ -1583,41 +1506,49 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: '120 L — Blue',
+        model: '120 L',
         size: '120 L',
         colour: 'Blue',
       },
       {
         label: '120 L — Green',
+        model: '120 L',
         size: '120 L',
         colour: 'Green',
       },
       {
         label: '120 L — Red',
+        model: '120 L',
         size: '120 L',
         colour: 'Red',
       },
       {
         label: '120 L — Yellow',
+        model: '120 L',
         size: '120 L',
         colour: 'Yellow',
       },
       {
         label: '240 L — Blue',
+        model: '240 L',
         size: '240 L',
         colour: 'Blue',
       },
       {
         label: '240 L — Green',
+        model: '240 L',
         size: '240 L',
         colour: 'Green',
       },
       {
         label: '240 L — Red',
+        model: '240 L',
         size: '240 L',
         colour: 'Red',
       },
       {
         label: '240 L — Yellow',
+        model: '240 L',
         size: '240 L',
         colour: 'Yellow',
       },
@@ -1632,89 +1563,107 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: '15 L — Blue',
+        model: '15 L',
         size: '15 L',
         colour: 'Blue',
       },
       {
         label: '15 L — Green',
+        model: '15 L',
         size: '15 L',
         colour: 'Green',
       },
       {
         label: '15 L — Red',
+        model: '15 L',
         size: '15 L',
         colour: 'Red',
       },
       {
         label: '15 L — Yellow',
+        model: '15 L',
         size: '15 L',
         colour: 'Yellow',
       },
       {
         label: '20 L — Blue',
+        model: '20 L',
         size: '20 L',
         colour: 'Blue',
       },
       {
         label: '20 L — Green',
+        model: '20 L',
         size: '20 L',
         colour: 'Green',
       },
       {
         label: '20 L — Red',
+        model: '20 L',
         size: '20 L',
         colour: 'Red',
       },
       {
         label: '20 L — Yellow',
+        model: '20 L',
         size: '20 L',
         colour: 'Yellow',
       },
       {
         label: '30 L — Blue',
+        model: '30 L',
         size: '30 L',
         colour: 'Blue',
       },
       {
         label: '30 L — Green',
+        model: '30 L',
         size: '30 L',
         colour: 'Green',
       },
       {
         label: '30 L — Red',
+        model: '30 L',
         size: '30 L',
         colour: 'Red',
       },
       {
         label: '30 L — Yellow',
+        model: '30 L',
         size: '30 L',
         colour: 'Yellow',
       },
       {
         label: '45 L — Blue',
+        model: '45 L',
         size: '45 L',
         colour: 'Blue',
       },
       {
         label: '45 L — Green',
+        model: '45 L',
         size: '45 L',
         colour: 'Green',
       },
       {
         label: '45 L — Red',
+        model: '45 L',
         size: '45 L',
         colour: 'Red',
       },
       {
         label: '45 L — Yellow',
+        model: '45 L',
         size: '45 L',
         colour: 'Yellow',
       },
       {
         label: 'Small',
+        model: 'Small',
       },
       {
         label: 'Medium',
+        model: 'Medium',
       },
     ],
   },
@@ -1727,30 +1676,36 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: '60 L — Blue',
+        model: '60 L',
         size: '60 L',
         colour: 'Blue',
       },
       {
         label: '60 L — Green',
+        model: '60 L',
         size: '60 L',
         colour: 'Green',
       },
       {
         label: '60 L — Red',
+        model: '60 L',
         size: '60 L',
         colour: 'Red',
       },
       {
         label: '60 L — Yellow',
+        model: '60 L',
         size: '60 L',
         colour: 'Yellow',
       },
       {
         label: '30 L',
+        model: '30 L',
         size: '30 L',
       },
       {
         label: '60 L (no colour stated)',
+        model: '60 L (no colour stated)',
         size: '60 L',
       },
     ],
@@ -1765,9 +1720,11 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: 'Small',
+        model: 'Small',
       },
       {
         label: 'Big',
+        model: 'Big',
       },
     ],
   },
@@ -1787,9 +1744,11 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: '50 g block',
+        model: '50 g block',
       },
       {
         label: 'Zipper pouch',
+        model: 'Zipper pouch',
       },
     ],
   },
@@ -1802,38 +1761,47 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: '3 L',
+        model: '3 L',
         size: '3 L',
       },
       {
         label: '5 L',
+        model: '5 L',
         size: '5 L',
       },
       {
         label: '8 L',
+        model: '8 L',
         size: '8 L',
       },
       {
         label: '11 L',
+        model: '11 L',
         size: '11 L',
       },
       {
         label: '13 L',
+        model: '13 L',
         size: '13 L',
       },
       {
         label: '16 L',
+        model: '16 L',
         size: '16 L',
       },
       {
         label: '18 L',
+        model: '18 L',
         size: '18 L',
       },
       {
         label: '20 L',
+        model: '20 L',
         size: '20 L',
       },
       {
         label: '25 L',
+        model: '25 L',
         size: '25 L',
       },
     ],
@@ -1848,16 +1816,19 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: '18 inch — Grey',
+        model: '18 inch',
         size: '18 inch',
         colour: 'Grey',
       },
       {
         label: '21 inch — Grey',
+        model: '21 inch',
         size: '21 inch',
         colour: 'Grey',
       },
       {
         label: '24 inch — Grey',
+        model: '24 inch',
         size: '24 inch',
         colour: 'Grey',
       },
@@ -1872,21 +1843,25 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: '18 inch — Grey',
+        model: '18 inch',
         size: '18 inch',
         colour: 'Grey',
       },
       {
         label: '21 inch — Grey',
+        model: '21 inch',
         size: '21 inch',
         colour: 'Grey',
       },
       {
         label: '24 inch — Grey',
+        model: '24 inch',
         size: '24 inch',
         colour: 'Grey',
       },
       {
         label: '24 inch — Blue',
+        model: '24 inch',
         size: '24 inch',
         colour: 'Blue',
       },
@@ -1902,11 +1877,13 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: '24 inch — Blue',
+        model: '24 inch',
         size: '24 inch',
         colour: 'Blue',
       },
       {
         label: 'Microfibre',
+        model: 'Microfibre',
       },
     ],
   },
@@ -1920,9 +1897,11 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: 'With cap',
+        model: 'With cap',
       },
       {
         label: 'Yellow handle',
+        model: 'Yellow handle',
         colour: 'Yellow',
       },
     ],
@@ -1958,10 +1937,12 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: 'Standard — Black',
+        model: 'Standard',
         colour: 'Black',
       },
       {
         label: 'Hexa — Black',
+        model: 'Hexa',
         colour: 'Black',
       },
     ],
@@ -1975,10 +1956,12 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: '1 L',
+        model: '1 L',
         size: '1 L',
       },
       {
         label: '5 L',
+        model: '5 L',
         size: '5 L',
       },
     ],
@@ -1992,21 +1975,25 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: '220 ML — Citrus',
+        model: '220 ML',
         size: '220 ML',
         fragrance: 'Citrus',
       },
       {
         label: '220 ML — Rose',
+        model: '220 ML',
         size: '220 ML',
         fragrance: 'Rose',
       },
       {
         label: '220 ML — Bliss',
+        model: '220 ML',
         size: '220 ML',
         fragrance: 'Bliss',
       },
       {
         label: '220 ML — Breeze',
+        model: '220 ML',
         size: '220 ML',
         fragrance: 'Breeze',
       },
@@ -2108,10 +2095,12 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: '1 L',
+        model: '1 L',
         size: '1 L',
       },
       {
         label: '1.5 L',
+        model: '1.5 L',
         size: '1.5 L',
       },
     ],
@@ -2125,10 +2114,12 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: '1 kg',
+        model: '1 kg',
         size: '1 kg',
       },
       {
         label: '25 kg',
+        model: '25 kg',
         size: '25 kg',
       },
     ],
@@ -2156,14 +2147,17 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: '500 ML (round)',
+        model: '500 ML (round)',
         size: '500 ML',
       },
       {
         label: '750 ML (HDPE)',
+        model: '750 ML (HDPE)',
         size: '750 ML',
       },
       {
         label: '1 L (round)',
+        model: '1 L (round)',
         size: '1 L',
       },
     ],
@@ -2191,6 +2185,7 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: '1000 g',
+        model: '1000 g',
         size: '1000 g',
       },
     ],
@@ -2204,9 +2199,11 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: '2-piece pack',
+        model: '2-piece pack',
       },
       {
         label: '4-piece pack',
+        model: '4-piece pack',
       },
     ],
   },
@@ -2233,9 +2230,11 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: '250 pulls',
+        model: '250 pulls',
       },
       {
         label: '350 pulls',
+        model: '350 pulls',
       },
     ],
   },
@@ -2263,9 +2262,11 @@ export const PRODUCTS: ProductItem[] = [
     variants: [
       {
         label: 'Closed Toe',
+        model: 'Closed Toe',
       },
       {
         label: 'Open Toe',
+        model: 'Open Toe',
       },
     ],
   },

@@ -53,6 +53,23 @@ export function LenisProvider({ children }: { children: React.ReactNode }) {
         duration: 1.2,
         easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
         smoothWheel: true,
+        // Abandon in-flight wheel momentum when a link to a DIFFERENT pathname is clicked.
+        //
+        // Lenis keeps `targetScroll`/`animatedScroll` in its own state, independent of the DOM, and
+        // its raf loop runs off the GSAP ticker above — a separate loop from the App Router's
+        // scroll reset. A programmatic write Lenis did not make is adopted only through the async
+        // native `scroll` event, which it ignores while it is itself animating. So a glide that is
+        // still unwinding when a route change commits survives the navigation and reasserts its
+        // stale target the frame AFTER `htmlElement.scrollTop = 0`, clamped to the new page's
+        // maximum — landing the visitor at the bottom of the page they just opened.
+        //
+        // This option (lenis 1.3.23, `lenis.mjs:546-551`) resets the instance from Lenis's own
+        // click listener, at click time, before the navigation commits. It fires only for a click
+        // whose composed path holds an `<a href>` on the SAME host with a DIFFERENT pathname, so
+        // in-page hash anchors (`/#about`, `/#contact`, the skip link) and external links are
+        // untouched. Covered by "Scroll restoration when clicked mid-glide" in
+        // e2e/scroll-restoration.spec.ts; do not remove without reading FAULT C there.
+        stopInertiaOnNavigate: true,
       });
 
       lenisRef.current = lenis;

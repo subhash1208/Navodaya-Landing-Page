@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { RotateCcw, ZoomIn, ZoomOut, Camera } from 'lucide-react';
+import type { ProductSelection } from '@/components/ui/ProductConfigurator';
 
 interface ProductViewerProps {
   productName: string;
@@ -10,6 +11,12 @@ interface ProductViewerProps {
    * approved photo, so the placeholder below remains the fallback rather than a dead end.
    */
   image?: string;
+  /**
+   * The model (and colour, when the model has one) the visitor currently has selected. Present only
+   * for a product that HAS an option selector; `undefined` means there is nothing to select, and
+   * the legacy "360° View Coming Soon" panel is the right fallback.
+   */
+  selection?: ProductSelection;
 }
 
 /**
@@ -36,7 +43,7 @@ interface ProductViewerProps {
  * Performance: the placeholder's hover effect is CSS-only (group-hover Tailwind classes) instead
  * of useState, eliminating re-renders on every mouse enter/leave.
  */
-export function ProductViewer({ productName, image }: ProductViewerProps) {
+export function ProductViewer({ productName, image, selection }: ProductViewerProps) {
   if (image) {
     return (
       <div className="relative w-full aspect-[4/3] overflow-hidden bg-grey-50 border border-grey-100">
@@ -49,6 +56,46 @@ export function ProductViewer({ productName, image }: ProductViewerProps) {
           loading="eager"
           fetchPriority="high"
         />
+      </div>
+    );
+  }
+
+  if (selection) {
+    /**
+     * The named placeholder, for every selected combination that has no photograph yet — which is
+     * currently every combination except each photographed product's default.
+     *
+     * Deliberately the SAME `aspect-[4/3]` box as the photographed branch above, not the legacy
+     * `aspect-square` one below: switching model or colour must not reflow the column, and these
+     * two branches are the pair a visitor toggles between. The legacy square box only ever appears
+     * for a product with no selector at all, where nothing can switch.
+     *
+     * Dashed rule and a flat `grey-100` ground so it reads as a deliberate placeholder rather than
+     * a broken image. `grey-600` on `grey-100` measures 6.71:1 and `ink` on it 15.95:1, both clear
+     * of 4.5:1 — `grey-400` would have measured 3.28:1 and is the exact mistake this repo has
+     * already shipped once.
+     *
+     * `role="img"` with a composed `aria-label`: the three stacked lines are one picture-substitute,
+     * and reading them as three separate paragraphs would be noise.
+     */
+    const described = [productName, selection.model, selection.colour].filter(Boolean).join(', ');
+    return (
+      <div
+        role="img"
+        aria-label={`${described} — photograph coming soon`}
+        className="relative w-full aspect-[4/3] overflow-hidden bg-grey-100 border border-grey-200"
+      >
+        <div className="absolute inset-3 flex flex-col items-center justify-center gap-2 border-2 border-dashed border-grey-300 p-6 text-center">
+          <p className="font-mono text-label uppercase tracking-wider text-grey-600">
+            Photograph Coming Soon
+          </p>
+          <p className="text-lg font-semibold text-ink">{selection.model}</p>
+          {selection.colour ? (
+            <p className="font-mono text-label uppercase tracking-wider text-grey-600">
+              {selection.colour}
+            </p>
+          ) : null}
+        </div>
       </div>
     );
   }

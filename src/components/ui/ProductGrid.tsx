@@ -80,10 +80,14 @@ const SUB_CATEGORY_CHIPS: { slug: SubCategorySlug | null; name: string; count: n
 ];
 
 /**
- * Selected state is a full inversion — dark ground, light text — not a hue swap, so it survives
- * any colour-vision deficiency; `aria-pressed` carries the same fact to assistive technology.
- * `grey-300` on `ink` measures 9.02:1, well clear of 4.5:1, which is why the count span flips
- * with the chip instead of staying `grey-500` (a light-surfaces-only token, per tailwind.config).
+ * Selected state is **brand blue**, matching `ProductOptions.tsx`'s chips exactly so the site has
+ * one selected-state language rather than two. `paper` on `brand.blue` measures **7.15:1** (the
+ * figure `tailwind.config.ts` records for that pair; the ratio is symmetric), well clear of the
+ * 4.5:1 bar, and `brand.blue` is a LIGHT-surfaces-only token sitting here on `paper`/`grey-50`.
+ * `aria-pressed` carries the same fact to assistive technology. `grey-200` on `brand.blue`
+ * measures 5.13:1, which is why the count span flips with the chip instead of staying `grey-500`
+ * (a light-surfaces-only token, per tailwind.config) or `grey-300`, which measured 9.02:1 against
+ * the old `ink` ground but only 3.48:1 against this one — below the bar, so it moved up a step.
  *
  * `py-2.5` (10px) plus the 14.3px `text-label` line box and the 1px border gives a 36.3px box;
  * `before:inset-y-[-5px]` grows the invisible hit area to 46.3px, clearing the 44px WCAG
@@ -91,7 +95,7 @@ const SUB_CATEGORY_CHIPS: { slug: SubCategorySlug | null; name: string; count: n
  * areas claim between them, so the expansion never steals a tap from the row above or below.
  */
 const SUB_CHIP_CLASS =
-  "group relative inline-flex items-baseline gap-1.5 border border-grey-200 px-3 py-2.5 font-mono text-label uppercase text-grey-500 transition-colors duration-200 hover:border-grey-400 hover:text-ink aria-pressed:border-ink aria-pressed:bg-ink aria-pressed:text-paper focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 before:absolute before:inset-x-0 before:inset-y-[-5px] before:content-['']";
+  "group relative inline-flex items-baseline gap-1.5 border border-grey-200 px-3 py-2.5 font-mono text-label uppercase text-grey-500 transition-colors duration-200 hover:border-grey-400 hover:text-ink aria-pressed:border-brand-blue aria-pressed:bg-brand-blue aria-pressed:text-paper focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue focus-visible:ring-offset-2 before:absolute before:inset-x-0 before:inset-y-[-5px] before:content-['']";
 
 /**
  * The small-screen disclosure trigger. Same box as a chip — border, `px-3 py-2.5`, mono label, and
@@ -235,7 +239,12 @@ export function ProductGrid({
           p.name.toLowerCase().includes(q) ||
           (p.description?.toLowerCase().includes(q) ?? false) ||
           (p.material?.toLowerCase().includes(q) ?? false) ||
-          (p.variants?.some((v) => v.label.toLowerCase().includes(q)) ?? false),
+          (p.variants?.some((v) => v.label.toLowerCase().includes(q)) ?? false) ||
+          // A product carries `variants` OR `optionAxes`, never both, so this clause is the only
+          // thing that makes the four axis products searchable by their own option names. Without
+          // it, "lavender" — a fragrance the catalogue genuinely lists — returns "No products
+          // found" on the site's only discovery surface.
+          (p.optionAxes?.some((a) => a.values.some((v) => v.toLowerCase().includes(q))) ?? false),
       );
     }
     return list;
@@ -471,7 +480,7 @@ export function ProductGrid({
                   data-cursor-invert={pressed || undefined}
                 >
                   {chip.name}
-                  <span className="text-grey-500 group-aria-pressed:text-grey-300">
+                  <span className="text-grey-500 group-aria-pressed:text-grey-200">
                     {chip.count}
                   </span>
                 </button>

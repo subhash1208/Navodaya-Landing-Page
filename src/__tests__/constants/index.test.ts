@@ -179,9 +179,32 @@ describe('catalogue invariants', () => {
         product.category.name,
       );
     }
-    expect(productSummary(bare[0])).toBe(
-      'Available for bulk supply — sizes and pricing on enquiry.',
-    );
+    expect(
+      productSummary(
+        // `bare` still includes the four `optionAxes` products — they have no description, no
+        // material and no variants — and those now compose an axis sentence instead of the bare
+        // fallback, so the exact-string case has to name a product with no options at all.
+        bare.filter((p) => !p.optionAxes)[0],
+      ),
+    ).toBe('Available for bulk supply — sizes and pricing on enquiry.');
+  });
+
+  it('names the option axes for an axis-bearing product instead of falling through to the bare sentence', () => {
+    const withAxes = PRODUCTS.filter((p) => p.optionAxes);
+    expect(withAxes.length).toBeGreaterThan(0);
+    for (const product of withAxes) {
+      const summary = productSummary(product);
+      expect(summary, `${product.slug} took the bare fallback`).not.toContain(
+        'sizes and pricing on enquiry',
+      );
+      for (const axis of product.optionAxes ?? []) {
+        expect(summary, `${product.slug} omits its ${axis.name} axis`).toContain(
+          axis.name.toLowerCase(),
+        );
+      }
+    }
+    const concentrate = PRODUCTS.find((p) => p.slug === 'air-freshener-concentrate')!;
+    expect(productSummary(concentrate)).toBe('Available in a choice of size and fragrance.');
   });
 
   it('lists a dual-category product under both of its categories', () => {

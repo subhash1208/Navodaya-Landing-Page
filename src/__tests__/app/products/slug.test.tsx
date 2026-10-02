@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { generateStaticParams, generateMetadata } from '@/app/products/[slug]/page';
 import ProductPage from '@/app/products/[slug]/page';
 import { PRODUCTS } from '@/constants';
@@ -143,7 +143,11 @@ describe('ProductPage [slug]', () => {
       const product = PRODUCTS.find((p) => p.slug === 'shoe-cover')!;
       expect(product.variants!.length).toBeGreaterThan(1);
       expect(screen.getByText('Available Options')).toBeTruthy();
-      product.variants!.forEach((v) => expect(screen.getByText(v.label)).toBeTruthy());
+      // Selectable chips, not a dead list: one radiogroup of discrete models.
+      expect(screen.getAllByRole('radiogroup')).toHaveLength(1);
+      product.variants!.forEach((v) =>
+        expect(screen.getByRole('radio', { name: v.label })).toBeTruthy(),
+      );
       // The variant count also reaches the spec table, so a visitor sees it twice over.
       expect(screen.getByText(`${product.variants!.length} available`)).toBeTruthy();
       unmount();
@@ -152,6 +156,23 @@ describe('ProductPage [slug]', () => {
       render(without as any);
       expect(screen.queryByText('Available Options')).toBeNull();
       expect(screen.queryByText('Options')).toBeNull();
+      expect(screen.queryByRole('radiogroup')).toBeNull();
+    });
+
+    it('renders one row per axis for a product whose options are axes', async () => {
+      // These four carry `optionAxes` instead of `variants` and rendered NOTHING under the old
+      // `<ul>`, which read `variants` alone.
+      const product = PRODUCTS.find((p) => p.slug === 'hand-wash')!;
+      expect(product.optionAxes!.length).toBeGreaterThan(1);
+      const Page = await ProductPage({ params: Promise.resolve({ slug: product.slug }) });
+      render(Page as any);
+      expect(screen.getAllByRole('radiogroup')).toHaveLength(product.optionAxes!.length);
+      product.optionAxes!.forEach((axis) => {
+        expect(screen.getByRole('radiogroup', { name: axis.name })).toBeTruthy();
+        axis.values.forEach((value) =>
+          expect(screen.getByRole('radio', { name: value })).toBeTruthy(),
+        );
+      });
     });
 
     it('never renders the literal string undefined for a product with no copy', async () => {
@@ -167,6 +188,16 @@ describe('ProductPage [slug]', () => {
       render(Page as any);
       const link = screen.getByRole('link', { name: /request a quote/i });
       expect(link.getAttribute('href')).toBe('/?product=surgeon-cap#contact');
+    });
+
+    it('adds the chosen option to the quote link', async () => {
+      const product = PRODUCTS.find((p) => p.slug === 'shoe-cover')!;
+      const Page = await ProductPage({ params: Promise.resolve({ slug: product.slug }) });
+      render(Page as any);
+      const label = product.variants![0].label;
+      fireEvent.click(screen.getByRole('radio', { name: label }));
+      const href = screen.getByRole('link', { name: /request a quote/i }).getAttribute('href')!;
+      expect(new URL(href, 'https://example.test').searchParams.get('variant')).toBe(label);
     });
   });
 });

@@ -80,7 +80,10 @@ describe('ProductCard', () => {
     const noCopy: ProductItem = {
       ...mockProduct,
       description: undefined,
-      variants: [{ label: 'Small' }, { label: 'Large' }],
+      variants: [
+        { label: 'Small', model: 'Small' },
+        { label: 'Large', model: 'Large' },
+      ],
     };
     render(<ProductCard product={noCopy} />);
     expect(screen.getByText('Non-woven construction. Available in 2 options.')).toBeTruthy();
@@ -107,15 +110,42 @@ describe('ProductCard', () => {
 
   it('reports a variant count only when there is a real choice to make', () => {
     const { unmount } = render(
-      <ProductCard product={{ ...mockProduct, variants: [{ label: 'A' }, { label: 'B' }] }} />,
+      <ProductCard
+        product={{
+          ...mockProduct,
+          variants: [
+            { label: 'A', model: 'A' },
+            { label: 'B', model: 'B' },
+          ],
+        }}
+      />,
     );
     expect(screen.getByText('Options:')).toBeTruthy();
     expect(screen.getByText('2')).toBeTruthy();
     unmount();
 
     // A single variant is not a choice — two products in the catalogue have exactly one.
-    render(<ProductCard product={{ ...mockProduct, variants: [{ label: 'A' }] }} />);
+    render(<ProductCard product={{ ...mockProduct, variants: [{ label: 'A', model: 'A' }] }} />);
     expect(screen.queryByText('Options:')).toBeNull();
+  });
+
+  it('names the option axes rather than counting them for an axis-bearing product', () => {
+    render(
+      <ProductCard
+        product={{
+          ...mockProduct,
+          variants: undefined,
+          optionAxes: [
+            { name: 'Size', values: ['500 ML', '1 L', '5 L'] },
+            { name: 'Fragrance', values: ['Lavender', 'Jasmine'] },
+          ],
+        }}
+      />,
+    );
+    expect(screen.getByText('Options:')).toBeTruthy();
+    // Names, not a count: 3 × 2 = 6 would re-fabricate SKUs the source never asserted.
+    expect(screen.getByText('Size, Fragrance')).toBeTruthy();
+    expect(screen.queryByText('6')).toBeNull();
   });
 
   it('links to product page', () => {

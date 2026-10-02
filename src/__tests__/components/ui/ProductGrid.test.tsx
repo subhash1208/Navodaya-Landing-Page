@@ -188,7 +188,7 @@ describe('ProductGrid', () => {
     expect(tablist.querySelectorAll('.bg-ink')).toHaveLength(0);
   });
 
-  it('searches material and variant labels, not just the product name', () => {
+  it('searches material, variant labels and option-axis values, not just the product name', () => {
     render(<ProductGrid activeCategory={ALL_ID} />);
     const input = screen.getByLabelText('Search products');
 
@@ -202,6 +202,20 @@ describe('ProductGrid', () => {
     fireEvent.change(input, { target: { value: '5 kg' } });
     expect(screen.getAllByRole('link').length).toBeGreaterThan(0);
     expect(PRODUCTS.filter((p) => p.name.toLowerCase().includes('5 kg'))).toHaveLength(0);
+
+    // 'Lavender' is an `optionAxes` value on exactly one product. It used to be reachable as a
+    // fabricated variant label; when the axes split out of `variants`, the filter stopped reading
+    // it and the product became undiscoverable by the fragrance it is actually stocked in.
+    fireEvent.change(input, { target: { value: 'lavender' } });
+    const axisHits = screen.getAllByRole('link').map((a) => a.getAttribute('href'));
+    expect(axisHits).toEqual(['/products/air-freshener-concentrate']);
+    expect(PRODUCTS.filter((p) => p.name.toLowerCase().includes('lavender'))).toHaveLength(0);
+
+    // 'Peach' is the same gap on a second product, reached through a different axis.
+    fireEvent.change(input, { target: { value: 'peach' } });
+    expect(screen.getAllByRole('link').map((a) => a.getAttribute('href'))).toEqual([
+      '/products/hand-wash',
+    ]);
   });
 
   it('shows no results message when search has no matches', () => {

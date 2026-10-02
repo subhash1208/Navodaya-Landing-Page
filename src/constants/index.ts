@@ -124,9 +124,10 @@ export function productEnquiryLabel(product: ProductItem): string {
  * The sentence a card or product page shows beneath the name.
  *
  * The client's catalogue carries no product copy — 123 of the 164 products have no `material`
- * either, and 63 take the bare fallback below: 61 have no variants at all, and two
- * (`cleaning-powder`, `tissue-roll-1000-g`) have a single variant, which the `variantCount > 1`
- * guard deliberately does not report. So this composes whatever factual data the product does
+ * either, and 63 take the bare fallback below: they have no variants at all, or (two of them,
+ * `cleaning-powder` and `tissue-roll-1000-g`) a single variant, which the `variantCount > 1`
+ * guard deliberately does not report. The four `optionAxes` products were in that set until the
+ * axis clause below was added. So this composes whatever factual data the product does
  * have rather than rendering an empty paragraph or the string "undefined". Writing real
  * descriptions is a separate, client-facing task; when `description` is populated it wins.
  *
@@ -148,6 +149,12 @@ export function productSummary(product: ProductItem): string {
 
   const variantCount = product.variants?.length ?? 0;
   if (variantCount > 1) facts.push(`Available in ${variantCount} options.`);
+
+  // The four `optionAxes` products have no variants to count — their options are independent
+  // dimensions. Naming the dimensions is the honest sentence; a count would mean crossing the
+  // axes back into SKUs the source never asserted as stocked.
+  const axisNames = product.optionAxes?.map((axis) => axis.name.toLowerCase()) ?? [];
+  if (axisNames.length > 0) facts.push(`Available in a choice of ${axisNames.join(' and ')}.`);
 
   if (facts.length === 0) {
     return 'Available for bulk supply — sizes and pricing on enquiry.';
